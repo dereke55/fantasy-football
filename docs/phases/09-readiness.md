@@ -2,7 +2,7 @@
 
 Purpose: turn the MVP into a draft-ready tool — Derek's review pass and fixes, the keeper-value helper before the keeper deadline, the Track A/B day, the hard freeze, the curated re-check, the dry run, and the buffer day.
 
-Status: Not started
+Status: keeper-value helper PULLED FORWARD to 2026-08-30 (deadline Mon Aug 31) and shipped as `ff keeper rounds|table|value`; the rest of Phase 9 is unchanged
 
 Specs: `docs/spec/ranking-model.md` §13 (keeper-value helper) and §14 (guards), `docs/spec/live-draft.md` (Track A / harness / dry-run feed), `docs/spec/data-model.md` (`draft_snapshot`, `raw_snapshots.post_kickoff` / `shape_ok`), `docs/runbook-draft-week.md` (freeze and post-kickoff procedures).
 
@@ -115,3 +115,22 @@ The plan defines no single gate line for Phase 9; the acceptance criteria are it
 - Day 9: 1–2 h curated-table re-check (ATL/LV/KC QB rooms, OL injuries, late signings: Decker, Conklin, Mixon, Chubb, Hopkins) with source URLs.
 - Day 9: approve any re-freeze explicitly.
 - Confirm the exact draft date/time (day-1 input) so the freeze evening and the poller start (draft_time − 60 min) are correct.
+
+
+## Keeper-value helper — delivered early (2026-08-30)
+
+The keeper declaration deadline (Mon Aug 31) lands before the full Phase 6 pipeline, so the helper was built on the
+vendor-only projection path: Sleeper/Rotowire stat lines re-scored under `config/league.yaml`, one E[games], and the
+keeper-aware VBD baselines from `app/ranking/vbd.py`.
+
+    keeper_surplus(player, cost_round) = VORP(player) − E[VORP of the best player still available at that pick]
+
+- `uv run ff keeper rounds` — what each round's pick is worth (the bar a keeper must clear).
+- `uv run ff keeper table --limit N [--position RB] [--slot S]` — every player's VORP and **break-even round**
+  (keep when `cost_round >= break_even_round`).
+- `uv run ff keeper value` — reads `backend/seeds/my_keeper_candidates.yaml` (name + cost_round) and prints
+  KEEP / DRAFT INSTEAD per candidate.
+
+The draft slot is still unknown, so every round's pick value is averaged over all 10 slots with min/max shown; pass
+`--slot` once it is assigned. **Scoring is still the labeled placeholder**, so every number is provisional until the
+real Yahoo scoring lands — re-run after that, and again after the Phase 6 blend replaces the vendor-only projection.

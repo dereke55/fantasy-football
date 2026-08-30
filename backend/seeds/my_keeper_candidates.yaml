@@ -1,0 +1,12 @@
+# Your keeper candidates: the players on your roster you could keep, and what each would cost.
+# cost_round = the round the player was drafted in last year (Yahoo assigns the keeper to that round and
+# skips your team in it). Add rows, then run:  uv run ff keeper value
+#
+# name must match the player's name in the tool (run `uv run ff keeper table --limit 40` to see names).
+version: 1
+rows: []
+# example:
+#   - name: Ja'Marr Chase
+#     cost_round: 3
+#   - name: Bijan Robinson
+#     cost_round: 1

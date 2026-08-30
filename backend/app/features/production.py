@@ -28,7 +28,10 @@ dominant group is QB/RB/WR/TE; **all** of his REG rows are then aggregated, so s
 
 *Shares* are season-level: ``targets / team targets``. For the ~60-90 players a season who change teams the share is
 summed per team stint (``Σ_team player targets on team / that team's season targets``), which is exact for the ~95 %
-of player-seasons spent on one team and is the closest season-level analogue for the rest. The weekly-mean variant
+of player-seasons spent on one team and is the closest season-level analogue for the rest. Summed over every player
+in the league those shares total exactly 1.0 per team-season; summed over the rows of :func:`compute` they do not,
+because a row is filed under the player's most-frequent team while his share covers all his stints (SEA 2025 totals
+1.12; teams whose 2025 contributors have left the 2026 hub total under 1.0). The weekly-mean variant
 ``target_share_wk_mean`` (mean of nflverse's own weekly ``target_share``) is kept alongside it for comparison; it
 weights every game equally regardless of team volume.
 """
@@ -208,7 +211,7 @@ def compute(seasons: list[int]) -> pl.DataFrame:
     cfg = load_league_config()
     weeks = _read_weeks(seasons)
     if weeks.is_empty():
-        return pl.DataFrame(schema={c: pl.Null for c in COMPUTE_COLUMNS})
+        return pl.DataFrame(schema=dict.fromkeys(COMPUTE_COLUMNS, pl.Null))
 
     season_pos = _dominant(weeks, "position_group", "position").filter(pl.col("position").is_in(POSITIONS))
     season_team = _dominant(weeks, "team", "team_season")

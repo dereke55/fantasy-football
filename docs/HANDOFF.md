@@ -1,4 +1,4 @@
-# Handoff — state as of 2026-08-29 (end of planning + Phase 0/1a session)
+# Handoff — state as of 2026-08-30 (Phase 4-lite + keeper helper shipped)
 
 Read `CLAUDE.md` → `docs/PLAN.md` → this file → the phase checklist you are working on. Progress is tracked by ticking
 `docs/phases/NN-*.md`; decisions go in `docs/decisions.md`. Draft is **before Sep 10**; the calendar in PLAN.md starts day 1 = Aug 31.
@@ -34,6 +34,15 @@ Read `CLAUDE.md` → `docs/PLAN.md` → this file → the phase checklist you ar
 - Phase 3 features: **stopped before any code was written** (to save tokens for the model switch). `app/features/` is empty. Implement per
   `docs/phases/03-features.md`: modules production / luck / consistency / durability / depth / team_tendencies, each `compute(seasons) -> polars`,
   an assembler writing `player_season_features` + `player_features` (Alembic migration), `GET /api/players/{id}/profile`, and the gate.
+
+## Added 2026-08-30
+- **Phase 4-lite market layer** (`app/market/build.py`, `rank_snapshots`): 4 sources → 1,519 rows, composite rank,
+  disagreement residual, `sd_adp` (OLS on FFC = 1.04 + 0.105·ADP). `ff market build` / `ff market check` (GATE PASSED,
+  depth reconciled to measured coverage — see docs/phases/04-market.md).
+- **Vendor projections** (`app/ranking/projections.py`): Sleeper stat lines re-scored under league config, plus E[games].
+- **Keeper helper** (`app/ranking/keeper_value.py`, `ff keeper rounds|table|value`) — pulled forward for the Aug 31 deadline.
+- Confirmed inputs: `league_key = 470.l.335180`, draft Sun Sep 6 8:45pm CDT, keeper deadline Aug 31, Yahoo app submitted.
+- Still pending from Derek: **real scoring table** (screenshot never arrived), roster slots/bench, max keepers, draft slot.
 
 ## Next (in order — see docs/PLAN.md calendar)
 1. Get Derek's day-1 inputs into `config/league.yaml` (scoring incl. fractional/negative flags, roster, keeper count/deadline, league_key,
