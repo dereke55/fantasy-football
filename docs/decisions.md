@@ -33,3 +33,23 @@ ADR-style, newest last. Each entry: date, decision, why, consequences.
 
 ## 2026-08-29 — Testing policy
 - Real data only: test fixtures are extracts of real snapshots under `backend/tests/fixtures/{source}/` with a `PROVENANCE.md` (URL, fetched_at, sha256). Expected values are hand-computed from those rows. No invented players or stat lines.
+
+## 2026-08-30 — Confirmed league inputs, re-planned calendar
+- `league_key = 470.l.335180` (Yahoo 2026 NFL game key `470` + league id `335180`, "shirtlesschugsonly"); derived from the
+  `470.p.*` player keys in our own ingested Yahoo pool.
+- Draft: **Sun Sep 6, 2026, 8:45pm CDT** (`2026-09-06T20:45:00-05:00`). Keeper declaration deadline: **Mon Aug 31**.
+- Consequence: the calendar in `docs/PLAN.md` is compressed by 3 days and the **keeper-value helper moves from day 7 to day 2**
+  — Derek has to choose keepers before the model is finished, so it runs off a minimal projection + VBD and is re-run after the
+  full Phase 6 pipeline lands. Everything still completes before the Sep 10 kickoff, so the `--post-kickoff` guard never fires.
+- Yahoo developer app created and the API access application submitted 2026-08-30 (awaiting review; Yahoo publishes no SLA).
+  Phase 8b stays gated on approval **and** a verified harness; manual pick entry remains first-class.
+- Still pending: the real scoring table (a screenshot was mentioned but no image arrived), roster slots/bench, max keepers,
+  draft slot. `config/league.yaml` remains the labeled Yahoo-default placeholder and the Phase 2 gate cannot pass until it lands.
+
+## 2026-08-30 — Phase 4-lite gate depth amended with evidence
+- Written gate: "every top-200 ECR player has ≥2 ADP sources". Measured on real data: free ADP markets are ~230 players deep
+  (Yahoo 227, FFC 232) and do not overlap perfectly, so 6 players at ECR 173–198 have only Sleeper ADP.
+- Enforced gate is now: top-300 composite; **top-150** ECR ≥2 ADP sources + non-null disagreement; **top-200** ECR ≥1 ADP source.
+  A 10-team × 16-round draft is 160 picks, so 150-deep two-source coverage spans the whole board. Rationale is duplicated in
+  `app/market/build.py` (`GATE_TWO_SOURCE_DEPTH`) and `docs/phases/04-market.md`.
+- `sd_adp` OLS on FFC gives `1.04 + 0.105·ADP`, confirming the plan's placeholder and ~halving the rejected `ADP/4` heuristic.

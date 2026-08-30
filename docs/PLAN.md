@@ -42,9 +42,9 @@ for the window, so the plan is now organized around a **hard MVP cut line** with
 |---|---|
 | Platform | Yahoo. OAuth2 app + **reviewed access application** submitted day 1 (Yahoo now reviews even personal-use apps; no SLA) |
 | Draft | Snake, 10 teams, keeper league; keeper cost = round drafted last year (Yahoo assigns each keeper to a round; that team is skipped in that round) |
-| Keeper list | Not final; entered manually (primary) or captured from Yahoo pre-draft `draftresults` if OAuth works |
+| Keeper list | **Declaration deadline Mon Aug 31**; entered manually (primary) or captured from Yahoo pre-draft `draftresults` if OAuth works |
 | Live scope | Live auto-sync from Yahoo **gated** on approval + a verified test harness; manual mode is first-class and identical |
-| Timing | Draft before Sep 10; exact date/time is a day-1 input; snapshot is frozen the evening before |
+| Timing | **Draft Sun Sep 6, 8:45pm CDT** (confirmed 2026-08-30); snapshot frozen Sat Sep 5 |
 | Roster | Standard 1-QB (no superflex / TE premium / IDP); K and DST ranked by consensus ADP only |
 | WHY text | Rule-based, deterministic templates over stored, auditable signals (no LLM) |
 | Data | Free stack only; real data only (tests use real snapshot extracts with provenance) |
@@ -52,8 +52,13 @@ for the window, so the plan is now organized around a **hard MVP cut line** with
 
 ### Day-1 inputs still needed from Derek (block Phase 2)
 
-1. **Scoring table** copied from Yahoo League → Settings (incl. fractional points on/off, negative points on/off, yardage bonuses). *Selected "paste in notes" but no notes arrived — please paste in the next message.*
-2. Roster slots + bench count. 3. Draft slot (or "TBD by <date>"). 4. Keeper rules: max keepers per team, whether the commissioner has already run "Assign Keeper Players", keeper deadline. 5. `league_key` (from the league URL). 6. Exact draft date/time.
+1. **Scoring table** — ⏳ STILL PENDING (a screenshot was mentioned on 2026-08-30 but no image arrived). Blocks the Phase 2 gate.
+2. Roster slots + bench count — ⏳ pending (placeholder: QB/RB2/WR3/TE/FLEX/K/DEF + 6 bench = 16 rounds).
+3. Draft slot — ⏳ pending (may be assigned late; the model runs for any slot).
+4. Keeper rules: max keepers per team + whether the commissioner has run "Assign Keeper Players" — ⏳ pending; **deadline Mon Aug 31** ✅ recorded.
+5. `league_key` — ✅ `470.l.335180` (2026 game key 470 + league 335180, "shirtlesschugsonly").
+6. Draft date/time — ✅ Sun Sep 6, 8:45pm CDT.
+7. Yahoo developer app + access application — ✅ submitted 2026-08-30 (awaiting review; no SLA).
 
 Until (1) lands, `config/league.yaml` carries Yahoo default public-league scoring with its source URL and is labeled as such.
 
@@ -211,20 +216,23 @@ snap_counts, NGS, PFR advstats, contracts (parquet only, `is_active`, dedupe on 
 - Manual: Derek's top-200 sanity pass (day 7) and curated-table review (day 9).
 - End-to-end: `uv run fastapi dev` + `pnpm dev`; dry run of draft-day mode with a scripted real-ADP pick feed; 8b tested against the Yahoo harness if shipped.
 
-## Calendar (draft before Sep 10; adjust if the date is earlier)
+## Calendar (CONFIRMED: draft Sun **Sep 6, 8:45pm CDT**; keeper deadline Mon **Aug 31**)
+
+Re-planned 2026-08-30 — the draft is 3 days earlier than the plan assumed, and the keeper deadline lands on day 2,
+so the keeper-value helper moves from day 7 to day 2 and every gate shifts earlier. All dates are before the
+Sep 10 kickoff, so the post-kickoff guard never fires this cycle.
 
 | Day | Date | Deliverable / gate |
 |---|---|---|
-| 1 | Sun Aug 30 / Mon Aug 31 | Phase 0 + crosswalk gate; Yahoo app + application + smoke test |
-| 2 | Tue Sep 1 | Ingest 1a + scoring gate + market composite |
-| 3 | Wed Sep 2 | Phase 3 features gate |
-| 4 | Thu Sep 3 | Phase 6 core (blend, value, keepers/pick_schedule, room ADP, tiers) — Spearman gate |
-| 5 | Fri Sep 4 | Flags + curated tables + WHY + 8a availability + CSV + `recompute` → **draft-day minimum** |
-| 6 | Sat Sep 5 | Board UI → **MVP checkpoint**; candidate freeze v1 |
-| 7 | Sun Sep 6 | Derek review + fixes; keeper-value helper; runbook |
-| 8 | Mon Sep 7 | Track A (Yahoo live) or Track B (injuries/skill movement/SoS display/polish); hard freeze the evening before the draft |
-| 9 | Tue Sep 8 | Curated re-check; dry run |
-| 10 | Wed Sep 9 | Buffer |
+| 1 | Sun Aug 30 | ✅ commit/push; league_key + draft time in `league.yaml`; **Phase 4-lite market composite (gate passed)**; Phase 3 feature modules |
+| 2 | Mon Aug 31 | Phase 3 assembly (`player_features`); minimal projection + VBD → **keeper-value helper before the keeper deadline**; Derek enters keepers |
+| 3 | Tue Sep 1 | Phase 6 core: blend, adjustments, keeper-aware VBD, tiers, room ADP — Spearman ≥ 0.8 gate |
+| 4 | Wed Sep 2 | Flags + WHY bullets + 8a availability/VONA + CSV export + `recompute` → **draft-day minimum** |
+| 5 | Thu Sep 3 | Board UI (Phase 7) → **MVP checkpoint**; candidate freeze v1 |
+| 6 | Fri Sep 4 | Derek's top-200 review + fixes; Phase 5 curated loader → `team_context` API + tags; Yahoo 8b if approved |
+| 7 | Sat Sep 5 | Curated re-check (QB rooms, OL, late signings); dry run of draft-day mode; **hard freeze** |
+| 8 | Sun Sep 6 | Buffer + final refresh in the morning; **draft 8:45pm CDT** |
+
 
 ## Deliverables on approval
 

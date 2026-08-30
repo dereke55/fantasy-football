@@ -6,15 +6,15 @@ source_url: https://help.yahoo.com/kb/SLN6448.html   # Yahoo Fantasy Football de
 as_of: 2026-08-29
 league:
   platform: yahoo
-  league_key: null            # e.g. 461.l.12345 (from the league URL) — DAY-1 INPUT
+  league_key: "470.l.335180"  # 2026 NFL game_key 470 + league id 335180 (shirtlesschugsonly)
   num_teams: 10
   draft_type: snake
-  draft_datetime: null        # ISO 8601 local, before 2026-09-10 — DAY-1 INPUT
+  draft_datetime: "2026-09-06T20:45:00-05:00"   # Sun Sep 6, 8:45pm CDT
   my_draft_slot: null         # 1..10, or null if not yet assigned
   keepers:
     max_per_team: null        # DAY-1 INPUT
     cost_rule: round_drafted  # keeper occupies the round the player was drafted in last year; team skips that round
-    deadline: null            # Yahoo: managers declare >= 1 hour before draft; commissioner approves
+    deadline: "2026-08-31"    # Derek: keeper declarations due Mon Aug 31; list entered into the tool that day
     assigned_in_yahoo: null   # true once the commissioner has run "Assign Keeper Players"
 roster:
   slots: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 1, K: 1, DEF: 1 }

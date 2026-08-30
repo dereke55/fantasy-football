@@ -18,6 +18,7 @@ def health() -> None:
 
 def _mount() -> None:
     from app.ingest import ffc, nflverse_ref, nflverse_stats, players_hub, sleeper, yahoo_pub
+    from app.market import build as market_build
 
     ingest_app.add_typer(nflverse_stats.cli, name="nflverse-stats")
     ingest_app.add_typer(nflverse_ref.cli, name="nflverse-ref")
@@ -25,6 +26,7 @@ def _mount() -> None:
     ingest_app.add_typer(ffc.cli, name="ffc")
     ingest_app.add_typer(yahoo_pub.cli, name="yahoo-pub")
     ingest_app.add_typer(players_hub.cli, name="players")
+    app.add_typer(market_build.cli, name="market")
 
 
 _mount()

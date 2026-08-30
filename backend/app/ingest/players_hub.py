@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import math
 import re
+import unicodedata
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -39,9 +40,12 @@ TEAM_FIX = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "OAK": "LV", "SD": "LAC", "
 
 
 def norm_name(name: str | None) -> str:
+    """Lowercase, strip accents/punctuation/suffixes: "Eddy Piñeiro" -> "eddy pineiro"."""
     if not name:
         return ""
-    s = name.lower().replace(".", "").replace("'", "").replace("’", "")
+    s = unicodedata.normalize("NFKD", name)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    s = s.lower().replace(".", "").replace("'", "").replace("’", "")
     s = re.sub(r"[-_/]", " ", s)
     s = re.sub(r"[^a-z0-9 ]", "", s)
     parts = [p for p in s.split() if p not in SUFFIXES]
