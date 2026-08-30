@@ -24,6 +24,12 @@ const POLARITY: Record<number, { color: string; mark: string }> = {
   [-1]: { color: 'var(--bad)', mark: '▼' },
 }
 
+const ordinal = (n: number): string => {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return s[(v - 20) % 10] ?? s[v] ?? s[0]
+}
+
 export function PlayerDrawer({ player, profile, loading, error, busy, onClose, onDraft }: Props) {
   const s = profile?.summary ?? null
   const g = (k: string) => (s ? (s as Record<string, unknown>)[k] : undefined)
@@ -164,6 +170,16 @@ export function PlayerDrawer({ player, profile, loading, error, busy, onClose, o
                 <M k="Blend PPG" v={one(num(profile.ranking?.ppg_blend))} />
                 <M k="Replacement" v={one(num(profile.ranking?.replacement_ppg))} />
                 <M k="Age 2026" v={one(num(g('age_2026')))} />
+                <M
+                  k="NFL season"
+                  v={
+                    bool(g('is_rookie'))
+                      ? 'Rookie'
+                      : num(g('years_exp')) != null
+                        ? `${(num(g('years_exp')) as number) + 1}${ordinal((num(g('years_exp')) as number) + 1)}`
+                        : DASH
+                  }
+                />
                 <M k="Draft capital" v={num(g('draft_round')) != null ? `R${num(g('draft_round'))} #${num(g('draft_pick'))}` : (bool(g('is_rookie')) ? 'UDFA' : DASH)} />
               </Group>
             </Sec>

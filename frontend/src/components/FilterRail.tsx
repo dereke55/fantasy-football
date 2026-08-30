@@ -94,7 +94,7 @@ export const FilterRail = forwardRef<HTMLInputElement, Props>(function FilterRai
               type="button"
               onClick={() => togglePreset(p.key)}
               className="flex items-center justify-between rounded border px-1.5 py-0.5 text-[11px] font-semibold"
-              style={chip(filters.presets.includes(p.key), p.key === 'sleeper' ? 'var(--good)' : 'var(--bad)')}
+              style={chip(filters.presets.includes(p.key), p.key === 'bust' ? 'var(--bad)' : 'var(--good)')}
             >
               <span>{p.icon} {p.label}</span>
               <span style={{ opacity: 0.65 }}>{counts[p.key] ?? 0}</span>

@@ -137,3 +137,31 @@ real, and they are separate problems:
   gap ≥ 6 / gap_z ≥ 1.0 / draftable; 33 are blocked by needing ≥ 2 support signals. Breece Hall (+9 picks),
   D'Andre Swift (+10) and Mike Evans (+13) have zero support signals despite large gaps, because the catalogue is
   thin (six signals, several of which need two seasons of same-role history).
+
+
+## 2026-08-30 — Sleeper split into sleeper / value, and a wider support catalogue
+
+Both problems from the review above, fixed as Derek asked.
+
+**Sleeper vs value.** Same evidence, different word. A player is *established* if the market already spends a
+top-5-round pick on him (`ESTABLISHED_ROUNDS = 5`) **or** he finished 2025 as a startable starter at his position
+in a league this size (top 10 QB / 20 RB / 30 WR / 10 TE, with >= 8 games). Established players clearing the value
+gap are flagged `value`; everyone else stays `sleeper`. Both carry the identical evidentiary burden
+(gap_z >= 1.0, gap >= 6 picks, >= 2 support signals, draftable ADP).
+
+Result: 15 sleepers, 10 value. Dak Prescott (2025 QB7), Patrick Mahomes (QB5), Brock Purdy (QB4) and Nico Collins
+(WR11) moved to `value` where they belong; the sleeper list is now genuinely unheralded — Zach Charbonnet (ADP 134,
+inheriting Kenneth Walker's vacated carries), Dalton Schultz (+81 picks), Brenton Strange (+64), Chris Rodriguez.
+
+**Wider support catalogue.** Five signals added, three of which only became possible with the vacated-opportunity
+and team-context work earlier today:
+`inherits_vacated_opportunity` (>= 2% of a club's per-game share inherited from departed team-mates),
+`our_model_sees_more_than_the_vendor` (in-house projection >= 1.0 PPG above the vendor line),
+`underperformed_expected_points` (ppg_diff <= -1.0), `team_context_tailwind` (context factor >= 1.02),
+`high_draft_capital_with_a_role` (R1-R2 rookie at depth rank 1-2).
+
+Flag coverage of players clearing the value gap went from 5/38 to 25/38. A test now guards the ratio at >= 40% and
+asserts each new signal actually fires, so the catalogue cannot silently rot back to unusable.
+
+Also: years of experience now appears in the player drawer as "NFL season" (2nd, 3rd, ... or Rookie). It was
+computed in `player_features` and typed in the frontend, but the board API never selected it.

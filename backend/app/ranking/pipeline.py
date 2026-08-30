@@ -49,6 +49,9 @@ MODEL_VERSION = "2026.1"
 W_VENDOR, W_INHOUSE = 0.70, 0.30
 W_VENDOR_NOHIST, W_INHOUSE_NOHIST = 0.90, 0.10
 SLEEPER_GAP_Z, SLEEPER_GAP = 1.0, 6.0
+ESTABLISHED_ROUNDS = 5          # a player the market spends a top-5-round pick on is not a secret
+VACATED_GAIN_MIN = 0.02         # share of a club's per-game opportunity inherited from departed team-mates
+MODEL_EDGE_PPG = 1.0            # our opportunity model above the vendor line
 # 10 teams x 16 rounds = 160 picks; allow margin for ADP noise before calling anyone a sleeper or a bust
 DRAFTABLE_ADP = 220.0
 # how many positional places apart our rank and the market's must be before a negative gap is player-specific
@@ -109,10 +112,13 @@ def build_board(cfg: LeagueConfig | None = None) -> tuple[pl.DataFrame, dict]:
 
     df = pool.join(feats.drop("position", "team", "name", strict=False), on="player_id", how="left")
     if inhouse is not None and not inhouse.is_empty():
-        keep = [c for c in ("player_id", "inhouse_ppg", "inhouse_ppg_raw", "age_factor", "share_source")
+        keep = [c for c in ("player_id", "inhouse_ppg", "inhouse_ppg_raw", "age_factor", "share_source",
+                            "context_factor", "target_vacated_gain", "carry_vacated_gain",
+                            "proj_target_share", "proj_carry_share")
                 if c in inhouse.columns]
         df = df.join(inhouse.select(keep), on="player_id", how="left")
-    for col in ("inhouse_ppg", "inhouse_ppg_raw", "age_factor", "share_source"):
+    for col in ("inhouse_ppg", "inhouse_ppg_raw", "age_factor", "share_source", "context_factor",
+                "target_vacated_gain", "carry_vacated_gain", "proj_target_share", "proj_carry_share"):
         if col not in df.columns:
             df = df.with_columns(pl.lit(None).alias(col))
 
@@ -265,6 +271,20 @@ def _signal_sets(r: dict, c: dict, dis_cut: float) -> tuple[list[str], list[str]
     age, pos = r.get("age_2026"), r.get("position")
     if age is not None and pos in ("RB", "WR", "TE") and float(age) <= 24.0 and (r.get("ppg_2025") or 0) > 0:
         support.append("young_with_role")
+    # --- signals added after review: the catalogue was too thin, so 33 of 38 players clearing the value gap
+    # --- were blocked purely for want of a second signal (Breece Hall, D'Andre Swift and Mike Evans had none).
+    if (r.get("ppg_diff_2025") or 0) <= -1.0:
+        support.append("underperformed_expected_points")
+    gain = max(float(r.get("target_vacated_gain") or 0), float(r.get("carry_vacated_gain") or 0))
+    if gain >= VACATED_GAIN_MIN:
+        support.append("inherits_vacated_opportunity")
+    ih, ven = r.get("inhouse_ppg"), r.get("vendor_ppg_no_bonus") or r.get("vendor_ppg")
+    if ih is not None and ven is not None and float(ih) - float(ven) >= MODEL_EDGE_PPG:
+        support.append("our_model_sees_more_than_the_vendor")
+    if (r.get("context_factor") or 1.0) >= 1.02:
+        support.append("team_context_tailwind")
+    if r.get("is_rookie") and (r.get("draft_round") or 9) <= 2 and (r.get("depth_rank") or 9) <= 2:
+        support.append("high_draft_capital_with_a_role")
     # --- player-level risk ---
     if td is not None and td >= 3:
         risk.append("positive_td_luck")
@@ -291,8 +311,30 @@ def _signal_sets(r: dict, c: dict, dis_cut: float) -> tuple[list[str], list[str]
     return support, risk
 
 
+def _mark_established(df: pl.DataFrame, cfg: LeagueConfig) -> pl.DataFrame:
+    """Who the market and last season already know about.
+
+    "Sleeper" should mean unheralded. A former MVP coming off a touchdown-unlucky year is a real value opinion,
+    but he is not a secret — Dak Prescott and Patrick Mahomes were both being flagged as sleepers. A player counts
+    as established if the market already spends an early pick on him, or if he finished last season as a startable
+    starter at his position in a league this size.
+    """
+    starters = {pos: cfg.league.num_teams * n for pos, n in cfg.roster.slots.items()}
+    early_adp = cfg.league.num_teams * ESTABLISHED_ROUNDS
+    return df.with_columns(
+        prior_pos_rank=pl.when(pl.col("games_2025").fill_null(0) >= 8)
+        .then(pl.col("ppg_2025").rank("ordinal", descending=True).over("position"))
+        .otherwise(None).cast(pl.Int64),
+    ).with_columns(
+        established=(pl.col("composite_adp").fill_null(9999) <= early_adp)
+        | (pl.col("prior_pos_rank").fill_null(9999)
+           <= pl.col("position").replace_strict(starters, default=99, return_dtype=pl.Int64))
+    )
+
+
 def _flags_and_why(df: pl.DataFrame, cfg: LeagueConfig, baselines) -> pl.DataFrame:
     ctx = {r["team"]: r for r in _q("select * from team_context").to_dicts()}
+    df = _mark_established(df, cfg)
     # "experts disagree more than usual" should mean unusual, not common: use the top decile of the residual.
     dis = df["disagreement"].drop_nulls()
     dis_cut = float(dis.quantile(0.90)) if dis.len() > 50 else 1.0
@@ -319,7 +361,10 @@ def _flags_and_why(df: pl.DataFrame, cfg: LeagueConfig, baselines) -> pl.DataFra
         draftable = adp is not None and adp <= DRAFTABLE_ADP
         if gz is not None and gp is not None and not r["is_kdst"] and draftable:
             if gz >= SLEEPER_GAP_Z and gp >= SLEEPER_GAP and len(support) >= 2:
-                flags.append("sleeper")
+                # same evidence, different word: an unheralded player is a sleeper, an established one the market
+                # is simply discounting is a value pick. Both are actionable; conflating them is what made a
+                # former MVP a "sleeper".
+                flags.append("value" if r.get("established") else "sleeper")
             if gz <= -SLEEPER_GAP_Z and gp <= -SLEEPER_GAP and len(risk) >= 2:
                 # a negative overall gap that disappears within the position is positional value, not a bust
                 if pg is not None and pg > -POS_GAP_MIN:
@@ -327,7 +372,8 @@ def _flags_and_why(df: pl.DataFrame, cfg: LeagueConfig, baselines) -> pl.DataFra
                 else:
                     flags.append("bust")
         signals = {"support": support, "risk": risk, "disagreement_cut": round(dis_cut, 3),
-                   "pos_gap": pg, "draftable": draftable}
+                   "pos_gap": pg, "draftable": draftable, "established": bool(r.get("established")),
+                   "prior_pos_rank": r.get("prior_pos_rank")}
 
         sig = build_signals(r, r, c, cfg.source)
         for b in render(sig, max_bullets=6):
@@ -414,8 +460,8 @@ def run(freeze: bool = typer.Option(False, help="Mark this run frozen (the draft
                 "why_bullets": len(getattr(board, "_why_bullets", [])),
                 "spearman_top150": None if sp is None else round(sp, 3),
                 "flags": {f: int(board.filter(pl.col("flags").list.contains(f)).height)
-                          for f in ("sleeper", "bust", "injury_prone", "rookie", "new_play_caller",
-                                    "qb_uncertain_team")},
+                          for f in ("sleeper", "value", "bust", "positional_reach", "injury_prone", "rookie",
+                                    "new_play_caller", "qb_uncertain_team")},
                 "duration_s": round(time.time() - t0, 2), "frozen": freeze,
                 "scoring": cfg.source, "weights": meta["weights"]})
 

@@ -12,7 +12,8 @@ export interface FlagDef {
 }
 
 export const FLAGS: Record<string, FlagDef> = {
-  sleeper: { icon: '▲', label: 'SLP', tone: 'good', title: 'Sleeper — our projection is well ahead of the market' },
+  sleeper: { icon: '▲', label: 'SLP', tone: 'good', title: 'Sleeper — unheralded, and our projection is well ahead of the market' },
+  value: { icon: '◆', label: 'VAL', tone: 'good', title: 'Value — an established player the market is discounting (early ADP or a starter-level 2025)' },
   bust: { icon: '▼', label: 'BUST', tone: 'bad', title: 'Bust — the market is well ahead of our projection' },
   injury_prone: { icon: '⚕', label: 'INJ', tone: 'warn', title: 'Injury prone — elevated missed-game rate over 2023-25' },
   structural_injury_return: { icon: '⛑', label: 'RTN', tone: 'warn', title: 'Returning from a structural injury (ACL/Achilles class)' },
@@ -36,6 +37,7 @@ export const TONE_STYLE: Record<FlagTone, { color: string; bg: string; border: s
 /** The two saved views in MVP. */
 export const PRESETS = [
   { key: 'sleeper', label: 'Sleepers', icon: FLAGS.sleeper.icon },
+  { key: 'value', label: 'Value', icon: FLAGS.value.icon },
   { key: 'bust', label: 'Busts', icon: FLAGS.bust.icon },
 ] as const
 export type PresetKey = (typeof PRESETS)[number]['key']

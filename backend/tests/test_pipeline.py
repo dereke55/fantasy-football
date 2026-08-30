@@ -5,7 +5,13 @@ import polars as pl
 import pytest
 
 from app.db import engine
-from app.ranking.pipeline import DRAFTABLE_ADP, POS_GAP_MIN, SLEEPER_GAP, SLEEPER_GAP_Z
+from app.ranking.pipeline import (
+    DRAFTABLE_ADP,
+    ESTABLISHED_ROUNDS,
+    POS_GAP_MIN,
+    SLEEPER_GAP,
+    SLEEPER_GAP_Z,
+)
 
 
 def q(sql: str) -> pl.DataFrame:
@@ -26,6 +32,8 @@ def board() -> pl.DataFrame:
             lambda s: (s if isinstance(s, dict) else json.loads(s)).get("risk", []), return_dtype=pl.List(pl.Utf8)),
         pos_gap=pl.col("signals").map_elements(
             lambda s: (s if isinstance(s, dict) else json.loads(s)).get("pos_gap"), return_dtype=pl.Float64),
+        established=pl.col("signals").map_elements(
+            lambda s: (s if isinstance(s, dict) else json.loads(s)).get("established"), return_dtype=pl.Boolean),
     )
 
 
@@ -101,3 +109,57 @@ def test_no_vendor_points_leak_into_the_board(board):
     """Every points column must come from our own scoring of raw stat lines."""
     cols = set(board.columns)
     assert not {"pts_ppr", "pts_half_ppr", "pts_std", "fantasy_points", "fantasy_points_ppr"} & cols
+
+
+def test_sleeper_means_unheralded_and_value_means_discounted(board):
+    """Same evidence, different word.
+
+    A former MVP coming off a touchdown-unlucky season is a real value opinion but he is not a secret: Dak
+    Prescott and Patrick Mahomes were both flagged "sleeper" before this split.
+    """
+    sleepers = board.filter(pl.col("flags").list.contains("sleeper"))
+    values = board.filter(pl.col("flags").list.contains("value"))
+    assert sleepers.height and values.height
+    assert set(sleepers["name"]) & set(values["name"]) == set(), "a player cannot be both"
+    # every sleeper is genuinely unheralded, every value pick genuinely established
+    assert sleepers["established"].any() is not True
+    assert all(values["established"].to_list())
+    # both carry the same evidentiary burden as before
+    for frame in (sleepers, values):
+        for row in frame.to_dicts():
+            assert row["gap_z"] >= SLEEPER_GAP_Z and row["gap"] >= SLEEPER_GAP
+            assert len(row["support"]) >= 2
+            assert row["composite_adp"] <= DRAFTABLE_ADP
+
+
+def test_established_is_market_or_production_based(board):
+    """Established = an early pick, or a starter-level finish last season."""
+    from app.scoring.config import load_league_config
+
+    cfg = load_league_config()
+    early = cfg.league.num_teams * ESTABLISHED_ROUNDS
+    starters = {pos: cfg.league.num_teams * n for pos, n in cfg.roster.slots.items()}
+    for row in board.filter(pl.col("established")).head(120).to_dicts():
+        prior = json.loads(row["signals"])["prior_pos_rank"] if isinstance(row["signals"], str) \
+            else row["signals"]["prior_pos_rank"]
+        by_market = row["composite_adp"] is not None and row["composite_adp"] <= early
+        by_production = prior is not None and prior <= starters.get(row["position"], 99)
+        assert by_market or by_production, f"{row['name']} marked established by neither route"
+
+
+def test_support_catalogue_is_wide_enough_to_fire(board):
+    """The catalogue was too thin: 33 of 38 players clearing the value gap were blocked for want of a second
+    signal (Breece Hall, D'Andre Swift and Mike Evans had none)."""
+    gap_clearers = board.filter(
+        (pl.col("gap_z") >= SLEEPER_GAP_Z) & (pl.col("gap") >= SLEEPER_GAP)
+        & (pl.col("composite_adp") <= DRAFTABLE_ADP) & ~pl.col("is_kdst"))
+    flagged = gap_clearers.filter(
+        pl.col("flags").list.contains("sleeper") | pl.col("flags").list.contains("value"))
+    assert gap_clearers.height >= 20
+    assert flagged.height / gap_clearers.height >= 0.4, (
+        f"only {flagged.height}/{gap_clearers.height} value gaps produce a flag — catalogue still too thin")
+    # the new signals actually fire
+    seen = {s for row in board.to_dicts() for s in row["support"]}
+    for sig in ("inherits_vacated_opportunity", "our_model_sees_more_than_the_vendor",
+                "underperformed_expected_points", "team_context_tailwind"):
+        assert sig in seen, f"{sig} never fires"
