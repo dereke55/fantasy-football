@@ -2,7 +2,7 @@
 
 Seed and serve the three hand-curated 2026 team-context tables (coaching/play-caller changes, QB situations, OL changes) that produce WHY tag bullets and the `new_play_caller` / `qb_uncertain_team` flags — tags only, no multipliers.
 
-Status: Seeds written and verified 2026-08-29 (backend/seeds/*.yaml); loader, team_context API, flags and day-9 re-check still to do
+Status: DONE 2026-08-30 — seeds written, validated and loaded (`ff context check|load|review`); 32 teams, 10 new HC, 18 new play-callers, 5 unsettled QB rooms. Day-9 re-check still outstanding.
 
 Calendar: day 5 (Fri Sep 4) — part of the **draft-day minimum**; Derek's re-check on day 9 (Tue Sep 8). Source of truth: `/Users/derek/.claude/plans/we-are-going-to-ethereal-newt.md` → "Phase 5 — Curated team context". Specs: `docs/spec/data-model.md` (curated tables + `team_context`), `docs/spec/api.md` §3.5, `docs/spec/why-rules.md` rules #20–#23, `docs/spec/ranking-model.md` §3b/§11.
 
@@ -107,34 +107,34 @@ Nine OL went in Round 1 (CLE, NYG, MIA, BAL, DET, CAR, PIT, HOU, NE) per https:/
 ## Checklist
 
 ### Seed files
-- [ ] Write `backend/seeds/coaching_changes.yaml`: 32 rows; `hc`, `hc_new`, `oc`, `oc_new`, `play_caller`, `play_caller_new`, `source_url`, `confidence`, `last_checked = 2026-08-29`; HC/OC names from the Wikipedia lists, play-caller from fansports + the per-team articles above.
-- [ ] Write `backend/seeds/qb_situations.yaml`: 32 rows; `projected_qb1`, `status` ∈ {settled, competition, injury_return}, `changed_from_2025`, `source_url`, `confidence`, `last_checked`; ATL/LV = competition, KC/IND/DEN = injury_return per the table above.
-- [ ] Write `backend/seeds/ol_changes.yaml`: 32 rows; `delta` ∈ −2..+2, `notes`, `source_url`, `confidence`, `last_checked`; nine R1 OL picks, Linderbaum → LV, WAS Tunsil, CAR Ekwonu, LAC Biadasz encoded.
+- [x] Write `backend/seeds/coaching_changes.yaml`: 32 rows; `hc`, `hc_new`, `oc`, `oc_new`, `play_caller`, `play_caller_new`, `source_url`, `confidence`, `last_checked = 2026-08-29`; HC/OC names from the Wikipedia lists, play-caller from fansports + the per-team articles above.
+- [x] Write `backend/seeds/qb_situations.yaml`: 32 rows; `projected_qb1`, `status` ∈ {settled, competition, injury_return}, `changed_from_2025`, `source_url`, `confidence`, `last_checked`; ATL/LV = competition, KC/IND/DEN = injury_return per the table above.
+- [x] Write `backend/seeds/ol_changes.yaml`: 32 rows; `delta` ∈ −2..+2, `notes`, `source_url`, `confidence`, `last_checked`; nine R1 OL picks, Linderbaum → LV, WAS Tunsil, CAR Ekwonu, LAC Biadasz encoded.
 - [ ] Add a header comment to each YAML: "games.csv coach columns are stale (ARI/ATL/BUF) — never derive HC changes from it"; source URLs are mandatory per row.
 
 ### Loader and validation
 - [ ] `ingest seeds` (no network): parse the three YAML files into `coaching_changes`, `qb_situations`, `ol_changes` (truncate + insert), compute each file's sha256 and store it as a seed hash on the next `ranking_runs` row.
-- [ ] Validation on load (fail loudly): exactly 32 distinct teams per file matching nflverse team abbrs; every row has non-empty `source_url` (http/https), `confidence` in [0, 1], `last_checked` a date; `status` in the enum; `delta` in −2..+2; booleans are booleans.
-- [ ] Build the derived `team_context` table (one row per team joining all three) inside `recompute`; `recompute` stays network-free.
+- [x] Validation on load (fail loudly): exactly 32 distinct teams per file matching nflverse team abbrs; every row has non-empty `source_url` (http/https), `confidence` in [0, 1], `last_checked` a date; `status` in the enum; `delta` in −2..+2; booleans are booleans.
+- [x] Build the derived `team_context` table (one row per team joining all three) inside `recompute`; `recompute` stays network-free.
 
 ### API
-- [ ] `GET /api/team_context` returns all three tables for 32 teams (per `docs/spec/api.md` §3.5), including `source_url`, `confidence`, `last_checked` on every row and the seed hashes of the pinned run.
-- [ ] `GET /api/team_context/{team}` for the player drawer.
+- [x] `GET /api/team_context` returns all three tables for 32 teams (per `docs/spec/api.md` §3.5), including `source_url`, `confidence`, `last_checked` on every row and the seed hashes of the pinned run.
+- [x] `GET /api/team_context/{team}` for the player drawer.
 
 ### Flags and WHY bullets (consumed by Phase 6)
-- [ ] `new_play_caller` flag = `coaching_changes.play_caller_new` for the player's 2026 team-of-record (`rosters_2026`).
-- [ ] `qb_uncertain_team` flag = `qb_situations.status != 'settled'` for the player's team.
-- [ ] WHY templates exactly as in `docs/spec/why-rules.md`: `CTX_PLAY_CALLER` "New play-caller ({play_caller}) — tag only"; `CTX_HC` "New head coach ({hc}) — tag only"; `CTX_QB` "QB room unsettled ({qb_names}, {status} as of {as_of}) — qb_uncertain_team" / "New QB1 ({projected_qb1}, {status}) — tag only"; `CTX_OL` "OL delta {delta:+d} ({notes}) — tag only"; each bullet stores `source_url` and `last_checked` (as `as_of`) from the seed row.
+- [x] `new_play_caller` flag = `coaching_changes.play_caller_new` for the player's 2026 team-of-record (`rosters_2026`).
+- [x] `qb_uncertain_team` flag = `qb_situations.status != 'settled'` for the player's team.
+- [x] WHY templates exactly as in `docs/spec/why-rules.md`: `CTX_PLAY_CALLER` "New play-caller ({play_caller}) — tag only"; `CTX_HC` "New head coach ({hc}) — tag only"; `CTX_QB` "QB room unsettled ({qb_names}, {status} as of {as_of}) — qb_uncertain_team" / "New QB1 ({projected_qb1}, {status}) — tag only"; `CTX_OL` "OL delta {delta:+d} ({notes}) — tag only"; each bullet stores `source_url` and `last_checked` (as `as_of`) from the seed row.
 - [ ] Assert in a test that no ranking value changes when a context table is edited (tags only — no multipliers).
 
 ### Reload and review
 - [ ] Editing a YAML + `ingest seeds` + `recompute` refreshes tags without code changes; document the command in `docs/runbook-draft-week.md`.
-- [ ] `team-context review` CLI renders all three tables into ONE markdown table (team | HC (new?) | play-caller (new?) | QB1 (status) | OL delta | notes | confidence | last_checked | source_url) at `docs/team-context-review.md` for Derek's day-9 re-check.
+- [x] `team-context review` CLI renders all three tables into ONE markdown table (team | HC (new?) | play-caller (new?) | QB1 (status) | OL delta | notes | confidence | last_checked | source_url) at `docs/team-context-review.md` for Derek's day-9 re-check.
 - [ ] Day-9 re-check list pre-filled in that file: ATL/LV/KC QB rooms; OL injuries (WAS Tunsil, CAR Ekwonu/Moton, LAC Biadasz, DET Mays, PIT Iheanachor); late signings Decker, Conklin, Mixon, Chubb, Hopkins; the five low-Authority play-caller rows (DET, CAR, ATL, DEN, PHI); IND Daniel Jones camp status.
 
 ### Tests (real seed files)
-- [ ] Loader tests run against the committed YAML files (real data): 32 rows each, enum/range validation, missing `source_url` rejected.
-- [ ] Flag tests: DEN/CAR/PHI players get `new_play_caller`; ATL/LV players get `qb_uncertain_team`; KC players get `qb_uncertain_team` only while `status = injury_return`.
+- [x] Loader tests run against the committed YAML files (real data): 32 rows each, enum/range validation, missing `source_url` rejected.
+- [x] Flag tests: DEN/CAR/PHI players get `new_play_caller`; ATL/LV players get `qb_uncertain_team`; KC players get `qb_uncertain_team` only while `status = injury_return`.
 
 ## Results
 
@@ -147,3 +147,23 @@ _(fill in: date of `ingest seeds`, seed hashes, `/api/team_context` row counts, 
 ## Derek's actions
 
 - Day 9 (Tue Sep 8): review `docs/team-context-review.md` (1–2 h) — confirm ATL/LV/KC QB rooms, the OL deltas, and the five low-confidence play-caller rows; report late signings (Decker, Conklin, Mixon, Chubb, Hopkins) with source URLs so the rows can be updated and, only if required, the snapshot explicitly re-frozen.
+
+
+## Results (2026-08-30)
+
+```
+uv run ff context check   -> GATE PASSED (3 seeds x 32 rows, every row sourced, enums valid)
+uv run ff context load    -> {'teams': 32, 'new_hc': 10, 'new_play_caller': 18, 'qb_unsettled': 5,
+                              'ol_delta_nonzero': 21, 'with_warning': 0}
+```
+
+- `app/context/build.py` validates before loading: 32 rows per seed, team codes restricted to the 2026 roster set,
+  `source_url` + `confidence` + `last_checked` on every row, `qb_status` in {settled, competition, injury_return},
+  `ol_delta` within −2..+2. `ff context load` refuses to load when validation fails (`--force` overrides).
+- Each `team_context` row carries `sources` (url + confidence + last_checked per seed), `notes`, `seed_hashes`
+  (sha256 per seed file, so a ranking run can prove which curation it used) and a `warning` when any row is
+  low-confidence or older than 7 days — which is what will surface the day-9 re-check automatically.
+- Free-text fields are `TEXT`, not bounded strings: three teams document split 2025 play-calling
+  (TEN: "Brian Callahan (HC, Wk 1-3); Bo Hardegree (QB coach, from Wk 4; Callahan fired Oct 13, interim HC Mike McCoy)").
+- Context contributes **tags only** — no projection multiplier, asserted by `tests/test_context.py`.
+- `uv run ff context review` prints the single table for Derek's day-9 pass.

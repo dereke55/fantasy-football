@@ -80,6 +80,9 @@ def compute(season: int | None = None) -> pl.DataFrame:
     if rows.is_empty():
         return empty
 
+    # the per-team snapshot clock comes from the WHOLE chart, but a rank is only ever read from the row that
+    # matches the player's hub position (a handful of fringe players are listed under a different pos_abb
+    # than the hub gives them — 5 on the 2026-08-29 chart — and those are reported as not on the chart)
     latest = rows.group_by("team").agg(target_dt=pl.col("dt").max())
     prior_target = (
         rows.join(latest, on="team", how="inner")
@@ -87,9 +90,15 @@ def compute(season: int | None = None) -> pl.DataFrame:
         .group_by("team")
         .agg(target_dt=pl.col("dt").max())
     )
+    mine = rows.join(
+        hub.select("gsis_id", "position"),
+        left_on=["gsis_id", "pos_abb"],
+        right_on=["gsis_id", "position"],
+        how="inner",
+    )
 
-    current = _rank_at(rows, latest).join(latest.rename({"target_dt": "depth_dt"}), on="team", how="left")
-    prior = _rank_at(rows, prior_target).rename({"pos_rank": "depth_rank_30d_ago"})
+    current = _rank_at(mine, latest).join(latest.rename({"target_dt": "depth_dt"}), on="team", how="left")
+    prior = _rank_at(mine, prior_target).rename({"pos_rank": "depth_rank_30d_ago"})
 
     # a player on two clubs' charts (mid-camp move) keeps the row from the most recently refreshed chart
     current = current.sort(["gsis_id", "depth_dt", "pos_rank"], descending=[False, True, False]).unique(

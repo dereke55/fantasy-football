@@ -230,7 +230,11 @@ def compute(seasons: list[int] | None = None) -> pl.DataFrame:
 
     ``games_missed = max(0, eligible_games - games_played)``. Note that "played" means >= 1 target, carry or
     pass attempt, so a healthy backup QB or a blocking TE registers as missed weeks — this column measures
-    availability-with-opportunity, not snaps."""
+    availability-with-opportunity, not snaps.
+
+    ``eligible_games`` is normally <= 17, but a player traded from a club whose bye is still ahead to one
+    whose bye has passed genuinely has 18 eligible weeks (six such rows over 2023-2025; Rashid Shaheed
+    actually played all 18 in 2025)."""
     seasons = list(seasons or settings.history_seasons)
     hub = hub_players()
     elig = eligible_weeks(seasons)
