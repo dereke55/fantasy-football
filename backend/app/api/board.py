@@ -88,16 +88,18 @@ def get_rankings(limit: int = Query(600, le=1000)) -> dict:
                k.ppg_blend as proj_ppg, k.season_value as proj_season, k.e_games,
                k.vorp as value, k.vols, k.ecr, k.ecr_sd, k.yahoo_adp as adp_yahoo_site,
                k.ffc_adp, k.sleeper_adp, k.composite_adp, k.room_adp, k.gap, k.gap_z,
-               k.p_avail_next as p_avail, k.vona, k.flags, k.signals, k.is_kdst,
+               k.p_avail_next as p_avail, k.vona, k.flags, k.signals, k.is_kdst, k.is_keeper,
                b.bye_week as bye,
                f.depth_rank, f.injury_prone, f.structural_injury_return, f.current_injury_status,
                f.td_diff_2025, f.ppg_2025, f.age_2026,
-               d.team_slot as drafted_by, d.is_keeper, d.id as pick_id
+               d.team_slot as drafted_by, d.id as pick_id,
+               ke.team_slot as kept_by, ke.cost_round as keeper_cost_round
         from rankings k
         join players p on p.id = k.player_id
         left join raw_nflverse_team_bye b on b.team = k.team and b.season = 2026
         left join player_features f on f.player_id = k.player_id
         left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
+        left join keepers ke on ke.player_id = k.player_id
         where k.run_id = :run
         order by k.overall_rank
         limit :limit
@@ -105,8 +107,12 @@ def get_rankings(limit: int = Query(600, le=1000)) -> dict:
     cfg = load_league_config()
     my_slot = cfg.league.my_draft_slot
     for r in rows:
-        r["drafted"] = r["drafted_by"] is not None
-        r["is_mine"] = r["drafted_by"] == my_slot if r["drafted_by"] is not None else False
+        # A kept player is off the board exactly like a drafted one — that is what "kept" means. Reporting it
+        # here rather than making every client join /api/keepers keeps one definition of "available".
+        r["drafted"] = r["drafted_by"] is not None or r["kept_by"] is not None
+        owner = r["drafted_by"] if r["drafted_by"] is not None else r["kept_by"]
+        r["drafted_by"] = owner
+        r["is_mine"] = owner == my_slot if owner is not None else False
         r["tags"] = [t for t in (
             "injury_prone" if r.pop("injury_prone", None) else None,
             "structural_injury_return" if r.pop("structural_injury_return", None) else None,
@@ -248,7 +254,10 @@ def get_availability(top: int = 3) -> dict:
     rows = _q("""select k.player_id, p.name, k.position, k.team, k.vorp, k.room_adp, k.sd_adp
                  from rankings k join players p on p.id = k.player_id
                  left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
-                 where k.run_id = :run and k.vorp is not null and not k.is_kdst and d.id is null""",
+                 left join keepers ke on ke.player_id = k.player_id
+                 -- a kept player cannot be drafted, so he is not a candidate (same rule as /api/rankings)
+                 where k.run_id = :run and k.vorp is not null and not k.is_kdst
+                   and d.id is null and ke.id is null""",
               run=run["run_id"])
     by_pos: dict[str, list] = {}
     for r in rows:
@@ -273,6 +282,27 @@ def get_availability(top: int = 3) -> dict:
             })
         out[pos] = {"slot_weight": weight, "open_slots": st["open_slots"].get(pos, 0), "candidates": items}
     return {"my_next_pick": nxt, "positions": out}
+
+
+def _recompute(reason: str) -> str | None:
+    """Rebuild the board after a keeper change.
+
+    Keepers move the VBD baselines, the pick schedule and room ADP, so without this every availability number on
+    screen silently describes the previous keeper set. It reads only stored data (no network) and takes ~2 s.
+    """
+    import time
+
+    from app.ranking.pipeline import build_board, save, spearman_vs_market
+
+    cfg = load_league_config()
+    t0 = time.time()
+    board, meta = build_board(cfg)
+    run_id = save(board, meta, cfg, duration=round(time.time() - t0, 2),
+                  spearman=spearman_vs_market(board))
+    with session_scope() as s:
+        s.execute(text("update ranking_runs set note = :n where run_id = :r"),
+                  {"n": f"auto-recompute: {reason}", "r": str(run_id)})
+    return str(run_id)
 
 
 # --------------------------------------------------------------------------- keepers
@@ -315,8 +345,8 @@ def add_keeper(body: KeeperIn) -> dict:
                        "values (:l, :t, :p, :r, :st, 'manual')"),
                   {"l": league["id"], "t": body.team_slot, "p": body.player_id, "r": body.cost_round,
                    "st": body.status})
-    return {"ok": True, "keepers": list_keepers()["keepers"], "state": _state(),
-            "note": "rerun `ff rank run` to refresh baselines, room ADP and P(avail) for the new keeper set"}
+    run_id = _recompute("keeper added")
+    return {"ok": True, "keepers": list_keepers()["keepers"], "state": _state(), "run_id": run_id}
 
 
 @router.delete("/keepers/{keeper_id}")
@@ -325,7 +355,8 @@ def delete_keeper(keeper_id: int) -> dict:
         n = s.execute(text("delete from keepers where id = :i"), {"i": keeper_id}).rowcount
     if not n:
         raise HTTPException(status_code=404, detail="keeper not found")
-    return {"ok": True, "keepers": list_keepers()["keepers"], "state": _state()}
+    run_id = _recompute("keeper removed")
+    return {"ok": True, "keepers": list_keepers()["keepers"], "state": _state(), "run_id": run_id}
 
 
 # --------------------------------------------------------------------------- CSV

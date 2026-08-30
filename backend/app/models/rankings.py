@@ -63,6 +63,7 @@ class Ranking(Base):
     flags: Mapped[list | None] = mapped_column(ARRAY(String(32)))
     signals: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     is_kdst: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_keeper: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     __table_args__ = (Index("ix_rankings_run_overall", "run_id", "overall_rank"),)
 

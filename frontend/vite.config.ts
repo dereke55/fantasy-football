@@ -6,7 +6,10 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 5173,
+    // Dedicated port: 5173/5174 are taken by other projects on this machine, and Vite silently falls forward
+    // to the next free port, which makes "is it running?" ambiguous. strictPort fails loudly instead.
+    port: 5190,
+    strictPort: true,
     proxy: { '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true } },
   },
 })

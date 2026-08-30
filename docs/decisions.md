@@ -53,3 +53,40 @@ ADR-style, newest last. Each entry: date, decision, why, consequences.
   A 10-team × 16-round draft is 160 picks, so 150-deep two-source coverage spans the whole board. Rationale is duplicated in
   `app/market/build.py` (`GATE_TWO_SOURCE_DEPTH`) and `docs/phases/04-market.md`.
 - `sd_adp` OLS on FFC gives `1.04 + 0.105·ADP`, confirming the plan's placeholder and ~halving the rejected `ADP/4` heuristic.
+
+## 2026-08-30 — Phase 7 board UI
+- **Table**: hand-rolled typed table + `@tanstack/react-virtual` instead of TanStack Table. The installed
+  `@tanstack/react-table` is **v9.2.4**, a store/plugin API unrelated to the v8 the plan assumed; sorting and filtering
+  631 rows client-side is a `useMemo` and a comparator, so the dependency bought nothing and risked a lot on draft eve.
+  Query stays on TanStack Query. `pnpm add @tanstack/react-virtual` is the only dependency added.
+- **Tier bands fire on first appearance of a tier, not on every change of `tier`.** `tier` is a GMM over ECR while
+  `rank` is ordered by value, so the two disagree locally and the literal §3 rule ("a rule whenever `tier` changes")
+  drew a band every two or three rows. First-appearance gives one rule per tier in rank order; stragglers still show
+  their tier in the Tier column. Value-tier breaks are monotonic with rank and keep the literal dashed rule.
+- **Best available is the lowest-ranked undrafted row under the filter, not the first row in the current sort.** Sorting
+  by ECR descending would otherwise star the worst player on the board — the opposite of useful thirty seconds before a
+  pick. When sorted by rank (the default) the two are identical.
+- **The board asks `/api/rankings?limit=1000`, not 600.** The pinned run holds 631 players; 600 silently cut the tail,
+  including Derek's own keeper (Colston Loveland, rank 631), so his keeper was invisible on the board.
+- **Keeper state is joined onto board rows in the client.** `/api/rankings` reflects `draft_picks` but not the `keepers`
+  table, so a declared keeper comes back `drafted: false`. The board overlays `/api/keepers` (both endpoints are
+  authoritative) so a kept player is dimmed, carries the `K` badge and is attributed to the team that kept him.
+- **The player name column is inserted after rank**, keeping the 14 columns of `docs/spec/ui.md` §3 in their exact
+  relative order. §3 omits `name` but the CSV contract in §7 includes it, so the omission is an oversight.
+- **Losing the API mid-draft never blanks the board.** The no-run/offline state only replaces the page when a run has
+  never loaded; after that a banner appears over the last good data with a Retry that refetches every query.
+- Known backend gaps found while wiring the UI, not worked around in the client:
+  - `POST/DELETE /api/keepers` re-cuts `pick_schedule` (`total_picks` 159 ↔ 158 immediately) but does **not** recompute
+    baselines, room ADP or P(avail); the endpoint says so in its own `note`, which the Keepers tab shows verbatim.
+    Measured: Nico Collins stayed at `room_adp 21 / p_avail 0.9997` across a keeper add and remove. The Phase 7 gate
+    clause "keeper edits recompute … P(avail) without reload" therefore needs `ff rank run` server-side.
+  - `rookie_draft_capital` WHY text renders the drafting team as Python `None`: "2026 rookie: round 1, pick #3 overall (None)".
+  - `POST /api/draft/picks {my_pick: true}` fills the lowest unfilled schedule slot and attributes it to my team, so
+    pressing `m` out of turn still advances the clock past someone else's pick. Correct when used on my own turn.
+  - There is no `PUT /api/keepers/{id}`; the Keepers tab says so and edits are remove-then-add.
+- Measured Phase 7 gate on Derek's machine (Vite **dev** build, React StrictMode, Chrome, 631 rows): the render pass
+  that commits the rows takes **41–306 ms** typical (worst observed 618 ms on a cold dev server), and **233–970 ms**
+  from navigation start to rows in the DOM including all six API calls. Gate is < 2 s, so it passes with a wide
+  margin; a production build removes the StrictMode double render and the dev module evaluation that account for
+  most of the spread. Marks are left in the Performance timeline as `board:render-start`, `board:committed`,
+  `board:render` and `board:from-navigation-start`, so the number can be re-measured any time.

@@ -120,3 +120,88 @@ def test_csv_export_header_matches_the_spec():
     for col in ("rank", "name", "pos", "team", "bye", "value", "ecr", "room_adp", "gap", "p_avail", "flags",
                 "player_id", "yahoo_id", "run_id"):
         assert col in header
+
+
+def test_kept_players_are_valued_not_buried(board, cfg):
+    """A keeper is excluded from the draftable POOL but must still be VALUED against the same baselines.
+
+    Regression: kept players got a null VORP and sorted last, which put Derek's own keeper at rank 631 of 631
+    despite a healthy projection.
+    """
+    keepers = client.get("/api/keepers").json()["keepers"]
+    if not keepers:
+        pytest.skip("no keeper recorded")
+    kept_ids = {k["player_id"] for k in keepers}
+    rows = {p["player_id"]: p for p in board["players"]}
+    for pid in kept_ids:
+        assert pid in rows, "a kept player must still appear on the board"
+        r = rows[pid]
+        assert r["value"] is not None and r["value"] > 0, f"{r['name']} has no value"
+        assert r["rank"] < len(board["players"]) // 2, f"{r['name']} is buried at rank {r['rank']}"
+    assert not [p for p in board["players"] if p["value"] is None and not p["is_kdst"]]
+
+
+def test_kept_players_are_off_the_board_server_side(board):
+    """"Available" has one definition, on the server — a client should not have to join /api/keepers."""
+    keepers = client.get("/api/keepers").json()["keepers"]
+    if not keepers:
+        pytest.skip("no keeper recorded")
+    rows = {p["player_id"]: p for p in board["players"]}
+    for k in keepers:
+        r = rows[k["player_id"]]
+        assert r["drafted"] is True and r["is_keeper"] is True
+        assert r["drafted_by"] == k["team_slot"] and r["keeper_cost_round"] == k["cost_round"]
+
+
+def test_keeper_edit_recomputes_room_adp_and_availability(board):
+    """Phase 7 gate: keeper edits recompute best-available and P(avail) without a reload.
+
+    Keepers move the VBD baselines, the pick schedule and room ADP, so a stale board would quietly describe the
+    previous keeper set.
+    """
+    # Room ADP is a re-rank of the remaining pool, so removing a player only shifts those BEHIND him in ADP
+    # order. Probe someone with a worse ADP than the player being kept.
+    avail = [p for p in board["players"] if not p["drafted"] and p["composite_adp"]]
+    target = next(p for p in avail if p["pos"] == "RB" and 40 < p["composite_adp"] < 80)
+    probe = next(p for p in avail if p["composite_adp"] > target["composite_adp"] + 20)
+    probe_name = probe["name"]
+    before = probe
+    add = client.post("/api/keepers", json={"player_id": target["player_id"], "team_slot": 4, "cost_round": 7})
+    assert add.status_code == 200 and add.json()["run_id"], "a keeper edit must produce a new ranking run"
+    try:
+        after_rows = client.get("/api/rankings", params={"limit": 700}).json()["players"]
+        after = next(p for p in after_rows if p["name"] == probe_name)
+        assert after["room_adp"] != before["room_adp"], "room ADP must re-rank around the removed player"
+        assert next(p for p in after_rows if p["player_id"] == target["player_id"])["drafted"] is True
+    finally:
+        kid = next(k["id"] for k in client.get("/api/keepers").json()["keepers"] if k["team_slot"] == 4)
+        rm = client.delete(f"/api/keepers/{kid}")
+        assert rm.status_code == 200
+    restored = next(p for p in client.get("/api/rankings", params={"limit": 700}).json()["players"]
+                    if p["name"] == probe_name)
+    assert restored["room_adp"] == before["room_adp"], "removing the keeper must restore the board exactly"
+
+
+def test_why_bullets_never_render_python_none():
+    """A rookie with no draft team rendered "pick #3 overall (None)"."""
+    bullets = client.get("/api/players/1/profile")
+    rows = client.get("/api/rankings", params={"limit": 200}).json()["players"]
+    seen = 0
+    for p in rows[:80]:
+        prof = client.get(f"/api/players/{p['player_id']}/profile").json()
+        for b in prof["why"]:
+            assert "None" not in b["text"], f"{p['name']}: {b['text']}"
+            seen += 1
+    assert seen > 100 and bullets.status_code in (200, 404)
+
+
+def test_availability_never_offers_a_kept_or_drafted_player():
+    """You cannot draft someone who is already off the board — the VONA panel listed a keeper as a candidate."""
+    keepers = client.get("/api/keepers").json()["keepers"]
+    kept = {k["player_id"] for k in keepers}
+    drafted = {p["player_id"] for p in client.get("/api/rankings", params={"limit": 700}).json()["players"]
+               if p["drafted"]}
+    a = client.get("/api/availability").json()
+    offered = {c["player_id"] for blk in a["positions"].values() for c in blk["candidates"]}
+    assert not offered & kept, "a kept player was offered as a draft candidate"
+    assert not offered & drafted

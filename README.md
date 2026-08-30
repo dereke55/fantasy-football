@@ -12,7 +12,7 @@ Plan and progress: [`docs/PLAN.md`](docs/PLAN.md) (overview, MVP cut line, calen
 ## Stack
 
 - **Backend** `backend/` — Python 3.12, FastAPI, SQLAlchemy 2 + Alembic, polars, httpx, typer CLI; managed with `uv`.
-- **Frontend** `frontend/` — Vite + React + TypeScript, Tailwind v4, TanStack Query/Table; dark theme only.
+- **Frontend** `frontend/` — Vite + React 19 + TypeScript, Tailwind v4, TanStack Query, `@tanstack/react-virtual`; dark theme only.
 - **Database** — local Postgres 17 (docker container `postgres`, database `fantasy_football`).
 - **Data** — `data/raw/{source}/{endpoint}/{timestamp}_{sha8}.{ext}` immutable snapshots (gitignored), registered in `raw_snapshots`.
 
@@ -30,11 +30,44 @@ uv run uvicorn app.main:app --reload --port 8000
 # frontend
 cd frontend
 pnpm install
-pnpm dev                        # http://localhost:5173 (proxies /api -> :8000)
+pnpm dev                        # http://localhost:5190 (proxies /api -> :8000)
+pnpm build                      # tsc -b && vite build
 ```
+
+`vite.config.ts` pins the dev server to **5190** with `strictPort`, so a stale instance fails loudly instead of
+silently moving to another port. The board needs the API on :8000; without it the page shows the "API is not
+answering" state with the uvicorn command and a Retry button.
 
 League configuration lives in [`config/league.yaml`](config/league.yaml) (scoring, roster, teams, keeper rules, draft
 date/slot). It is currently a **labeled placeholder** (Yahoo default scoring) until the real league settings are pasted in.
+
+## Draft board (Phase 7)
+
+Single dark page at the Vite dev URL. Three regions: the **top bar** (mode, on-the-clock, "my next pick in N" with the
+back-to-back pair for slot 10 of 10, picks made/total, run id + config hash, CSV export), the **board** (all 631 ranked
+players, virtualised) with a filter rail on the left, and a **right panel** with a Draft tab and a Keepers tab. Selecting
+a row and pressing Enter slides the **player drawer** over the panel: WHY bullets with rule id / period / source link,
+the 3-season PPG line, key metrics, the market table and the curated team context.
+
+Board columns, left to right: rank (+ positional rank), player, tier, value tier, pos, team, bye, proj PPG · season,
+value, ECR, Yahoo site-wide ADP, room ADP, gap, P(avail), flags. Tier bands rule the board while it is sorted by rank;
+value-tier breaks are a dashed rule. Drafted rows stay in place, dimmed and struck through, with the drafting team
+(`→ T3`), a `K` badge for keepers and a filled marker for my own picks — "hide drafted" is off by default.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `j` / `k` | move the highlight down / up |
+| `d` | mark the highlighted player drafted |
+| `m` | mark the highlighted player as my pick |
+| `u` | undo the last manual pick |
+| `Enter` | open / close the player drawer |
+| `Esc` | close the drawer, or leave the search box |
+| `/` | focus the search box |
+
+Shortcuts are ignored while focus is in a text input or a select, so typing a player's name never drafts anyone.
+`d` and `m` never prompt — undo is the recovery path.
 
 ## CLI (`uv run ff …`)
 

@@ -19,10 +19,22 @@ Read `docs/PLAN.md` first; it has the MVP cut line, gates and calendar. Track pr
 
 ## Layout
 `backend/app/{api,models,ingest,scoring,features,ranking,why,live}` · `backend/seeds/*.yaml` (curated tables with source_url per row) ·
-`backend/alembic` · `frontend/src` · `config/league.yaml` · `docs/{PLAN.md,phases,spec,runbook-draft-week.md,decisions.md}`.
+`backend/alembic` · `config/league.yaml` · `docs/{PLAN.md,phases,spec,runbook-draft-week.md,decisions.md}`.
+
+`frontend/src`: `api/{types,client,queries}.ts` (typed contract mirror, fetch layer that preserves the FastAPI `detail`
+string, TanStack Query keys from `docs/spec/ui.md` §10) · `lib/{format,positions,flags,boardModel}.ts` (number rules,
+position hues, flag registry, filter/sort/tier-band assembly) · `components/*` (one concern per file; `App.tsx` is the
+composition root and owns filters, sort, highlight, drawer and the keyboard).
+
+Frontend rules: dark theme only, extend the CSS variables in `src/index.css` rather than replacing them. Numbers are
+right-aligned tabular figures — one decimal for PPG/ECR/ADP, integers for season points and gap, percent for P(avail),
+em dash for null. Flags always render as icon + label, never colour alone. The board never computes points and never
+references a vendor points field (`grep -r 'pts_ppr\|pts_half_ppr\|pts_std' frontend/src` must stay empty).
+Keyboard: `j`/`k` move, `d` drafted, `m` my pick, `u` undo, `Enter`/`Esc` drawer, `/` search — all disabled while a
+text input or select has focus.
 
 ## Commands
 - Backend: `cd backend && uv sync && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 8000`; CLI `uv run ff --help`; tests `uv run pytest`; lint `uv run ruff check .`
-- Frontend: `cd frontend && pnpm dev` (proxies `/api` → `:8000`); `pnpm build`.
+- Frontend: `cd frontend && pnpm dev` (proxies `/api` → `:8000`, add `--port NNNN` if 5173 is taken); `pnpm build` (tsc + vite, must pass clean); `pnpm lint`.
 - Database: docker container `postgres` (user `local-master`), db `fantasy_football`; `docker exec postgres psql -U local-master -d fantasy_football`.
 - Use `uv` for Python, `pnpm` for Node. Python >=3.12 (venv currently 3.13).

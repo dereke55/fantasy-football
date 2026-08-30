@@ -12,6 +12,19 @@
   --good: #3fb950;
   --warn: #d29922;
   --bad: #f85149;
+
+  /* Phase 7 additions — layered surfaces, row states and the "next action" accent. */
+  --panel-2: #0e141c;
+  --panel-3: #161e29;
+  --row-alt: rgba(255, 255, 255, 0.014);
+  --row-hover: rgba(88, 166, 255, 0.07);
+  --row-selected: rgba(88, 166, 255, 0.14);
+  --band: #0f1621;
+  --accent-dim: rgba(88, 166, 255, 0.16);
+  --good-dim: rgba(63, 185, 80, 0.14);
+  --bad-dim: rgba(248, 81, 73, 0.14);
+  --warn-dim: rgba(210, 153, 34, 0.14);
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
 html, body, #root { height: 100%; }
@@ -21,4 +34,51 @@ body {
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-feature-settings: "tnum" 1;
+  overflow: hidden;
+}
+
+/* Every number on the board is right-aligned with tabular figures (docs/spec/ui.md §9). */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  text-align: right;
+}
+
+.mono { font-family: var(--mono); }
+
+/* Scrollbars that read as part of the panel rather than the OS. */
+* { scrollbar-width: thin; scrollbar-color: #2b3949 transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #2b3949; border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: #3a4c60; background-clip: content-box; }
+
+/* Focus is always visible: this tool is driven from the keyboard under time pressure. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.42; }
+input, select { font: inherit; color: inherit; }
+
+/* The on-the-clock pulse — only ever applied to my own turn, so it never becomes wallpaper. */
+@keyframes ff-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.45); }
+  50% { box-shadow: 0 0 0 6px rgba(88, 166, 255, 0); }
+}
+.pulse { animation: ff-pulse 1.8s ease-in-out infinite; }
+
+@keyframes ff-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise { animation: ff-rise 0.16s ease-out; }
+
+@keyframes ff-slide {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.slide-in { animation: ff-slide 0.16s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse, .rise, .slide-in { animation: none; }
 }

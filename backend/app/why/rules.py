@@ -319,8 +319,10 @@ def rookie_draft_capital(s: Mapping) -> Bullet | None:
     ids, url = _prov(s, "draft_pick")
     if rnd is None:
         return Bullet("rookie_draft_capital", "Undrafted 2026 rookie", "rookie", -1, 8, {}, "2026", ids, url)
-    return Bullet("rookie_draft_capital", f"2026 rookie: round {rnd}, pick #{pick} overall ({team})", "rookie",
-                  1 if rnd == 1 else 0, 8, {"round": rnd, "pick": pick}, "2026", ids, url)
+    where = f" by {team}" if team else ""          # never render a bare Python None into user-facing text
+    pick_txt = f", pick #{pick} overall" if pick else ""
+    return Bullet("rookie_draft_capital", f"2026 rookie: round {rnd}{pick_txt}{where}", "rookie",
+                  1 if rnd == 1 else 0, 8, {"round": rnd, "pick": pick, "team": team}, "2026", ids, url)
 
 
 @rule("depth_chart", 16)

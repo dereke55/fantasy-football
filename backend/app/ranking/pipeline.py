@@ -147,6 +147,14 @@ def build_board(cfg: LeagueConfig | None = None) -> tuple[pl.DataFrame, dict]:
                                   flex_eligible=cfg.roster.flex_eligible, bench=cfg.roster.bench,
                                   keepers=kept_pairs)
     vals = {v.player_id: v for v in value_pool(projections, baselines)}
+    # Kept players are excluded from the POOL (they cannot be drafted) but must still be VALUED, against the same
+    # baselines, or they sort last with a null value — which made Derek's own keeper rank 631 of 631 despite a
+    # healthy projection. The board dims them via is_keeper; it does not bury them.
+    kept_projections = [Projection(r["player_id"], r["position"], r["ppg_blend"], r["e_games"])
+                        for r in df.to_dicts()
+                        if r["player_id"] in kept_ids and r["ppg_blend"] is not None and r["e_games"] is not None]
+    for v in value_pool(kept_projections, baselines):
+        vals[v.player_id] = v
     df = df.with_columns(
         vorp=pl.col("player_id").map_elements(lambda i: vals[i].vorp if i in vals else None, return_dtype=pl.Float64),
         season_value=pl.col("player_id").map_elements(
@@ -158,6 +166,7 @@ def build_board(cfg: LeagueConfig | None = None) -> tuple[pl.DataFrame, dict]:
         baseline_rank=pl.col("position").map_elements(
             lambda p: baselines.vols_rank.get(p), return_dtype=pl.Int64),
         is_kdst=pl.col("position").is_in(list(NO_VBD_POSITIONS)),
+        is_keeper=pl.col("player_id").is_in(list(kept_ids)) if kept_ids else pl.lit(False),
     )
 
     # ---- 4. ranks and tiers ----
@@ -336,7 +345,8 @@ RANK_COLS = ("player_id", "position", "team", "overall_rank", "pos_rank", "tier"
              "ppg_inhouse", "ppg_inhouse_raw", "w_vendor", "w_inhouse", "bonus_pg", "ppg_blend", "e_games",
              "replacement_ppg", "baseline_rank", "season_value", "vols", "vorp", "ecr", "ecr_sd", "disagreement",
              "yahoo_adp", "ffc_adp", "sleeper_adp", "composite_adp", "room_adp", "sd_adp", "sd_adp_source",
-             "our_pick_equivalent", "gap", "gap_z", "p_avail_next", "vona", "flags", "signals", "is_kdst")
+             "our_pick_equivalent", "gap", "gap_z", "p_avail_next", "vona", "flags", "signals", "is_kdst",
+             "is_keeper")
 ALIASES = {"ppg_vendor": "vendor_ppg", "ppg_inhouse": "inhouse_ppg", "ppg_inhouse_raw": "inhouse_ppg_raw"}
 
 
