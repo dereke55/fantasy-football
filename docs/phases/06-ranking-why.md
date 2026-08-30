@@ -2,7 +2,7 @@
 
 Turn features (Phase 3), market (Phase 4-lite) and curated context (Phase 5) into a keeper-aware, league-scored ranking with tiers, sleeper/bust flags and an auditable rule-based WHY for every draftable player.
 
-Status: DONE 2026-08-30 — `ff rank run|check|export` GATE PASSED (Spearman 0.854 vs 0.80 floor; every top-100 player has >= 3 WHY bullets)
+Status: DONE 2026-08-30 — `ff rank run|check|export|turns` GATE PASSED (Spearman 0.903 vs 0.80 floor; every top-100 player has >= 3 WHY bullets)
 
 Calendar: days 4–5. Day 4 (Thu Sep 3): Phase 6 core (blend, value, keepers/pick_schedule, room ADP, tiers) — Spearman gate. Day 5 (Fri Sep 4): flags + curated tables + WHY + 8a availability + CSV + `recompute` → **draft-day minimum**. If the draft lands early (≤ day 6), WHY polish is dropped. Specs: `docs/spec/ranking-model.md` (formulas and constants), `docs/spec/why-rules.md` (rule catalogue), `docs/spec/data-model.md` (`ranking_runs`, `rankings`, `why_bullets`, `keepers`, `pick_schedule`, `draft_picks`), `docs/spec/api.md` (endpoints). Source of truth: `/Users/derek/.claude/plans/we-are-going-to-ethereal-newt.md` → "Phase 6 — Ranking model, flags, WHY".
 
@@ -185,3 +185,38 @@ The in-house component moved Spearman from **0.799 (vendor-only, failing) to 0.8
   active, so a real roster's contributors sum to ~1.24 (targets) / ~1.20 (carries) — capping at 1.0 was a ~20%
   haircut on every skill player. `measured_share_budget()` now measures it from the same data, restricted to the
   ~12 players per team who account for 98% of volume (including all 66 who touched the ball inflates it to 1.39).
+
+
+## The replacement baseline was the most sensitive constant in the model (2026-08-30)
+
+With Derek's slot (10 of 10) and his Loveland keeper recorded, the turn-by-turn view showed **every one of his first
+picks as a running back**, which prompted a sensitivity test rather than shipping it. The `DEFAULT_BENCH_SHARE`
+guess of `{RB: 0.40, WR: 0.40}` turned out to be the worst of every option tried:
+
+| baseline | Spearman top-150 | Spearman top-50 |
+|---|---|---|
+| `{RB: .40, WR: .40}` (original guess) | 0.854 | **0.618** |
+| last player *drafted* per position (measured from ADP) | 0.848 | — |
+| roster-proportional `{RB: .30, WR: .45}` | 0.903 | 0.758 |
+| no bench at all (last starter, VOLS) | 0.914 | 0.823 |
+| **`{RB: .25, WR: .35}` (adopted)** | **0.925** | 0.776 |
+
+The top-50 number is the important one — those are the picks that decide a season, and the original guess scored
+0.618 there.
+
+**The conceptual error**: replacement should be the last player who fills a real lineup slot, not the last player
+*drafted*. Deriving the baseline from measured draft depth (RB 58, WR 65 of a 160-pick draft) made it worse,
+because the tail of a position's draft is handcuffs and lottery tickets who never start. A baseline set that deep
+lands on the steep part of the running-back projection curve — the 50th back projects 4.8 PPG — and inflates every
+RB against it. `measured_draft_depth()` is kept for diagnostics but deliberately not used as the baseline.
+
+Live board Spearman moved **0.848 → 0.903**, and the top of the board went from five straight RBs to a
+positionally balanced list (CeeDee Lamb 2nd at Derek's pick 10, Trey McBride and Malik Nabers live at pick 30).
+
+## Draft-day inputs recorded
+
+- `my_draft_slot: 10` — the turn. Picks are **10 and 11 back-to-back**, then 30–31, 50–51, … so each pair should be
+  planned together rather than as two independent picks.
+- Keeper: **Colston Loveland (TE, CHI)** at his round-13 cost, entered via `ff league keeper-set`. He is removed
+  from the pool, the TE baseline shifts, and Derek's round-13 pick is consumed (15 live picks, not 16).
+- `ff league init | keepers | keeper-set | keeper-clear | picks` and `ff rank turns` added for draft day.

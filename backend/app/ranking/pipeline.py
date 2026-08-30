@@ -33,7 +33,13 @@ from app.ranking.projections import projection_pool
 from app.ranking.room_adp import gap_z, our_pick_equivalent, room_adp
 from app.ranking.signals import build_signals
 from app.ranking.tiers import ecr_tiers, value_tiers
-from app.ranking.vbd import NO_VBD_POSITIONS, Projection, compute_baselines, value_pool
+from app.ranking.vbd import (
+    NO_VBD_POSITIONS,
+    Projection,
+    compute_baselines,
+    measured_draft_depth,
+    value_pool,
+)
 from app.scoring.config import LeagueConfig, league_config_sha256, load_league_config
 from app.why.rules import render
 
@@ -48,6 +54,7 @@ DRAFTABLE_ADP = 220.0
 # how many positional places apart our rank and the market's must be before a negative gap is player-specific
 POS_GAP_MIN = 5.0
 SPEARMAN_FLOOR = 0.80
+LATEST_RUN = "(select run_id from ranking_runs where status='ok' order by started_at desc limit 1)"
 
 
 def _q(sql: str) -> pl.DataFrame:
@@ -129,6 +136,13 @@ def build_board(cfg: LeagueConfig | None = None) -> tuple[pl.DataFrame, dict]:
     projections = [Projection(r["player_id"], r["position"], r["ppg_blend"], r["e_games"])
                    for r in open_rows.to_dicts() if r["ppg_blend"] is not None and r["e_games"] is not None]
     kept_pairs = [(r["player_id"], r["position"]) for r in df.to_dicts() if r["player_id"] in kept_ids]
+    depth = measured_draft_depth(
+        {r["player_id"]: r["composite_adp"] for r in df.to_dicts()},
+        {r["player_id"]: r["position"] for r in df.to_dicts()},
+        cfg.league.num_teams * cfg.roster.rounds)
+    # `depth` is reported for diagnostics but deliberately NOT used as the baseline: the last player DRAFTED at a
+    # position includes handcuffs and lottery tickets who never fill a lineup slot, which pushes the running-back
+    # baseline onto the steep tail of the projection curve. See DEFAULT_BENCH_SHARE in app/ranking/vbd.py.
     baselines = compute_baselines(projections, num_teams=cfg.league.num_teams, slots=cfg.roster.slots,
                                   flex_eligible=cfg.roster.flex_eligible, bench=cfg.roster.bench,
                                   keepers=kept_pairs)
@@ -212,6 +226,7 @@ def build_board(cfg: LeagueConfig | None = None) -> tuple[pl.DataFrame, dict]:
         "weights": {"vendor": W_VENDOR, "inhouse": W_INHOUSE, "vendor_no_history": W_VENDOR_NOHIST,
                     "inhouse_no_history": W_INHOUSE_NOHIST, "inhouse_available": inhouse is not None},
         "my_next_pick": my_next, "keepers": len(keepers), "baselines": baselines.vols_rank,
+        "draft_depth": depth, "replacement_ppg": {k: round(v, 2) for k, v in baselines.replacement_ppg.items()},
     }
 
 
@@ -423,6 +438,44 @@ def check() -> None:
     typer.echo("GATE PASSED")
 
 
+@cli.command("turns")
+def turns(top: int = 6) -> None:
+    """Who is likely to be there at each of YOUR picks, using room ADP and its measured spread.
+
+    For a turn slot (first or last in a round) the two picks are consecutive, so the same player is very likely to
+    survive both — the pair should be planned together rather than as two independent picks.
+    """
+    cfg = load_league_config()
+    slot = cfg.league.my_draft_slot
+    if slot is None:
+        typer.secho("set league.my_draft_slot in config/league.yaml first", fg=typer.colors.RED)
+        raise typer.Exit(code=2)
+    board = _q(f"""select k.*, p.name from rankings k join players p on p.id = k.player_id
+                   where k.run_id = {LATEST_RUN} and k.vorp is not null and not k.is_kdst""")
+    cands = [Candidate(r["player_id"], r["position"], max(0.0, r["vorp"]), r["room_adp"], r["sd_adp"] or 10.0)
+             for r in board.to_dicts()]
+    names = {r["player_id"]: (r["name"], r["position"], r["team"], r["vorp"], r["room_adp"])
+             for r in board.to_dicts()}
+    keepers = load_keepers(cfg)
+    sched = build_pick_schedule(cfg.league.num_teams, cfg.roster.rounds, keepers)
+    mine = [s for s in sched if s.team_slot == slot and s.live_pick_no is not None]
+    for s_ in mine[:8]:
+        pick = s_.live_pick_no
+        rows = []
+        for c in sorted(cands, key=lambda x: -x.value):
+            pa = p_available(c.room_adp, c.sd_adp, pick)
+            if pa < 0.25:
+                continue
+            n = names[c.player_id]
+            rows.append({"player": n[0], "pos": n[1], "team": n[2], "vorp": round(n[3], 1),
+                         "room_adp": n[4], "p_avail": round(pa, 2)})
+            if len(rows) >= top:
+                break
+        typer.echo(f"\n--- round {s_.round}, pick {pick} (overall {s_.overall_pick}) "
+                   f"| best available at >= 25% odds ---")
+        typer.echo(pl.DataFrame(rows) if rows else "nothing above the threshold")
+
+
 @cli.command("export")
 def export(path: str = "draft_board.csv", limit: int = 300) -> None:
     """Cheat-sheet CSV from the latest run (works offline on draft day)."""
@@ -432,7 +485,7 @@ def export(path: str = "draft_board.csv", limit: int = 300) -> None:
                 k.p_avail_next, k.vona, array_to_string(k.flags, '|') flags, f.depth_rank, f.e_games
                 from rankings k join players p on p.id = k.player_id
                 left join player_features f on f.player_id = k.player_id
-                where k.run_id = (select run_id from ranking_runs where status='ok' order by started_at desc limit 1)
+                where k.run_id = {LATEST_RUN}
                 order by k.overall_rank limit {limit}""")
     df.write_csv(path)
     typer.echo({"rows": df.height, "path": path, "generated_at": datetime.now(UTC).isoformat()})

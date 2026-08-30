@@ -9,7 +9,7 @@ league:
   num_teams: 10
   draft_type: snake
   draft_datetime: "2026-09-06T20:45:00-05:00"   # Sun Sep 6, 8:45pm CDT
-  my_draft_slot: null         # 1..10, still unassigned
+  my_draft_slot: 10           # last pick of round 1, first of round 2 (confirmed 2026-08-30)
   keepers:
     max_per_team: 1           # Derek's keeper sheet lists a single "Keeper" column
     cost_rule: round_drafted  # keeper occupies the round the player was drafted in; the team skips that round

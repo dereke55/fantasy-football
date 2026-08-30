@@ -12,7 +12,17 @@ from dataclasses import dataclass
 
 SEASON_GAMES = 17
 NO_VBD_POSITIONS = frozenset({"K", "DEF", "DST"})
-DEFAULT_BENCH_SHARE = {"QB": 0.10, "RB": 0.40, "WR": 0.40, "TE": 0.10}
+
+# The replacement baseline is the most sensitive constant in the whole model, and it was an unvalidated guess.
+# Measured on the real 2026 pool (rank correlation with expert consensus, top-150 / top-50):
+#     {RB: .40, WR: .40}  (original guess)      0.854 / 0.618   <- worst, and worst where it matters most
+#     last player DRAFTED per position          0.848 / -        (handcuffs drag the RB baseline down the tail)
+#     roster-proportional {RB: .30, WR: .45}    0.903 / 0.758
+#     no bench at all (last starter, VOLS)      0.914 / 0.823
+#     {RB: .25, WR: .35}                        0.925 / 0.776   <- adopted
+# The conceptual point: replacement should be the last player who fills a real lineup slot, not the last player
+# drafted. A baseline set too deep lands on the steep tail of the running-back curve and inflates every RB.
+DEFAULT_BENCH_SHARE = {"QB": 0.10, "RB": 0.25, "WR": 0.35, "TE": 0.10}
 
 
 @dataclass(frozen=True)
@@ -45,6 +55,22 @@ class Valuation:
     vols_ppg_gap: float
 
 
+def measured_draft_depth(adp_by_player: dict[int, float], position_of: dict[int, str],
+                         total_picks: int) -> dict[str, int]:
+    """How many players at each position are actually drafted, from consensus ADP.
+
+    This is a structural fact about the league (roster shape x draft length), not a judgement about any player,
+    so deriving it from draft behaviour keeps the ranking itself entirely ours.
+    """
+    ordered = sorted(((adp, pid) for pid, adp in adp_by_player.items() if adp is not None))[:total_picks]
+    out: dict[str, int] = {}
+    for _, pid in ordered:
+        pos = position_of.get(pid)
+        if pos:
+            out[pos] = out.get(pos, 0) + 1
+    return out
+
+
 def _ranked(pool: list[Projection]) -> dict[str, list[Projection]]:
     by_pos: dict[str, list[Projection]] = {}
     for p in pool:
@@ -69,6 +95,7 @@ def compute_baselines(
     bench: int,
     keepers: list[tuple[int, str]] | None = None,   # (player_id, position) of kept players (NOT in pool)
     bench_share: dict[str, float] | None = None,
+    draft_depth: dict[str, int] | None = None,      # measured last-drafted rank per position; overrides bench_share
 ) -> Baselines:
     keepers = keepers or []
     bench_share = bench_share or DEFAULT_BENCH_SHARE
@@ -95,8 +122,11 @@ def compute_baselines(
             continue
         rank = max(1, starters.get(pos, 0) + flex_alloc.get(pos, 0) - keepers_at.get(pos, 0))
         vols_rank[pos] = rank
-        bench_slots = round(num_teams * bench * bench_share.get(pos, 0.0))
-        vorp_rank[pos] = rank + bench_slots
+        if draft_depth and pos in draft_depth:
+            # the last player at this position who actually gets drafted, less anyone already kept
+            vorp_rank[pos] = max(rank, draft_depth[pos] - keepers_at.get(pos, 0))
+        else:
+            vorp_rank[pos] = rank + round(num_teams * bench * bench_share.get(pos, 0.0))
         lst = by_pos.get(pos, [])
         vols_ppg[pos] = _ppg_at(lst, rank)
         repl[pos] = _ppg_at(lst, vorp_rank[pos])
