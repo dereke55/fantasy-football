@@ -278,7 +278,8 @@ OUTPUT_COLUMNS: tuple[str, ...] = (
     "eff_ypt", "eff_ypc", "eff_yprr_or_none",
     "proj_rec_pg", "proj_rec_yd_pg", "proj_rush_yd_pg", "proj_pass_yd_pg", "proj_pass_td_pg",
     "proj_td_pg",
-    "inhouse_ppg_raw", "age_factor", "inhouse_ppg",
+    "inhouse_ppg_raw", "age_factor", "context_factor", "qb_context_effect", "ol_context_effect",
+    "caller_context_effect", "target_vacated_gain", "carry_vacated_gain", "inhouse_ppg",
     # ---- audit columns (inputs to the WHY bullets; not part of the blend contract) ----
     "team_targets_pg", "proj_pass_att_share", "proj_pass_att_pg", "proj_pass_int_pg",
     "proj_rec_td_pg", "proj_rush_td_pg",
@@ -651,6 +652,71 @@ def measured_share_budget(seasons: tuple[int, ...], kind: str) -> float:
     return float(per_game["s"].median())
 
 
+def _redistribute_vacated(df: pl.DataFrame, share_col: str, budget: float,
+                          gain_col: str, max_gain: float = 0.5) -> pl.DataFrame:
+    """Push a club's VACATED opportunity onto the players who are still there.
+
+    When A.J. Brown leaves Philadelphia his ~140 targets do not evaporate — they go to whoever remains. Because
+    every player's share is estimated from his own history (or a depth-slot baseline), a club that lost a large
+    share of its 2025 usage projects to a total well below what a real offence spends, and everyone left is
+    under-projected. The team cap already handles the opposite case (shares summing too high); this is its
+    mirror image.
+
+    The shortfall is distributed in proportion to each remaining player's own projected share, so the WR1 absorbs
+    most of it — but no player may gain more than `max_gain` of his own share, which stops a fourth-stringer on a
+    gutted roster from inheriting a starter's workload on the strength of a rounding error.
+    """
+    total = pl.col(share_col).fill_null(0.0).sum().over("team")
+    shortfall = (pl.lit(budget) - total).clip(lower_bound=0.0)
+    raw_gain = pl.when(total > 0).then(pl.col(share_col).fill_null(0.0) / total * shortfall).otherwise(0.0)
+    capped = pl.min_horizontal(raw_gain, pl.col(share_col).fill_null(0.0) * max_gain)
+    return df.with_columns(capped.alias(gain_col)).with_columns(
+        (pl.col(share_col).fill_null(0.0) + pl.col(gain_col)).alias(share_col))
+
+
+# Team-context effects on the IN-HOUSE half only. The vendor half already prices 2026 context in, so applying
+# these to the blend would double-count; keeping them here means the effect is diluted to its 30% weight and can
+# never dominate. Magnitudes are deliberately small and hard-capped — 18 of 32 clubs changed play-caller, so a
+# large multiplier applied to half the league would add noise, not signal.
+QB_TIER_EFFECT = {1: 0.04, 2: 0.02, 3: 0.0, 4: -0.03}   # quarterback quality, for players who catch his passes
+QB_UNSETTLED_EFFECT = -0.02                              # an open or injury-returning QB room
+OL_EFFECT_QB = 0.015                                     # per delta point; OL matters most for quarterbacks
+OL_EFFECT_RUSH = 0.010                                   # smaller for running backs
+NEW_CALLER_EFFECT = -0.01                                # pure uncertainty about role, not a talent claim
+CONTEXT_CAP = (0.94, 1.06)
+
+
+def _context_factor(df: pl.DataFrame) -> pl.DataFrame:
+    """One capped multiplier per player from the curated 2026 team context."""
+    ctx = pl.read_database(
+        "select team, qb_quality_tier, qb_status, ol_delta, play_caller_new from team_context",
+        connection=engine, infer_schema_length=None)
+    if ctx.is_empty():
+        return df.with_columns(context_factor=pl.lit(1.0), context_detail=pl.lit("{}"))
+    df = df.join(ctx, on="team", how="left")
+    catches_passes = pl.col("position").is_in(["WR", "TE", "RB"])
+    qb_eff = (
+        pl.when(catches_passes)
+        .then(pl.col("qb_quality_tier").replace_strict(QB_TIER_EFFECT, default=0.0, return_dtype=pl.Float64))
+        .otherwise(0.0)
+        + pl.when(catches_passes & pl.col("qb_status").is_in(["competition", "injury_return"]))
+        .then(QB_UNSETTLED_EFFECT).otherwise(0.0)
+    )
+    ol_eff = (
+        pl.when(pl.col("position") == "QB").then(pl.col("ol_delta").fill_null(0) * OL_EFFECT_QB)
+        .when(pl.col("position") == "RB").then(pl.col("ol_delta").fill_null(0) * OL_EFFECT_RUSH)
+        .otherwise(0.0)
+    )
+    caller_eff = pl.when(pl.col("play_caller_new").fill_null(value=False)).then(NEW_CALLER_EFFECT).otherwise(0.0)
+    return df.with_columns(
+        qb_context_effect=qb_eff.round(4),
+        ol_context_effect=ol_eff.round(4),
+        caller_context_effect=caller_eff.round(4),
+        context_factor=(1.0 + qb_eff + ol_eff + caller_eff)
+        .clip(lower_bound=CONTEXT_CAP[0], upper_bound=CONTEXT_CAP[1]).round(4),
+    )
+
+
 def _apply_team_cap(df: pl.DataFrame, share_col: str, scale_col: str, budget: float = 1.0) -> pl.DataFrame:
     """Scale each club's shares proportionally so they sum to <= `budget` (see measured_share_budget)."""
     total = pl.col(share_col).fill_null(0.0).sum().over("team")
@@ -850,12 +916,15 @@ def compute_inhouse(cfg: LeagueConfig | None = None, seasons: list[int] | None =
         proj_pass_att_share=pl.col("pass_att_share_raw"),
     )
     seasons_t = tuple(seasons)
-    df = _apply_team_cap(df, "proj_target_share", "target_cap_scale",
-                         measured_share_budget(seasons_t, "target"))
-    df = _apply_team_cap(df, "proj_carry_share", "carry_cap_scale",
-                         measured_share_budget(seasons_t, "carry"))
-    df = _apply_team_cap(df, "proj_pass_att_share", "pass_att_cap_scale",
-                         measured_share_budget(seasons_t, "pass_att"))
+    tgt_budget = measured_share_budget(seasons_t, "target")
+    car_budget = measured_share_budget(seasons_t, "carry")
+    pas_budget = measured_share_budget(seasons_t, "pass_att")
+    # vacated opportunity first (raises an under-allocated club), then the cap (lowers an over-allocated one)
+    df = _redistribute_vacated(df, "proj_target_share", tgt_budget, "target_vacated_gain")
+    df = _redistribute_vacated(df, "proj_carry_share", car_budget, "carry_vacated_gain")
+    df = _apply_team_cap(df, "proj_target_share", "target_cap_scale", tgt_budget)
+    df = _apply_team_cap(df, "proj_carry_share", "carry_cap_scale", car_budget)
+    df = _apply_team_cap(df, "proj_pass_att_share", "pass_att_cap_scale", pas_budget)
 
     # ---- team volume ------------------------------------------------------------------------------------
     team_vol = (
@@ -924,6 +993,9 @@ def compute_inhouse(cfg: LeagueConfig | None = None, seasons: list[int] | None =
         proj_rush_td_pg=pl.col("proj_carries_pg") * pl.col("eff_rush_td_rate"),
     ).with_columns(proj_td_pg=pl.col("proj_rec_td_pg") + pl.col("proj_rush_td_pg"))
 
+    # ---- team context (in-house half only, hard-capped) --------------------------------------------------
+    df = _context_factor(df)
+
     # ---- scoring and the age step -----------------------------------------------------------------------
     ppg_raw: list[float] = []
     ages: list[float | None] = []
@@ -945,7 +1017,8 @@ def compute_inhouse(cfg: LeagueConfig | None = None, seasons: list[int] | None =
         pl.Series("age", ages, dtype=pl.Float64),
         pl.Series("age_factor", factors_age, dtype=pl.Float64),
     ).with_columns(
-        inhouse_ppg=(pl.col("inhouse_ppg_raw") * pl.col("age_factor")).clip(lower_bound=0.0).round(4)
+        inhouse_ppg=(pl.col("inhouse_ppg_raw") * pl.col("age_factor") * pl.col("context_factor"))
+        .clip(lower_bound=0.0).round(4)
     )
 
     rounded = {

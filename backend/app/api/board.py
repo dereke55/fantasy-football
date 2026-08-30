@@ -91,7 +91,7 @@ def get_rankings(limit: int = Query(600, le=1000)) -> dict:
                k.p_avail_next as p_avail, k.vona, k.flags, k.signals, k.is_kdst, k.is_keeper,
                b.bye_week as bye,
                f.depth_rank, f.injury_prone, f.structural_injury_return, f.current_injury_status,
-               f.td_diff_2025, f.ppg_2025, f.age_2026,
+               f.td_diff_2025, f.ppg_2025, f.age_2026, f.years_exp, f.is_rookie,
                d.team_slot as drafted_by, d.id as pick_id,
                ke.team_slot as kept_by, ke.cost_round as keeper_cost_round
         from rankings k

@@ -90,3 +90,50 @@ ADR-style, newest last. Each entry: date, decision, why, consequences.
   margin; a production build removes the StrictMode double render and the dev module evaluation that account for
   most of the spread. Marks are left in the Performance timeline as `board:render-start`, `board:committed`,
   `board:render` and `board:from-navigation-start`, so the number can be re-measured any time.
+
+
+## 2026-08-30 — Vacated opportunity and capped team-context effects
+
+Derek asked which of his listed factors actually reach the number. Audit result: roster changes partly, coaching
+tags-only, workhorse-vs-committee yes (via carry share), injury yes, **strength of schedule not built**, **contract
+not built** (the WHY rule exists but nflverse contracts were never ingested — Phase 1b). He asked for the first two
+gaps closed and SoS explicitly dropped.
+
+**1. Vacated opportunity** (`_redistribute_vacated` in `app/ranking/inhouse.py`). Every player's share is estimated
+from his own history or a depth-slot baseline, so a club that lost a large share of its 2025 usage projected to a
+total well below what a real offence spends, and everyone remaining was under-projected. The team cap already
+handled the opposite case; this is its mirror image. The shortfall is distributed in proportion to each remaining
+player's own share, capped so no player gains more than 50% of his own share. Miami (Hill released, Waddle traded)
+is the largest beneficiary, then Baltimore and Pittsburgh (Pickens to Dallas). Every club now lands exactly at the
+measured budget.
+
+**2. Team context now moves the projection**, but only the in-house half and only within a hard cap of
+[0.94, 1.06]: QB quality tier ±4%/−3% for players who catch his passes, −2% more for an unsettled QB room, O-line
+delta ±1.5%/point for QBs and ±1.0% for RBs, −1% for a new play-caller (uncertainty, not a talent claim).
+
+Applied to the in-house component rather than the blend for the same reason context was tags-only before: the
+vendor half already prices 2026 context in, so adjusting the blend would double-count. Living in the 30% component
+also means the effective swing on a player's final projection is roughly a third of the cap. Observed spread across
+845 players: 0.96–1.05, mean 1.005.
+
+Rank correlation with expert consensus moved 0.925 → 0.920 — within noise, and a small independent divergence is
+the expected consequence of the model holding an opinion the market does not.
+
+**Not done, deliberately**: strength of schedule (dropped by Derek; positional points-allowed has YoY correlation
+0.16–0.26, essentially zero for WRs) and contracts (evidence for the contract-year effect is neutral-to-negative
+once age is controlled).
+
+### Sleeper-flag review (diagnosis only — no change made)
+
+Derek flagged that Dak Prescott and Patrick Mahomes are labelled "sleepers" and that 5 seems too few. Both are
+real, and they are separate problems:
+
+- **The label, not the maths.** Dak (our 56 vs ADP 74) and Mahomes (86 vs 105) qualify on `negative_td_luck` +
+  `ppg_trend_up`. Dak was the most touchdown-unlucky player in the NFL in 2025 (−11.4 vs expected), Mahomes −6.2.
+  The regression argument is sound; calling a former MVP a "sleeper" is not. A `value` or `regression_candidate`
+  label, or excluding established players by ADP or prior finish, would fix the semantics without touching the
+  model.
+- **The count is limited by the support catalogue, not the gap threshold.** 38 players clear
+  gap ≥ 6 / gap_z ≥ 1.0 / draftable; 33 are blocked by needing ≥ 2 support signals. Breece Hall (+9 picks),
+  D'Andre Swift (+10) and Mike Evans (+13) have zero support signals despite large gaps, because the catalogue is
+  thin (six signals, several of which need two seasons of same-role history).

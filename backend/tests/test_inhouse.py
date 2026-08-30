@@ -356,15 +356,61 @@ def test_per_game_bonuses_are_left_to_the_caller(proj: pl.DataFrame) -> None:
 
 # -------------------------------------------------------------------------------------- age and sanity
 
-def test_age_step_is_the_last_multiplier(proj: pl.DataFrame) -> None:
+def test_age_and_context_are_the_final_multipliers(proj: pl.DataFrame) -> None:
+    """inhouse_ppg = raw x age x team context, and nothing else."""
     d = proj.with_columns(
-        expected=(pl.col("inhouse_ppg_raw") * pl.col("age_factor")).clip(lower_bound=0.0).round(4)
+        expected=(pl.col("inhouse_ppg_raw") * pl.col("age_factor") * pl.col("context_factor"))
+        .clip(lower_bound=0.0).round(4)
     )
     assert (d["expected"] - d["inhouse_ppg"]).abs().max() < 1e-3
     for r in proj.filter(pl.col("age").is_not_null()).head(200).to_dicts():
         assert r["age_factor"] == pytest.approx(age_factor(r["position"], r["age"]))
     assert proj["age_factor"].min() >= 0.78
     assert proj["age_factor"].max() <= 1.05
+
+
+def test_team_context_is_small_and_hard_capped(proj: pl.DataFrame) -> None:
+    """Context adjusts the in-house half only, and can never dominate it.
+
+    18 of 32 clubs changed play-caller, so a large multiplier applied to half the league would add noise rather
+    than signal. It is also applied here rather than to the blend, because the vendor half already prices 2026
+    context in — adjusting the blend would double-count it.
+    """
+    from app.ranking.inhouse import CONTEXT_CAP
+
+    lo, hi = CONTEXT_CAP
+    assert proj["context_factor"].min() >= lo - 1e-9
+    assert proj["context_factor"].max() <= hi + 1e-9
+    assert hi - lo <= 0.15, "a context swing wider than +/-7% would swamp the opportunity model"
+    # the pieces must add up to the (uncapped) factor
+    d = proj.with_columns(
+        parts=1.0 + pl.col("qb_context_effect") + pl.col("ol_context_effect") + pl.col("caller_context_effect"))
+    inside = d.filter(pl.col("parts").is_between(lo, hi))
+    assert (inside["parts"] - inside["context_factor"]).abs().max() < 1e-3
+    # quarterback quality only moves players who catch his passes
+    qb_rows = proj.filter(pl.col("position") == "QB")
+    assert qb_rows["qb_context_effect"].abs().max() == 0.0
+
+
+def test_vacated_opportunity_is_redistributed_within_budget(proj: pl.DataFrame) -> None:
+    """A club that lost usage must not project below what a real offence spends.
+
+    When a team's contributors leave, their share does not evaporate - it goes to whoever remains. Every club
+    should therefore land at the measured budget, and no player may gain more than half his own share.
+    """
+    from app.config import settings
+    from app.ranking.inhouse import measured_share_budget
+
+    seasons = tuple(settings.history_seasons)
+    for kind, col, gain in (("target", "proj_target_share", "target_vacated_gain"),
+                            ("carry", "proj_carry_share", "carry_vacated_gain")):
+        budget = measured_share_budget(seasons, kind)
+        sums = proj.group_by("team").agg(pl.col(col).sum().alias("s"))
+        assert sums["s"].max() <= budget + CAP_TOLERANCE, f"{kind} over budget"
+        assert sums["s"].min() >= budget - 0.05, f"{kind} left a club under-allocated"
+        assert proj[gain].min() >= 0.0, "redistribution never removes opportunity"
+        share_before = proj[col] - proj[gain]
+        assert (proj[gain] <= share_before * 0.5 + 1e-6).all(), "a player gained more than half his own share"
 
 
 def test_inhouse_ppg_is_finite_and_non_negative_for_every_row(proj: pl.DataFrame) -> None:
