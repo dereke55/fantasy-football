@@ -53,6 +53,71 @@ def _pct(x: float | None) -> str:
     return "—" if x is None else f"{100 * x:.0f}%"
 
 
+# ---------------------------------------------------------------- headline (always available)
+
+@rule("projection", 5)
+def projection(s: Mapping) -> Bullet | None:
+    """The headline: what we actually project, and where that ranks. Always present for a ranked player."""
+    ppg, pos = s.get("blend_ppg"), s.get("position")
+    if ppg is None:
+        return None
+    ids, url = _prov(s, "vendor_ppg")
+    bits = [f"Projects {ppg:.1f} pts/game"]
+    if s.get("pos_rank"):
+        bits.append(f"({pos}{s['pos_rank']})")
+    if s.get("vorp") is not None:
+        bits.append(f"— {s['vorp']:.0f} over replacement")
+    if s.get("e_games") is not None:
+        bits.append(f"over {s['e_games']:.1f} expected games")
+    return Bullet("projection", " ".join(bits), "value", 0, 5,
+                  {"ppg": ppg, "vorp": s.get("vorp"), "e_games": s.get("e_games")}, "2026", ids, url)
+
+
+@rule("market_position", 55)
+def market_position(s: Mapping) -> Bullet | None:
+    """Where the room takes him versus where we have him — shown even when the gap is unremarkable."""
+    room, ours = s.get("room_adp"), s.get("our_pick")
+    if room is None or ours is None:
+        return None
+    ids, url = _prov(s, "room_adp")
+    delta = room - ours
+    if abs(delta) < 6:
+        tail = "in line with our value"
+    else:
+        tail = f"{abs(delta):.0f} picks {'later' if delta > 0 else 'earlier'} than our value"
+    return Bullet("market_position", f"Room takes him around pick {room:.0f}; we have him at {ours:.0f} — {tail}",
+                  "market", 0, 55, {"room_adp": room, "our_pick": ours}, "2026", ids, url)
+
+
+@rule("usage_level", 18)
+def usage_level(s: Mapping) -> Bullet | None:
+    """Absolute opportunity, for players whose usage did not move enough to trigger the trend rule."""
+    pos = s.get("position")
+    ts, cs = s.get("target_share_2025"), s.get("carry_share_2025")
+    ids, url = _prov(s, "target_share_2025", "carry_share_2025")
+    if pos == "RB" and cs is not None and float(cs) > 0:
+        return Bullet("usage_level", f"Handled {_pct(float(cs))} of team carries in 2025", "opportunity",
+                      1 if float(cs) >= 0.5 else 0, 18, {"carry_share": float(cs)}, "2025", ids, url)
+    if ts is not None and float(ts) > 0:
+        return Bullet("usage_level", f"Commanded {_pct(float(ts))} of team targets in 2025", "opportunity",
+                      1 if float(ts) >= 0.20 else 0, 18, {"target_share": float(ts)}, "2025", ids, url)
+    return None
+
+
+@rule("experience", 62)
+def experience(s: Mapping) -> Bullet | None:
+    if s.get("is_rookie"):
+        return None
+    yrs, age = s.get("years_exp"), s.get("age")
+    if yrs is None:
+        return None
+    ids, url = _prov(s, "age")
+    label = "Second NFL season" if yrs == 1 else f"{int(yrs) + 1}th NFL season"
+    extra = f", age {age:.0f}" if age is not None else ""
+    return Bullet("experience", f"{label}{extra}", "bio", 1 if yrs == 1 else 0, 62,
+                  {"years_exp": yrs, "age": age}, "2026", ids, url)
+
+
 # ---------------------------------------------------------------- opportunity / production
 
 @rule("target_share_trend", 10)
@@ -83,12 +148,13 @@ def ppg_trend(s: Mapping) -> Bullet | None:
 
 @rule("carries_share", 14)
 def carries_share(s: Mapping) -> Bullet | None:
+    """Workhorse usage only; the general case is covered by `usage_level` so the two never duplicate."""
     share = s.get("carry_share_2025")
-    if share is None or s.get("position") != "RB" or share < 0.55:
+    if share is None or s.get("position") != "RB" or float(share) < 0.55:
         return None
     ids, url = _prov(s, "carry_share_2025")
-    return Bullet("carries_share", f"Handled {_pct(share)} of team carries in 2025", "opportunity", 1, 14,
-                  {"carry_share": share}, "2025", ids, url)
+    return Bullet("carries_share", f"Workhorse back: {_pct(float(share))} of team carries in 2025", "opportunity",
+                  1, 14, {"carry_share": float(share)}, "2025", ids, url)
 
 
 # ---------------------------------------------------------------- regression / luck
@@ -291,6 +357,10 @@ def render(signals: Mapping, *, max_bullets: int = 6) -> list[Bullet]:
         if b is not None:
             out.append(b)
     out.sort(key=lambda b: (b.priority, b.rule_id))
+    # usage_level and carries_share describe the same thing; keep the more specific one
+    ids_present = {b.rule_id for b in out}
+    if {"usage_level", "carries_share"} <= ids_present:
+        out = [b for b in out if b.rule_id != "usage_level"]
     return out[:max_bullets]
 
 

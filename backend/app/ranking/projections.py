@@ -24,6 +24,8 @@ from app.scoring.config import LeagueConfig, load_league_config
 from app.scoring.engine import score
 
 SEASON_GAMES = 17
+# floor on the per-game divisor; below this a projection is too thin to imply a credible rate
+MIN_PPG_DIVISOR_GAMES = 6
 
 
 def _q(sql: str) -> pl.DataFrame:
@@ -74,7 +76,10 @@ def vendor_projections(cfg: LeagueConfig | None = None) -> pl.DataFrame:
     for r in df.to_dicts():
         base = score(from_sleeper_projection(r, strict=False), cfg.scoring, r["position"], include_bonuses=False)
         km = missed.get(r["gsis_id"] or "", 0)
-        games = max(1, SEASON_GAMES - km)
+        # The divisor converts a season projection into a per-game rate. It must NOT collapse for a player who is
+        # out for the year: Brandon Aiyuk (known_missed_weeks = 17) would otherwise divide by 1 and report his
+        # entire season as a per-game rate (41.6 PPG). E[games] is what removes an absent player from contention.
+        games = max(MIN_PPG_DIVISOR_GAMES, SEASON_GAMES - km)
         bpg = bonus_pg.get(r["player_id"], 0.0)
         rows.append({
             "player_id": r["player_id"], "gsis_id": r["gsis_id"], "name": r["name"], "position": r["position"],

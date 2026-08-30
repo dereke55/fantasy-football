@@ -59,6 +59,9 @@ def build_signals(feat: dict, rank: dict, context: dict, cfg_source: str) -> dic
         "vendor_ppg": rank.get("ppg_vendor"),
         "inhouse_ppg": rank.get("ppg_inhouse"),
         "blend_ppg": rank.get("ppg_blend"),
+        "pos_rank": rank.get("pos_rank"),
+        "vorp": rank.get("vorp"),
+        "years_exp": feat.get("years_exp"),
     }
     if context:
         s.update({
