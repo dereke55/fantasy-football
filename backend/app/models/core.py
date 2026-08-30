@@ -4,7 +4,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, Index, Integer, String, Text, func
+from sqlalchemy import BigInteger, Boolean, DateTime, Float, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -49,3 +49,13 @@ class RankingRun(Base):
     input_snapshot_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     is_frozen: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     note: Mapped[str | None] = mapped_column(Text)
+    # what the run produced, so a frozen board can be audited without recomputing it
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="running")  # running|ok|failed
+    model_version: Mapped[str | None] = mapped_column(String(24))
+    weights: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    keepers_hash: Mapped[str | None] = mapped_column(String(64))
+    spearman_top150: Mapped[float | None] = mapped_column(Float)
+    n_players_ranked: Mapped[int | None] = mapped_column(Integer)
+    n_why_bullets: Mapped[int | None] = mapped_column(Integer)
+    duration_s: Mapped[float | None] = mapped_column(Float)
+    error: Mapped[str | None] = mapped_column(Text)

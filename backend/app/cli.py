@@ -22,6 +22,7 @@ def _mount() -> None:
     from app.ingest import ffc, nflverse_ref, nflverse_stats, players_hub, sleeper, yahoo_pub
     from app.market import build as market_build
     from app.ranking import keeper_cli
+    from app.ranking import pipeline as ranking_pipeline
 
     ingest_app.add_typer(nflverse_stats.cli, name="nflverse-stats")
     ingest_app.add_typer(nflverse_ref.cli, name="nflverse-ref")
@@ -33,6 +34,7 @@ def _mount() -> None:
     app.add_typer(keeper_cli.cli, name="keeper")
     app.add_typer(context_build.cli, name="context")
     app.add_typer(features_build.cli, name="features")
+    app.add_typer(ranking_pipeline.cli, name="rank")
 
 
 _mount()

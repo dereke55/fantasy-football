@@ -89,7 +89,9 @@ def vendor_projections(cfg: LeagueConfig | None = None) -> pl.DataFrame:
 
 def with_expected_games(proj: pl.DataFrame, market: pl.DataFrame, num_teams: int) -> pl.DataFrame:
     """Attach E[games] (ONE application, at the per-game -> season conversion) using the ADP band for the base rate."""
-    m = market.select("player_id", "composite_rank", "composite_adp", "ecr_rank", "sd_adp", "n_adp_sources")
+    wanted = ["player_id", "composite_rank", "composite_adp", "ecr_rank", "ecr", "ecr_sd", "ecr_best", "ecr_worst",
+              "disagreement", "yahoo_adp", "ffc_adp", "sleeper_adp", "sd_adp", "sd_adp_source", "n_adp_sources"]
+    m = market.select([c for c in wanted if c in market.columns])
     df = proj.join(m, on="player_id", how="left")
     out = []
     for r in df.to_dicts():
