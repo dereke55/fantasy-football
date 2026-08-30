@@ -71,6 +71,16 @@ def player_profile(player_id: int) -> dict:
         "select source, format, kind, rank, adp, std, min_pick, max_pick, as_of "
         "from rank_snapshots where player_id = :id order by source", id=player_id)
 
+    why = _q(
+        "select rule_id, text, kind, polarity, priority, inputs, seasons, source_url, template_version "
+        "from why_bullets where player_id = :id and run_id = "
+        "(select run_id from ranking_runs where status='ok' order by is_frozen desc, started_at desc limit 1) "
+        "order by priority", id=player_id)
+    ranking = _q(
+        "select * from rankings where player_id = :id and run_id = "
+        "(select run_id from ranking_runs where status='ok' order by is_frozen desc, started_at desc limit 1)",
+        id=player_id)
+
     context: dict = {}
     if player.get("team") and _table_exists("team_context"):
         got = _q("select * from team_context where team = :t", t=player["team"])
@@ -80,6 +90,8 @@ def player_profile(player_id: int) -> dict:
         "player": player,
         "seasons": seasons,
         "summary": summary,
+        "why": why,
+        "ranking": ranking[0] if ranking else {},
         "market": market,
         "team_context": context,
         "provenance": {
