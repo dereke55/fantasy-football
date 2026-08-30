@@ -1,4 +1,4 @@
-# Handoff — state as of 2026-08-30 (Phase 4-lite + keeper helper shipped)
+# Handoff — state as of 2026-08-30 (Phases 3, 4-lite and 5 complete; keeper helper shipped)
 
 Read `CLAUDE.md` → `docs/PLAN.md` → this file → the phase checklist you are working on. Progress is tracked by ticking
 `docs/phases/NN-*.md`; decisions go in `docs/decisions.md`. Draft is **before Sep 10**; the calendar in PLAN.md starts day 1 = Aug 31.
@@ -43,6 +43,18 @@ Read `CLAUDE.md` → `docs/PLAN.md` → this file → the phase checklist you ar
 - **Keeper helper** (`app/ranking/keeper_value.py`, `ff keeper rounds|table|value`) — pulled forward for the Aug 31 deadline.
 - Confirmed inputs: `league_key = 470.l.335180`, draft Sun Sep 6 8:45pm CDT, keeper deadline Aug 31, Yahoo app submitted.
 - Still pending from Derek: **real scoring table** (screenshot never arrived), roster slots/bench, max keepers, draft slot.
+
+## Added later on 2026-08-30
+- **Phase 3 complete**: six feature modules (production, luck, consistency, durability, depth, team_tendencies)
+  assembled by `ff features build` into `player_features` (961) and `player_season_features` (1,443).
+  `ff features check` GATE PASSED — five named players' 2025 totals reconcile with nflverse exactly.
+  E[games] is computed once from ADP band + injury history + announced absences, with history gated on real usage.
+- **Phase 5 complete**: `ff context check|load|review` → `team_context` (32 teams, 10 new HC, 18 new play-callers,
+  5 unsettled QB rooms, 21 non-zero OL deltas). Validation refuses to load unsourced/invalid rows; every row carries
+  source URLs, confidence and a seed sha256; a `warning` column auto-flags stale/low-confidence rows for the day-9 pass.
+- **API**: `GET /api/players`, `/api/players/{id}/profile` (history + summary + market + team context + provenance),
+  `/api/teams/context`.
+- Suite: **95 tests green**, ruff clean, 6 commits pushed.
 
 ## Next (in order — see docs/PLAN.md calendar)
 1. Get Derek's day-1 inputs into `config/league.yaml` (scoring incl. fractional/negative flags, roster, keeper count/deadline, league_key,
