@@ -100,10 +100,12 @@ def build(seasons: str = typer.Option(None, help="Comma-separated; defaults to s
     cfg = load_league_config()
     season_df = build_season_frame(seasons_l)
     summary_df = build_summary_frame(seasons_l)
+    # Drop in its own committed transaction: replace_partition inspects the live schema to (re)create the
+    # table, and an uncommitted DROP leaves the inspector believing the table is still there.
     with session_scope() as s:
         for table in (SEASON_TABLE, SUMMARY_TABLE):
             s.execute(text(f"drop table if exists {table}"))
-        s.flush()
+    with session_scope() as s:
         n1 = replace_partition(s, SEASON_TABLE, season_df, partition=[], snapshot_id=None)
         n2 = replace_partition(s, SUMMARY_TABLE, summary_df, partition=[], snapshot_id=None)
     typer.echo({

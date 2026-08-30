@@ -19,6 +19,7 @@ from app.config import settings
 from app.db import engine
 from app.ranking.adjustments import expected_games
 from app.scoring.adapters import from_sleeper_projection
+from app.scoring.bonuses import season_bonus_points
 from app.scoring.config import LeagueConfig, load_league_config
 from app.scoring.engine import score
 
@@ -66,15 +67,22 @@ def vendor_projections(cfg: LeagueConfig | None = None) -> pl.DataFrame:
     if df.is_empty():
         return df
     missed = known_missed_weeks()
+    # The yardage bonuses are per game, so they cannot be read off a season total: estimate the per-game bonus
+    # from the player's own weekly history instead (app/scoring/bonuses.py).
+    bonus_pg = season_bonus_points(cfg, list(settings.history_seasons))
     rows = []
     for r in df.to_dicts():
-        pts = score(from_sleeper_projection(r, strict=False), cfg.scoring, r["position"])
+        base = score(from_sleeper_projection(r, strict=False), cfg.scoring, r["position"], include_bonuses=False)
         km = missed.get(r["gsis_id"] or "", 0)
         games = max(1, SEASON_GAMES - km)
+        bpg = bonus_pg.get(r["player_id"], 0.0)
         rows.append({
             "player_id": r["player_id"], "gsis_id": r["gsis_id"], "name": r["name"], "position": r["position"],
-            "team": r["team"], "is_rookie": r["is_rookie"], "vendor_season_points": round(pts, 2),
-            "vendor_ppg": round(pts / games, 3), "known_missed_weeks": km,
+            "team": r["team"], "is_rookie": r["is_rookie"],
+            "vendor_season_points": round(base + bpg * games, 2),
+            "vendor_ppg": round(base / games + bpg, 3),
+            "vendor_ppg_no_bonus": round(base / games, 3), "bonus_pg": round(bpg, 3),
+            "known_missed_weeks": km,
         })
     return pl.DataFrame(rows)
 

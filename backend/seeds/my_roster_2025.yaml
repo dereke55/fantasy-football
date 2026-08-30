@@ -1,0 +1,24 @@
+# Derek's 2025 roster with the round each player was drafted in (Yahoo keeper sheet, 2026-08-30).
+# cost_round = what keeping the player would cost in the 2026 draft.
+# Yahoo marked the round 1-4 picks "Not Eligible" for keeping.
+version: 1
+as_of: 2026-08-30
+team: White Knight Rises
+rows:
+  - { name: Christian McCaffrey, cost_round: 1,  eligible: false }
+  - { name: Chase Brown,         cost_round: 2,  eligible: false }
+  - { name: Kenneth Walker III,  cost_round: 3,  eligible: false }
+  - { name: George Pickens,      cost_round: 4,  eligible: false }
+  - { name: Travis Hunter,       cost_round: 6,  eligible: true }
+  - { name: Chris Olave,         cost_round: 7,  eligible: true }
+  - { name: Jakobi Meyers,       cost_round: 8,  eligible: true }
+  - { name: Brock Purdy,         cost_round: 9,  eligible: true }
+  - { name: Josh Downs,          cost_round: 11, eligible: true }
+  - { name: Colston Loveland,    cost_round: 13, eligible: true }
+  - { name: Detroit Lions,       cost_round: 14, eligible: true }
+  - { name: Jared Goff,          cost_round: 15, eligible: true }
+  - { name: Wan'Dale Robinson,   cost_round: 16, eligible: true }
+  - { name: Evan McPherson,      cost_round: 16, eligible: true }
+  - { name: Will Reichard,       cost_round: 16, eligible: true }
+  - { name: Cleveland Browns,    cost_round: 16, eligible: true }
+  - { name: Miami Dolphins,      cost_round: 16, eligible: true }

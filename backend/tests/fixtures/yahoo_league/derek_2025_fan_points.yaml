@@ -1,0 +1,19 @@
+# Real 2025 season fantasy points for Derek's roster, read from his Yahoo league page under this league's
+# own scoring settings. These are the ground truth for the Phase 2 scoring gate.
+source: https://football.fantasysports.yahoo.com/league/shirtlesschugsonly  ("Last Season 2024-25" stats tab)
+captured_at: 2026-08-30
+season: 2025
+season_type: REG
+players:
+  Jared Goff: 366.06
+  George Pickens: 252.40
+  Chris Olave: 221.00
+  Jakobi Meyers: 138.30
+  Kenneth Walker III: 178.40
+  Chase Brown: 251.10
+  Colston Loveland: 137.10
+  Christian McCaffrey: 369.60
+  Josh Downs: 107.40
+  Wan'Dale Robinson: 176.90
+  Brock Purdy: 217.38
+  Travis Hunter: 50.80

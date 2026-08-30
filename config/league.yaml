@@ -1,42 +1,85 @@
 # League configuration — the single source of truth for scoring, roster, and draft parameters.
-# STATUS: PLACEHOLDER. Scoring below is Yahoo's default public-league scoring, used only until Derek
-# pastes the real settings from Yahoo League > Settings. Every derived number recomputes on change.
-source: yahoo_default_public_league_scoring   # replace with: yahoo_settings_page (+ date) once real values land
-source_url: https://help.yahoo.com/kb/SLN6448.html   # Yahoo Fantasy Football default scoring (verify when replacing)
-as_of: 2026-08-29
+# Transcribed from Yahoo League > Settings on 2026-08-30 (screenshots supplied by Derek).
+source: yahoo_settings_page
+source_url: https://football.fantasysports.yahoo.com/league/shirtlesschugsonly/settings
+as_of: 2026-08-30
 league:
   platform: yahoo
   league_key: "470.l.335180"  # 2026 NFL game_key 470 + league id 335180 (shirtlesschugsonly)
   num_teams: 10
   draft_type: snake
   draft_datetime: "2026-09-06T20:45:00-05:00"   # Sun Sep 6, 8:45pm CDT
-  my_draft_slot: null         # 1..10, or null if not yet assigned
+  my_draft_slot: null         # 1..10, still unassigned
   keepers:
-    max_per_team: null        # DAY-1 INPUT
-    cost_rule: round_drafted  # keeper occupies the round the player was drafted in last year; team skips that round
-    deadline: "2026-08-31"    # Derek: keeper declarations due Mon Aug 31; list entered into the tool that day
-    assigned_in_yahoo: null   # true once the commissioner has run "Assign Keeper Players"
+    max_per_team: 1           # Derek's keeper sheet lists a single "Keeper" column
+    cost_rule: round_drafted  # keeper occupies the round the player was drafted in; the team skips that round
+    deadline: "2026-08-31"
+    assigned_in_yahoo: false
+    ineligible_rounds: [1, 2, 3, 4]   # Yahoo marked Derek's R1-R4 picks "Not Eligible"
 roster:
-  slots: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 1, K: 1, DEF: 1 }
+  # Yahoo: QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF, BN x6, IR
+  slots: { QB: 1, WR: 3, RB: 2, TE: 1, FLEX: 1, K: 1, DEF: 1 }
   flex_eligible: [RB, WR, TE]
   bench: 6
-  ir: 0
+  ir: 1                       # IR does not consume a draft pick
 scoring:
   uses_fractional_points: true
   uses_negative_points: true
-  # points per unit; yardage keys are per yard (25 yds/pt = 0.04)
-  pass_yd: 0.04
-  pass_td: 4
-  pass_int: -1
+  # ---- offense (per-unit) ----
+  pass_yd: 0.04               # 25 yards per point
+  pass_td: 6                  # override of Yahoo default 4
+  pass_int: -2                # override of Yahoo default -1
   pass_2pt: 2
-  rush_yd: 0.1
+  rush_yd: 0.1                # 10 yards per point
   rush_td: 6
   rush_2pt: 2
   rec: 0.5
-  rec_yd: 0.1
+  rec_yd: 0.1                 # 10 yards per point
   rec_td: 6
   rec_2pt: 2
   fum_lost: -2
-  ret_td: 6
-  bonuses: []               # e.g. {stat: pass_yd, threshold: 300, points: 2}
-  position_overrides: {}    # e.g. {TE: {rec: 1.0}} — not used (no TE premium)
+  ret_td: 6                   # return TDs and offensive fumble-return TDs
+  # ---- per-GAME yardage bonuses ----
+  # Yahoo models each threshold as its own stat category, so crossing 425 passing yards fires the
+  # 350, 400 and 425 bonuses (1+2+3 = 6). Set bonus_mode: highest if the league instead awards only
+  # the top tier reached. See docs/spec/scoring.md.
+  bonus_mode: cumulative
+  bonuses:
+    - { stat: pass_yd, threshold: 350, points: 1 }
+    - { stat: pass_yd, threshold: 400, points: 2 }
+    - { stat: pass_yd, threshold: 425, points: 3 }
+    - { stat: rush_yd, threshold: 100, points: 1 }
+    - { stat: rush_yd, threshold: 150, points: 2 }
+    - { stat: rush_yd, threshold: 200, points: 3 }
+    - { stat: rec_yd,  threshold: 100, points: 1 }
+    - { stat: rec_yd,  threshold: 150, points: 2 }
+    - { stat: rec_yd,  threshold: 200, points: 3 }
+  position_overrides: {}      # no TE premium
+  # ---- kicker (recorded; K is ranked by consensus ADP, VBD 0 — see docs/PLAN.md MVP cut line) ----
+  kicker:
+    fg_0_19: 3
+    fg_20_29: 3
+    fg_30_39: 3
+    fg_40_49: 4
+    fg_50_plus: 5
+    fg_missed_0_19: -1        # override of Yahoo default 0
+    pat_made: 1
+    pat_missed: -1            # override of Yahoo default 0
+  # ---- defense / special teams (recorded; DEF is ranked by consensus ADP, VBD 0) ----
+  defense:
+    sack: 1
+    interception: 2
+    fumble_recovery: 2
+    touchdown: 6
+    safety: 2
+    block_kick: 2
+    return_td: 6
+    extra_point_returned: 2
+    points_allowed:           # all overrides of the Yahoo defaults (this league is far more generous)
+      "0": 15
+      "1-6": 12
+      "7-13": 7
+      "14-20": 5
+      "21-27": 3
+      "28-34": 0
+      "35+": -2

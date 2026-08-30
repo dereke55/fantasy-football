@@ -13,6 +13,7 @@ from app.scoring.config import load_league_config
 cli = typer.Typer(no_args_is_help=True, help="Keeper decision helper (surplus vs the pick a keeper costs)")
 
 CANDIDATES = "my_keeper_candidates.yaml"
+ROSTER = "my_roster_2025.yaml"  # real roster + draft rounds; eligible rows are the candidate set
 
 
 def _banner() -> None:
@@ -56,9 +57,17 @@ def table(limit: int = 40, position: str = typer.Option(None, help="QB|RB|WR|TE"
 def value(slot: int = typer.Option(None)) -> None:
     """Evaluate the candidates in backend/seeds/my_keeper_candidates.yaml (name + cost_round)."""
     _banner()
+    roster = settings.seeds_dir / ROSTER
     path = settings.seeds_dir / CANDIDATES
-    doc = yaml.safe_load(path.read_text()) if path.exists() else {}
-    rows = (doc or {}).get("rows") or []
+    rows: list[dict] = []
+    if roster.exists():
+        doc = yaml.safe_load(roster.read_text()) or {}
+        rows = [r for r in (doc.get("rows") or []) if r.get("eligible", True)]
+        skipped = [r["name"] for r in (doc.get("rows") or []) if not r.get("eligible", True)]
+        if skipped:
+            typer.secho(f"ineligible to keep (Yahoo): {', '.join(skipped)}", fg=typer.colors.YELLOW)
+    if not rows and path.exists():
+        rows = (yaml.safe_load(path.read_text()) or {}).get("rows") or []
     if not rows:
         typer.secho(f"No candidates yet — add rows to {path} (name + cost_round), then re-run.", fg=typer.colors.YELLOW)
         raise typer.Exit(code=0)

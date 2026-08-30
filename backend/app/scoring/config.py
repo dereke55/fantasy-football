@@ -41,8 +41,11 @@ class Scoring(BaseModel):
     rec_2pt: float = 0.0
     fum_lost: float = 0.0
     ret_td: float = 0.0
+    bonus_mode: str = "cumulative"   # cumulative = every threshold crossed fires; highest = only the top tier
     bonuses: list[Bonus] = Field(default_factory=list)
     position_overrides: dict[str, dict[str, float]] = Field(default_factory=dict)
+    kicker: dict[str, float] = Field(default_factory=dict)
+    defense: dict[str, object] = Field(default_factory=dict)
 
     def weights_for(self, position: str | None) -> dict[str, float]:
         w = {k: getattr(self, k) for k in STAT_KEYS}
