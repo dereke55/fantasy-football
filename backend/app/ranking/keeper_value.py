@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import polars as pl
 
+from app.config import settings
 from app.ranking.availability import Candidate, expected_best_value
 from app.ranking.pick_schedule import build_pick_schedule
 from app.ranking.projections import projection_pool
@@ -77,8 +78,30 @@ def round_pick_numbers(cfg: LeagueConfig, slot: int | None) -> dict[int, list[in
     return out
 
 
+def _signals(cfg: LeagueConfig) -> pl.DataFrame:
+    """Phase 3 context that a keeper decision turns on: last year's production and TD/points luck.
+
+    A high positive `td_diff_2025` means the player scored more touchdowns than his opportunity implied — the
+    single most regression-prone input to a projection, and worth seeing before spending a keeper on him.
+    """
+    from app.features import luck, production
+
+    seasons = settings.history_seasons
+    try:
+        prod = production.compute_summary(seasons).select(
+            "player_id", "ppg_2025", "ppg_2024", "target_share_2025", "carry_share_2025",
+            "yoy_ppg_delta", "same_role_seasons")
+    except Exception:  # noqa: BLE001 - signals are additive; the keeper maths must still run
+        prod = pl.DataFrame({"player_id": []}, schema={"player_id": pl.Int64})
+    try:
+        lk = luck.compute_summary(seasons).select("player_id", "td_diff_2025", "ppg_diff_2025")
+    except Exception:  # noqa: BLE001
+        lk = pl.DataFrame({"player_id": []}, schema={"player_id": pl.Int64})
+    return prod.join(lk, on="player_id", how="full", coalesce=True)
+
+
 def keeper_table(cfg: LeagueConfig | None = None, *, slot: int | None = None,
-                 kept: set[int] | None = None) -> pl.DataFrame:
+                 kept: set[int] | None = None, with_signals: bool = True) -> pl.DataFrame:
     """For every projected player, the surplus of keeping him in each round, and his break-even round."""
     cfg = cfg or load_league_config()
     kept = kept or set()
@@ -104,7 +127,12 @@ def keeper_table(cfg: LeagueConfig | None = None, *, slot: int | None = None,
             "break_even_round": positive[0] if positive else None,
             **{f"surplus_r{rnd}": surplus[rnd] for rnd in sorted(surplus)},
         })
-    return pl.DataFrame(rows).sort("vorp", descending=True)
+    out = pl.DataFrame(rows).sort("vorp", descending=True)
+    if with_signals:
+        sig = _signals(cfg)
+        if sig.height:
+            out = out.join(sig, on="player_id", how="left")
+    return out
 
 
 def expected_best_by_round(cfg: LeagueConfig | None = None, *, slot: int | None = None,

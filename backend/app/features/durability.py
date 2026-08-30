@@ -47,7 +47,7 @@ import yaml
 
 from app.config import settings
 from app.db import engine
-from app.ranking.adjustments import expected_games
+from app.ranking.adjustments import SEASON_GAMES, expected_games
 
 # ------------------------------------------------------------------ constants
 
@@ -338,6 +338,24 @@ def _structural_returns(seasons: list[int]) -> pl.DataFrame:
     )
 
 
+def _trailing_absence(season: int) -> pl.DataFrame:
+    """gsis_id -> trailing_missed: the run of unplayed eligible weeks that closes out `season`.
+
+    A player whose season ends on injured reserve has a trailing run equal to the length of the IR stint."""
+    elig = eligible_weeks([season])
+    played = played_weeks([season]).with_columns(played=pl.lit(value=True))
+    weeks = (
+        elig.join(played, on=["gsis_id", "season", "week"], how="left")
+        .with_columns(played=pl.col("played").fill_null(value=False))
+        .sort(["gsis_id", "week"], descending=[False, True])
+    )
+    return (
+        weeks.group_by("gsis_id")
+        .agg(trailing_missed=pl.col("played").cum_sum().eq(0).sum().cast(pl.Int32))
+        .select("gsis_id", "trailing_missed")
+    )
+
+
 def _sleeper_status() -> pl.DataFrame:
     """sleeper_id -> today's injury designation (raw_sleeper_players snapshot, once/day)."""
     df = _q(
@@ -365,6 +383,18 @@ def compute_summary(seasons: list[int] | None = None) -> pl.DataFrame:
 
     injury_prone = (miss_rate_3yr >= 0.20 AND >= 2 injury events spread over >= 2 distinct seasons)
                    OR (>= 2 soft-tissue spells in different seasons).
+
+    structural_injury_return marks a player coming back from a RECENT season-ending structural injury
+    (ACL / Achilles / MCL / PCL / patellar / fracture / "torn"). Two paths, because a player placed straight
+    on IR disappears from the weekly injury report altogether (Malik Nabers' 2025 ACL is nowhere in
+    raw_nflverse_injuries — his last listings are a Back and a Shoulder in weeks 1-4):
+      report path  a season-ending structural spell whose last weekly listing is on or after
+                   2026-09-10 minus 365 days, i.e. inside 12 months of kickoff (see _structural_returns);
+      sleeper path today's Sleeper `injury_body_part` names a structural injury AND the player's last
+                   history season (max(seasons)) ended in a run of >= 4 unplayed eligible weeks.
+    Both paths exclude players already ruled out for all of 2026 (known_missed_weeks >= 17) — those are not
+    "returning", and e_games already zeroes them out.
+
     e_games      = app.ranking.adjustments.expected_games(position, adp_round=None, hist_missed=...,
                    hist_eligible=..., known_missed_weeks=...). adp_round is None until the Phase 4-lite
                    composite exists, so every player currently uses the middle (rounds 3-5) base band."""
@@ -396,12 +426,33 @@ def compute_summary(seasons: list[int] | None = None) -> pl.DataFrame:
         hub.join(totals, on="player_id", how="left")
         .join(causes, on="gsis_id", how="left")
         .join(_structural_returns(seasons), on="gsis_id", how="left")
+        .join(_trailing_absence(max(seasons)), on="gsis_id", how="left")
         .join(_sleeper_status(), on="sleeper_id", how="left")
         .with_columns(
             known_missed_weeks=pl.col("gsis_id").replace_strict(
                 known_missed_weeks(), default=0, return_dtype=pl.Int32
             ),
-            structural_injury_return=pl.col("structural_injury_return").fill_null(value=False),
+        )
+        .with_columns(
+            structural_injury_return=(
+                pl.col("structural_injury_return").fill_null(value=False)
+                | (
+                    pl.col("current_injury_body_part").fill_null("").str.contains(STRUCTURAL_RE)
+                    & (pl.col("trailing_missed").fill_null(0) >= SEASON_ENDING_MIN_MISSED)
+                )
+            )
+            & (pl.col("known_missed_weeks") < SEASON_GAMES),
+            structural_cause=pl.coalesce(pl.col("structural_cause"), pl.col("current_injury_body_part")),
+            structural_season=pl.coalesce(
+                pl.col("structural_season"),
+                pl.when(pl.col("trailing_missed").fill_null(0) >= SEASON_ENDING_MIN_MISSED)
+                .then(pl.lit(max(seasons), dtype=pl.Int32))
+                .otherwise(None),
+            ),
+        )
+        .with_columns(
+            structural_cause=pl.when(pl.col("structural_injury_return")).then(pl.col("structural_cause")),
+            structural_season=pl.when(pl.col("structural_injury_return")).then(pl.col("structural_season")),
         )
         .with_columns(
             miss_rate_3yr=pl.when(pl.col("games_eligible_3yr") > 0)

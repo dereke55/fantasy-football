@@ -45,8 +45,11 @@ def table(limit: int = 40, position: str = typer.Option(None, help="QB|RB|WR|TE"
         kt = kt.filter(pl.col("position") == position.upper())
     pl.Config.set_tbl_rows(limit)
     pl.Config.set_tbl_width_chars(160)
-    typer.echo(kt.select("name", "position", "team", "vendor_ppg", "e_games", "vorp", "composite_adp",
-                         "break_even_round").head(limit))
+    cols = ["name", "position", "team", "vendor_ppg", "e_games", "vorp", "composite_adp", "break_even_round"]
+    cols += [c for c in ("ppg_2025", "td_diff_2025", "ppg_diff_2025") if c in kt.columns]
+    typer.echo(kt.select(cols).head(limit))
+    if "td_diff_2025" in kt.columns:
+        typer.echo("\ntd_diff_2025 = 2025 touchdowns minus expected touchdowns; large positive = regression risk.")
 
 
 @cli.command("value")
@@ -74,7 +77,7 @@ def value(slot: int = typer.Option(None)) -> None:
             "name": h["name"], "pos": h["position"], "team": h["team"], "cost_round": cost,
             "vorp": h["vorp"], "surplus": surplus, "break_even_round": h["break_even_round"],
             "verdict": "KEEP" if surplus is not None and surplus > 0 else "DRAFT INSTEAD",
-            "adp": h["composite_adp"],
+            "adp": h["composite_adp"], "ppg_2025": h.get("ppg_2025"), "td_diff_2025": h.get("td_diff_2025"),
         })
     if missing:
         typer.secho(f"not found (check spelling against `ff keeper table`): {missing}", fg=typer.colors.RED)
