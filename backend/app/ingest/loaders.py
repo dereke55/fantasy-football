@@ -68,13 +68,14 @@ def replace_partition(
     df: pl.DataFrame,
     *,
     partition: Sequence[str],
-    snapshot_id: uuid.UUID,
+    snapshot_id: uuid.UUID | None,
     batch_size: int = 5000,
 ) -> int:
     """Delete rows whose partition-key values appear in `df`, then insert `df`. Returns inserted row count."""
     import json
 
-    df = df.with_columns(pl.lit(str(snapshot_id)).alias("snapshot_id"))
+    if snapshot_id is not None:
+        df = df.with_columns(pl.lit(str(snapshot_id)).alias("snapshot_id"))
     ensure_table(session, table, df)
     if not partition:
         session.execute(text(f"DELETE FROM {_pg_ident(table)}"))  # empty partition key = full replace

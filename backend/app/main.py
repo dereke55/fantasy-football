@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api import players
 from app.db import engine
 
 app = FastAPI(title="Fantasy Football Draft Board", version="0.1.0")
+app.include_router(players.router)
 
 
 @app.get("/health")

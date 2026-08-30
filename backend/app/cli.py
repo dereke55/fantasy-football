@@ -18,6 +18,7 @@ def health() -> None:
 
 def _mount() -> None:
     from app.context import build as context_build
+    from app.features import build as features_build
     from app.ingest import ffc, nflverse_ref, nflverse_stats, players_hub, sleeper, yahoo_pub
     from app.market import build as market_build
     from app.ranking import keeper_cli
@@ -31,6 +32,7 @@ def _mount() -> None:
     app.add_typer(market_build.cli, name="market")
     app.add_typer(keeper_cli.cli, name="keeper")
     app.add_typer(context_build.cli, name="context")
+    app.add_typer(features_build.cli, name="features")
 
 
 _mount()

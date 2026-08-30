@@ -24,8 +24,15 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+# Tables whose schema follows a computation rather than a model: the raw_* mirrors of upstream schemas and the
+# derived feature tables, which are dropped and rebuilt wholesale by `ff features build`. Alembic must never
+# autogenerate drops for them. `raw_snapshots` IS model-managed despite the prefix.
+DERIVED_TABLES = {"player_features", "player_season_features"}
+
+
 def include_object(obj, name, type_, reflected, compare_to):
-    """Loader-owned raw_* tables mirror upstream schemas and are NOT managed by Alembic (never dropped)."""
+    if type_ == "table" and name in DERIVED_TABLES:
+        return False
     if type_ == "table" and name.startswith("raw_") and name != "raw_snapshots":
         return False
     return True

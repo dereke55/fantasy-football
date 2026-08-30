@@ -11,8 +11,6 @@ up under KR/PR and, for a few teams, in more than one receiver slot, and those r
 """
 from __future__ import annotations
 
-from datetime import timedelta
-
 import polars as pl
 
 from app.config import settings
