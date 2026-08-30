@@ -1,0 +1,402 @@
+# Curated 2026 QB situations — one row per NFL team (nflverse abbreviations: LA = Rams, LV = Raiders, JAX = Jaguars).
+#
+# WARNING: games.csv 2026 coach columns are stale (ARI/ATL/BUF) — never derive HC changes from it.
+# Every row MUST carry a source_url (http/https), confidence, and last_checked. Edit this YAML + `ingest seeds` + `recompute`.
+#
+# Field notes
+#   projected_qb1     Week 1 starter as of as_of (or the competitors, for status = competition)
+#   qb1_2025          Primary 2025 REG starter — the team's intended starter; where a replacement clearly took over the
+#                     job, the replacement (games-started counts from raw_nflverse_stats_player_week, 2025 REG, 10+ att)
+#   changed_from_2025 projected_qb1 != qb1_2025
+#   status            settled | competition | injury_return   (status != settled drives the qb_uncertain_team flag)
+#   qb_quality_tier   EDITORIAL JUDGMENT (1 elite, 2 good, 3 average, 4 below-average/unknown) — not sourced
+#   backup            QB2 per ESPN depth page fetched 2026-08-29 or nflverse depth_charts_2026 (dt 2026-08-29T12:56Z)
+#   confidence        high | medium | low (task spec; the phase doc's 0-1 scale is NOT used here)
+version: 1
+as_of: "2026-08-29"
+description: Hand-curated 2026 Week 1 QB rooms for all 32 teams (projected QB1, 2025 starter, status, editorial quality tier, backup) with per-row sources.
+rows:
+  - team: ARI
+    projected_qb1: Jacoby Brissett
+    qb1_2025: Jacoby Brissett
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 3
+    backup: Gardner Minshew II
+    source_url: https://www.azcardinals.com/news/jacoby-brissett-cardinals-work-out-new-contract
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Contract reworked Jul 26 ($10M raise to $15.5M 2026 salary, incentives to $21M) under new HC Mike LaFleur; nflverse depth chart 8/29 lists Brissett QB1, Minshew QB2, rookie Carson Beck (R3 #65) QB3. Editorial: qb1_2025 = Brissett because he started 12 of 17 in 2025 (Kyler Murray 5, then IR; released Mar 11) — research file frames this as Murray -> Brissett; changed_from_2025 kept false (same passer for the WR room). Tier 3 is editorial."
+  - team: ATL
+    projected_qb1: Tua Tagovailoa / Michael Penix Jr. (undecided)
+    qb1_2025: Michael Penix Jr.
+    changed_from_2025: true
+    status: competition
+    qb_quality_tier: 3
+    backup: loser of Tua/Penix competition; Cooper Rush QB3
+    source_url: https://www.nfl.com/news/michael-penix-jr-out-falcons-preseason-finale-falcons-qb1-decision
+    source_url_2: https://www.espn.com/nfl/team/depth/_/name/atl/atlanta-falcons
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "No decision as of 8/29 (Falcons.com latest QB item is Aug 26; preseason finale at MIA Aug 28). Stefanski names a starter only when the depth chart must be published. Penix (partial ACL, surgery announced Nov 19 2025) cleared for 11-on-11 but sat the finale; listed Questionable (knee) on ESPN 8/26 and says he'll be ready for Week 1 at PIT. ESPN depth page 8/29: Tua QB1, Penix QB2 (Q), Rush QB3. Reports lean Penix (Fox/OutKick Aug 25 'Penix's to lose'; Yahoo Aug 29 'Penix Jr. likely to start'); Stefanski praised Tua after the Aug 28 finale but has not announced — treat as competition. 2025: Penix 9 starts, Kirk Cousins 9 after the ACL. Tier 3 editorial."
+  - team: BAL
+    projected_qb1: Lamar Jackson
+    qb1_2025: Lamar Jackson
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Tyler Huntley
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (updated Aug 25) + nflverse depth chart 8/29 (Jackson, Huntley, Fagnano). New HC Jesse Minter / OC Declan Doyle. Tier 1 editorial."
+  - team: BUF
+    projected_qb1: Josh Allen
+    qb1_2025: Josh Allen
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Kyle Allen
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (J. Allen, K. Allen, Buechele). Trubisky (2025 backup) left for TEN. Joe Brady promoted to HC and still calls plays. Tier 1 editorial."
+  - team: CAR
+    projected_qb1: Bryce Young
+    qb1_2025: Bryce Young
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 3
+    backup: Kenny Pickett
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://www.espn.com/nfl/team/depth/_/name/car/carolina-panthers
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Re-checked 8/29: ESPN depth page Young QB1, Pickett (from LV) QB2, Haynes King QB3 (Q), Kyle Trask QB4; Young not on the ESPN injury report; Andy Dalton traded to PHI. Young started 16 of 17 in 2025. New play-caller OC Brad Idzik. Tier 3 editorial."
+  - team: CHI
+    projected_qb1: Caleb Williams
+    qb1_2025: Caleb Williams
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Tyson Bagent
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Williams, Bagent, Keenum). Williams started all 17 in 2025; Ben Johnson still calls plays (new OC Press Taylor). Tier 2 editorial."
+  - team: CIN
+    projected_qb1: Joe Burrow
+    qb1_2025: Joe Burrow
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Joe Flacco
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Burrow, Flacco, J. Johnson). Burrow 8 starts in 2025 (toe), Flacco 6; not on the Sleeper/ESPN injury feeds 8/29. Tier 1 editorial."
+  - team: CLE
+    projected_qb1: Deshaun Watson
+    qb1_2025: Shedeur Sanders
+    changed_from_2025: true
+    status: settled
+    qb_quality_tier: 4
+    backup: Shedeur Sanders
+    source_url: https://www.nfl.com/news/browns-deshaun-watson-starting-qb-week-1-2026-season
+    source_url_2: https://www.profootballrumors.com/2026/08/browns-to-name-deshaun-watson-starting-qb
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Officially named Week 1 starter (at JAX Sept 13) on Aug 24 by new HC Todd Monken ('not a week-to-week decision'); Sanders is the backup, Dillon Gabriel QB3. Watson missed all of 2025 (Achilles re-rupture) and has 19 games since 2023 — tier 4 is editorial. 2025 starts: Sanders 8, Gabriel 6, Flacco 4 (traded to CIN)."
+  - team: DAL
+    projected_qb1: Dak Prescott
+    qb1_2025: Dak Prescott
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Joe Milton III
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Prescott, Milton, Howell). Prescott started all 17 in 2025. Tier 2 editorial."
+  - team: DEN
+    projected_qb1: Bo Nix
+    qb1_2025: Bo Nix
+    changed_from_2025: false
+    status: injury_return
+    qb_quality_tier: 2
+    backup: Jarrett Stidham
+    source_url: https://www.espn.com/nfl/story/_/id/49593421/bo-nix-track-sit-broncos-preseason-opener
+    source_url_2: https://www.espn.com/nfl/player/_/id/4426338/bo-nix
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Two right-ankle surgeries (Jan fracture in the playoffs, April bone spurs). Re-checked 8/29: not on the ESPN/Sleeper injury feeds; ESPN player page shows he returned in preseason (TD pass vs GB) and went 6/9 for 76 yds and a TD in the finale vs MIN (Aug 28). Kept injury_return per the Phase 5 plan — Derek may flip to settled on day 9. New primary play-caller OC Davis Webb. Tier 2 editorial."
+  - team: DET
+    projected_qb1: Jared Goff
+    qb1_2025: Jared Goff
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Joshua Dobbs
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Goff, Dobbs, Altmyer). Goff started all 17 in 2025; new OC/play-caller Drew Petzing. Tier 2 editorial."
+  - team: GB
+    projected_qb1: Jordan Love
+    qb1_2025: Jordan Love
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Tyrod Taylor
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Love, T. Taylor from NYJ, McCord). Love 15 starts in 2025; Malik Willis (2 starts) left for MIA. Tier 2 editorial."
+  - team: HOU
+    projected_qb1: C.J. Stroud
+    qb1_2025: C.J. Stroud
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Davis Mills
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Stroud, Mills, Rypien). Stroud 14 starts in 2025, Mills 4. Tier 2 editorial."
+  - team: IND
+    projected_qb1: Daniel Jones
+    qb1_2025: Daniel Jones
+    changed_from_2025: false
+    status: injury_return
+    qb_quality_tier: 3
+    backup: Riley Leonard / Anthony Richardson Sr. (backup battle)
+    source_url: https://www.espn.com/nfl/player/_/id/3917792/daniel-jones
+    source_url_2: https://www.foxsports.com/stories/nfl/colts-falcons-joint-practice-daniel-jones-return-from-achilles-injury
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Achilles tear Week 14 2025; 2-yr/$88M deal. Re-checked 8/29: ESPN player page — 'fully cleared from Achilles' (~late July), status Active, not on the ESPN Colts injury report; ESPN depth page Jones QB1, Leonard QB2, Richardson QB3, Stick QB4; Colts.com 8/29 covers the Richardson-vs-Leonard backup battle. Verifier 8/29: Fox Sports Aug 20 (joint practice vs ATL) — no limitations dropping back/scrambling, 'there's nothing I don't feel good doing'; Detroit News Aug 4 — every first-team snap, not limited; NBC/UPI Jul 27 — fully cleared for camp. Status stays injury_return only because the Phase 5 plan table pins KC/IND/DEN there; Derek may flip to settled on day 9. Jones 12 starts in 2025 (Rivers 3). Tier 3 editorial."
+  - team: JAX
+    projected_qb1: Trevor Lawrence
+    qb1_2025: Trevor Lawrence
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Nick Mullens (Quinn Ewers acquired Aug 29)
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://www.profootballrumors.com/2026/08/jaguars-to-acquire-qb-quinn-ewers-from-dolphins
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25); Lawrence started all 17 in 2025. Ewers traded from MIA Aug 29 for a 2028 6th and may push Mullens for QB2. Tier 2 editorial."
+  - team: KC
+    projected_qb1: Patrick Mahomes
+    qb1_2025: Patrick Mahomes
+    changed_from_2025: false
+    status: injury_return
+    qb_quality_tier: 1
+    backup: Justin Fields (Garrett Nussmeier pushing for QB2)
+    source_url: https://www.profootballrumors.com/2026/08/chiefs-qb-patrick-mahomes-remains-on-track-for-week-1
+    source_url_2: https://www.rotowire.com/rss/news.php?sport=NFL
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Torn ACL + LCL Dec 14 2025; received full clearance by the start of camp (late July) and hit every rehab checkmark; did not play in preseason. Re-checked 8/29: RotoWire 10:08 AM PDT / Rapoport — on track to start Week 1 (Mon Sept 14 vs DEN); still Questionable (Knee - ACL) on the Sleeper/ESPN feeds 8/29, so status stays injury_return. Fields acquired from NYJ Mar 18 (2027 6th); R7 Nussmeier competing for QB2. Tier 1 editorial (assumes health)."
+  - team: LA
+    projected_qb1: Matthew Stafford
+    qb1_2025: Matthew Stafford
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Stetson Bennett IV (R1 #13 Ty Simpson QB3)
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25; SI refers to Stafford as reigning MVP) + nflverse depth chart 8/29 (Stafford, Bennett, Simpson). Started all 17 in 2025; age 38 — tier 1 is editorial and age-sensitive. New OC Nate Scheelhaase (McVay still calls plays)."
+  - team: LAC
+    projected_qb1: Justin Herbert
+    qb1_2025: Justin Herbert
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Trey Lance
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Herbert, Lance, Uiagalelei). Herbert 16 starts in 2025. New OC/play-caller Mike McDaniel. Tier 1 editorial."
+  - team: LV
+    projected_qb1: Kirk Cousins (expected, not yet announced)
+    qb1_2025: Geno Smith
+    changed_from_2025: true
+    status: competition
+    qb_quality_tier: 3
+    backup: Fernando Mendoza (R1 #1) or Aidan O'Connell — Kubiak open to O'Connell as QB2
+    source_url: https://www.profootballrumors.com/2026/08/raiders-waiting-on-starting-qb-decision
+    source_url_2: https://www.rotowire.com/rss/news.php?sport=NFL
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Re-checked 8/29: Kubiak declined to name a starter after the Aug 27 finale ('I still don't think we need to name anybody'); ESPN's Fowler (Aug 28 11:08 PM) and CBS's Zenitz (RotoWire 8/29 2:30 PM PDT) report Cousins expected to be named Week 1 starter (vs MIA Sept 13). ESPN depth page 8/29: Cousins QB1, Mendoza QB2, O'Connell QB3; RotoBaller 8/29: Mendoza could open as QB3. Verifier 8/29: Bing News — Kubiak 'declined for a third straight week' to name a starter after the Aug 27 finale; CBS Aug 28 quotes him: 'Kirk Cousins is the starting quarterback ... he's going to get a ton of reps'. Stays competition until announced. Geno Smith (15 starts 2025) traded to NYJ Mar 11. Tier 3 editorial."
+  - team: MIA
+    projected_qb1: Malik Willis
+    qb1_2025: Tua Tagovailoa
+    changed_from_2025: true
+    status: settled
+    qb_quality_tier: 4
+    backup: Cam Miller (Quinn Ewers traded to JAX Aug 29)
+    source_url: https://www.nfl.com/news/ten-best-moves-of-2026-nfl-offseason-so-far-trades-free-agent-signings-boost-rams-dolphins-steelers
+    source_url_2: https://www.profootballrumors.com/2026/08/jaguars-to-acquire-qb-quinn-ewers-from-dolphins
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Willis signed 3-yr/$67.5M from GB to start under new HC Jeff Hafley / OC Bobby Slowik; Tua released Mar 11-12 (signed ATL). Re-checked 8/29: Ewers traded to JAX for a 2028 6th, leaving Miller and UDFA Mark Gronowski behind Willis (ESPN depth page 8/29). Tua 14 starts in 2025 (Ewers 3). Tier 4 editorial — Willis has 2 career starts as a full-time starter's sample."
+  - team: MIN
+    projected_qb1: Kyler Murray
+    qb1_2025: J.J. McCarthy
+    changed_from_2025: true
+    status: settled
+    qb_quality_tier: 2
+    backup: J.J. McCarthy (ankle, Questionable 8/28)
+    source_url: https://www.nfl.com/news/vikings-name-kyler-murray-starting-week-1-quarterback-for-2026-season
+    source_url_2: https://www.espn.com/nfl/team/injuries/_/name/min/minnesota-vikings
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Named Week 1 starter (vs GB Sept 13) by O'Connell on Aug 11 after a two-week camp competition; 1-yr deal signed in March after ARI release (Mar 11). Re-checked 8/29: Murray not on the injury report; McCarthy (ankle) sat the Aug 28 preseason finale at DEN and is Questionable — Carson Wentz is QB3. McCarthy 10 starts in 2025 (Wentz 5). Tier 2 editorial."
+  - team: NE
+    projected_qb1: Drake Maye
+    qb1_2025: Drake Maye
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Tommy DeVito
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25; 2025 MVP runner-up) + nflverse depth chart 8/29 (Maye, DeVito, Morton). Started all 17 in 2025. Tier 1 editorial."
+  - team: "NO"
+    projected_qb1: Tyler Shough
+    qb1_2025: Tyler Shough
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 3
+    backup: Spencer Rattler (Zach Wilson QB3)
+    source_url: https://www.espn.com/nfl/story/_/id/47541318/saints-committed-tyler-shough-starting-qb-2026
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Saints committed to Shough (2025 R2, 5-4 as starter) on Jan 7; nflverse depth chart 8/29 Shough, Rattler, Z. Wilson (from MIA). Editorial: qb1_2025 = Shough (10 starts vs Rattler 8 — he took the job in November), so changed_from_2025 = false even though research frames it Rattler -> Shough. Tier 3 editorial."
+  - team: NYG
+    projected_qb1: Jaxson Dart
+    qb1_2025: Jaxson Dart
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Jameis Winston
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://www.espn.com/nfl/team/depth/_/name/nyg/new-york-giants
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Re-checked 8/29: ESPN depth page Dart QB1, Winston QB2, Brandon Allen QB3, Haener QB4, no injury designations. Dart 12 starts in 2025 (Russell Wilson 3, retired). New HC John Harbaugh / OC Matt Nagy. Tier 2 editorial."
+  - team: NYJ
+    projected_qb1: Geno Smith
+    qb1_2025: Justin Fields
+    changed_from_2025: true
+    status: settled
+    qb_quality_tier: 3
+    backup: Cade Klubnik (R4 #110)
+    source_url: https://www.nfl.com/news/jets-hc-aaron-glenn-has-no-doubt-geno-smith-will-be-new-york-s-starter-he-s-our-guy
+    source_url_2: https://www.profootballrumors.com/2026/08/jets-to-waive-qb-bailey-zappe
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Acquired from LV Mar 11 (Geno + 2026 7th for a 2026 6th); Glenn: 'No doubt about it. He's our guy.' Jets open AT Tennessee Sept 13. Re-checked 8/29: Zappe waived; rookie Klubnik is the backup, Brady Cook QB3 (ESPN depth page). Fields (9 starts 2025) traded to KC, Tyrod Taylor to GB. New OC/play-caller Frank Reich. Tier 3 editorial."
+  - team: PHI
+    projected_qb1: Jalen Hurts
+    qb1_2025: Jalen Hurts
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Andy Dalton
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Hurts, Dalton from CAR, McKee). Hurts 16 starts in 2025. New OC/first-time play-caller Sean Mannion. Tier 1 editorial."
+  - team: PIT
+    projected_qb1: Aaron Rodgers
+    qb1_2025: Aaron Rodgers
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 3
+    backup: Mason Rudolph
+    source_url: https://www.cbssports.com/nfl/news/aaron-rodgers-steelers-return-2026-season/
+    source_url_2: https://en.wikipedia.org/wiki/2026_Pittsburgh_Steelers_season
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "1-yr return ($22M gtd, up to $25M) reuniting with new HC/play-caller Mike McCarthy; announced May 20 that 2026 is his 22nd and final season (Wikipedia Steelers season page — the CBS article predates that). Re-checked 8/29: nflverse depth chart Rodgers, Rudolph, Will Howard; not on injury feeds. Rodgers 16 starts in 2025. Age 42 — tier 3 editorial."
+  - team: SEA
+    projected_qb1: Sam Darnold
+    qb1_2025: Sam Darnold
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Drew Lock
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25) + nflverse depth chart 8/29 (Darnold, Lock, Milroe). Started all 17 in 2025. New OC/play-caller Brian Fleury (Kubiak to LV). Tier 2 editorial."
+  - team: SF
+    projected_qb1: Brock Purdy
+    qb1_2025: Brock Purdy
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Mac Jones
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25; reigning Super Bowl champion) + nflverse depth chart 8/29 (Purdy, M. Jones, Rourke); PFR 8/29 notes the 49ers kept Purdy starter / Jones backup while waiving Adrian Martinez. Purdy 9 starts in 2025 (toe), Mac Jones 8. Tier 2 editorial."
+  - team: TB
+    projected_qb1: Baker Mayfield
+    qb1_2025: Baker Mayfield
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 2
+    backup: Jake Browning
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25; final contract year) + nflverse depth chart 8/29 (Mayfield, Browning from CIN, Bazelak). Started all 17 in 2025. New OC/play-caller Zac Robinson. Tier 2 editorial."
+  - team: TEN
+    projected_qb1: Cam Ward
+    qb1_2025: Cam Ward
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 3
+    backup: Mitchell Trubisky (Questionable on ESPN depth page 8/29)
+    source_url: https://www.espn.com/nfl/story/_/id/49619516/why-titans-believe-brian-daboll-maximize-cam-ward-potential
+    source_url_2: https://www.espn.com/nfl/team/depth/_/name/ten/tennessee-titans
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Unquestioned year-2 starter under new HC Robert Saleh / OC-play-caller Brian Daboll; Week 18 2025 AC-joint sprain needed no surgery. Re-checked 8/29: ESPN depth page Ward QB1, Trubisky QB2 (Q), Will Levis QB3, Hendon Hooker QB4; Ward not on injury feeds. 16 starts in 2025 (55 sacks). Tier 3 editorial."
+  - team: WAS
+    projected_qb1: Jayden Daniels
+    qb1_2025: Jayden Daniels
+    changed_from_2025: false
+    status: settled
+    qb_quality_tier: 1
+    backup: Marcus Mariota (knee, Questionable 8/16)
+    source_url: https://www.si.com/nfl/every-starting-nfl-quarterback-2026-season-updated-weekly
+    source_url_2: https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_2026.csv
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "SI starter list (Aug 25: fully healthy after missing 10 games in 2025) + nflverse depth chart 8/29 (Daniels, Mariota, Hartman). Editorial: qb1_2025 = Daniels (7 starts) although Mariota made 9 injury-fill starts. New OC/play-caller David Blough. Tier 1 editorial."

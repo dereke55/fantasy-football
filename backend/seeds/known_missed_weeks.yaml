@@ -1,0 +1,591 @@
+# known_missed_weeks — hand-curated PLAYER table (not per team).
+#
+# One row per fantasy-relevant QB/RB/WR/TE (roughly top-250 ADP, plus a few announced
+# IR/PUP/suspension cases) with a currently announced absence or a genuinely open Week 1
+# status as of 2026-08-29. Healthy players are NOT listed.
+#
+# known_missed_weeks = best-estimate integer of 2026 REG weeks missed counting from Week 1:
+#   IR = season (17) unless a return is expected; PUP = at least 4; suspension = its length;
+#   week-to-week / "Week 1 uncertain" = 1-2; 0 = listed (Questionable) but expected for Week 1.
+# status ∈ {IR, PUP, Suspended, Out, Doubtful, Questionable}.
+# YAML gotcha: the Saints code must be written "NO" (quoted) — bare NO parses as boolean false.
+#
+# Primary source: ESPN injuries JSON (https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries,
+# fetched 2026-08-29T23:26Z). NOTE: that feed is capped at 25 entries per team, so a few players
+# (e.g. Kamara, Tyson, Dell) come from ESPN team injury pages / CBS tracker instead.
+# Cross-checked against the Sleeper players snapshot in raw_sleeper_players (2026-08-29) and
+# nflverse roster_2026 (gsis_id). Every row carries source_url, confidence, last_checked.
+#
+# Excluded on purpose (checked 2026-08-29): Daniel Jones (IND, Achilles — fully cleared, not on the
+# Colts injury report), Bo Nix (DEN — started the Aug 22 preseason game), Ozzy Trapilo (CHI OT —
+# out most of 2026 but OL, not a fantasy position), Tyreek Hill / Joe Mixon (unsigned free agents).
+# Re-check after roster cutdown (Tue Sep 1): reserve/PUP and IR designations become official then.
+
+version: 1
+as_of: "2026-08-29"
+description: Announced 2026 season-start absences (IR/PUP/suspension/Week 1 doubt) for fantasy-relevant QB/RB/WR/TE, with estimated REG weeks missed from Week 1
+rows:
+  # ---------------------------------------------------------------- season-ending / IR
+  - name: Jayden Higgins
+    team: HOU
+    position: WR
+    gsis_id: "00-0040130"
+    known_missed_weeks: 17
+    reason: "Torn ACL in practice (week of Aug 17); placed on injured reserve Aug 21 — season-ending"
+    status: IR
+    return_estimate: null
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4877706/jayden-higgins
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Was projected HOU WR2; Sleeper status Inactive/IR (2026-08-21). Also on CBS camp tracker."
+  - name: Trey Benson
+    team: ARI
+    position: RB
+    gsis_id: "00-0039921"
+    known_missed_weeks: 17
+    reason: "Knee (Oct 2025 meniscus surgery, never fully recovered); waived/injured Aug 24, reverted to IR Aug 25"
+    status: IR
+    return_estimate: "Out for 2026 unless released via injury settlement"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4429275/trey-benson
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Reverted to IR after clearing waivers; cannot play for ARI in 2026. Sleeper Inactive/IR."
+  - name: Ricky Pearsall
+    team: SF
+    position: WR
+    gsis_id: "00-0039916"
+    known_missed_weeks: 17
+    reason: "Right knee PCL — season-ending surgery Aug 13; on injured reserve"
+    status: IR
+    return_estimate: null
+    source_url: https://www.espn.com/nfl/team/injuries/_/name/sf/san-francisco-49ers
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Not in the ESPN JSON feed (25-per-team cap); ESPN 49ers page IR (Aug 13), Sleeper Inactive/IR, nflverse players status RES."
+  - name: Brandon Aiyuk
+    team: SF
+    position: WR
+    gsis_id: "00-0036261"
+    known_missed_weeks: 17
+    reason: "Reserve/Did Not Report — has not reported to SF; Lynch (late Jul) says team is focused on players in camp; 49ers Webzone Aug 29: insider says he 'may have played his final NFL game', team could recoup up to $18.4M"
+    status: Out
+    return_estimate: "None while on reserve/DNR; ineligible to play unless he reports"
+    source_url: https://www.espn.com/nfl/player/news/_/id/4360438/brandon-aiyuk
+    source_url_2: https://news.google.com/rss/search?q=%22Brandon+Aiyuk%22+49ers&hl=en-US&gl=US&ceid=US:en
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Not on nflverse roster_2026 (players table status RLS, latest_team SF) — verifier 8/29 confirmed gsis 00-0036261 is absent from raw_nflverse_rosters season 2026, so the loader must tolerate a missing roster join for this row; Sleeper 8/29 lists SF / DNR. Treat as unavailable; ADP ~264."
+  # ---------------------------------------------------------------- PUP
+  - name: Zach Charbonnet
+    team: SEA
+    position: RB
+    gsis_id: "00-0039165"
+    known_missed_weeks: 8
+    reason: "Torn ACL (Jan 2026 wild-card game vs SF), surgery Feb 20; on active/PUP since Jul 22 with no timetable"
+    status: PUP
+    return_estimate: "Reserve/PUP expected at cutdown (minimum 4 games); Feb surgery makes ~Nov (Week 9-11) a realistic return"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.si.com/nfl/seahawks/onsi/zach-charbonnet-injury-update-makes-seahawks-rookie-jadarian-price-even-more-important
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "ESPN status Out / PUP-P (est. 2026-09-09 = cutdown decision); Sleeper PUP. Week count is an estimate — 2026 season 'in jeopardy' per SI; re-check Sep 1 reserve/PUP move."
+  - name: Tip Reiman
+    team: ARI
+    position: TE
+    gsis_id: "00-0039737"
+    known_missed_weeks: 4
+    reason: "Ankle (season-ending injury Sept 2025); active/PUP — 'will not be back for the start of the regular season' (Aug 20)"
+    status: PUP
+    return_estimate: "ESPN est. return 2026-10-11 (Week 5) via reserve/PUP"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4696700/tip-reiman
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Backup TE behind Trey McBride; marginal ADP, listed because the absence is announced."
+  - name: Mason Tipton
+    team: "NO"
+    position: WR
+    gsis_id: "00-0039623"
+    known_missed_weeks: 4
+    reason: "Leg (tibia surgery); expected to open the season on reserve/PUP (Aug 29)"
+    status: PUP
+    return_estimate: "Eligible after 4 games"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4573697/mason-tipton
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Depth WR; marginal ADP. Sleeper PUP (2026-08-29)."
+  # ---------------------------------------------------------------- suspension
+  - name: Jeshaun Jones
+    team: MIN
+    position: WR
+    gsis_id: "00-0039710"
+    known_missed_weeks: 3
+    reason: "Three-game NFL suspension, substance-abuse policy (announced Aug 25)"
+    status: Suspended
+    return_estimate: "Eligible Week 4 (ESPN est. 2026-09-28)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4360637/jeshaun-jones
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Only offensive-skill suspension found (ESPN feed RESERVE-SUS + Sleeper 'Sus'); roster-bubble WR, may land on practice squad."
+  # ---------------------------------------------------------------- multi-week / Week 1 out
+  - name: Alvin Kamara
+    team: "NO"
+    position: RB
+    gsis_id: "00-0033906"
+    known_missed_weeks: 2
+    reason: "Grade 2 MCL sprain (Aug 18 joint practice vs DAL); Garafolo (NFL Network, Aug 19): expected to miss 4-6 weeks; will miss Week 1 (Sept 13 vs DET)"
+    status: Out
+    return_estimate: "4-6 weeks from Aug 18 = Sept 15-29 -> Week 2 doubtful, Week 3-4 likely"
+    source_url: https://www.cbssports.com/nfl/news/alvin-kamara-injury-saints-mcl-sprain-running-back-options/
+    source_url_2: https://www.espn.com/nfl/team/injuries/_/name/no/new-orleans-saints
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "ESPN lists Questionable with 'out at least one month'; CBS Aug 19 (ESPN report) says he will miss the opener, only the 2nd Week 1 miss of his career. Not in the ESPN JSON feed (cap). Travis Etienne is the NO lead back; Kendre Miller / Devin Neal behind him. Sleeper 8/29: Questionable (Knee)."
+  - name: Jordyn Tyson
+    team: "NO"
+    position: WR
+    gsis_id: "00-0041029"
+    known_missed_weeks: 6
+    reason: "Hamstring strain in training camp (~Aug 14); out approximately two months; likely to open on IR"
+    status: Doubtful
+    return_estimate: "~mid-October (Week 6-7), then gradual ramp-up"
+    source_url: https://www.cbssports.com/nfl/news/nfl-training-camp-injury-tracker/
+    source_url_2: https://www.fantasypros.com/nfl/players/jordyn-tyson.php
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Sleeper Doubtful (2026-08-27); ESPN Saints page Doubtful. Verifier 8/29: Fox News Aug 17 — could be sidelined 'through Week 6'; Yahoo Aug 29 — out 'for the foreseeable future'. IR placement not yet official — if placed on IR at cutdown the minimum is 4 games."
+  - name: James Conner
+    team: ARI
+    position: RB
+    gsis_id: "00-0033553"
+    known_missed_weeks: 2
+    reason: "Foot (season-ending 2025 injury); still not in team drills a month into camp; LaFleur 'too early to tell' for Week 1 (Aug 26)"
+    status: Questionable
+    return_estimate: "Availability for the early part of the season uncertain"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/3045147/james-conner
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Avoided PUP at camp open; trade rumors. With Love (ankle) also uncertain, Tyler Allgeier may lead ARI backfield Week 1."
+  # ---------------------------------------------------------------- Week 1 in doubt (1-2 weeks)
+  - name: Jeremiyah Love
+    team: ARI
+    position: RB
+    gsis_id: "00-0041027"
+    known_missed_weeks: 1
+    reason: "High-ankle sprain (Aug 13 preseason opener); light work Aug 26-28; Week 1 (Sept 13) unclear"
+    status: Questionable
+    return_estimate: "Week 1-2"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4870808/jeremiyah-love
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "ESPN est. return 2026-09-13; CBS tracker 'uncertain for Sept 13 opener'. Rookie R1; ADP ~30."
+  - name: Kyle Monangai
+    team: CHI
+    position: RB
+    gsis_id: "00-0040236"
+    known_missed_weeks: 1
+    reason: "Hyperextended knee (Aug 16 practice); week-to-week, 'expected to miss multiple weeks'"
+    status: Questionable
+    return_estimate: "Week 1-2 ('chance to avoid missing any real games' per ESPN)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.cbssports.com/nfl/news/nfl-training-camp-injury-tracker/
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Roschon Johnson gets the work behind D'Andre Swift meanwhile."
+  - name: Isiah Pacheco
+    team: DET
+    position: RB
+    gsis_id: "00-0037197"
+    known_missed_weeks: 1
+    reason: "MCL sprain, then a back injury (Aug 26); Week 1 availability unclear"
+    status: Questionable
+    return_estimate: "Week 1-2"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4361529/isiah-pacheco
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Campbell says knee is not a concern; back 'feeling better' Aug 26. Sleeper Questionable (Knee - MCL)."
+  - name: Emeka Egbuka
+    team: TB
+    position: WR
+    gsis_id: "00-0040129"
+    known_missed_weeks: 1
+    reason: "Toe sprain (early Aug); no preseason action; Bowles (Aug 29) 'hopefully' ready for Week 1"
+    status: Questionable
+    return_estimate: "Week 1 hopeful, not confirmed"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.rotowire.com/rss/news.php?sport=NFL
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "ADP ~35; RotoWire 8/29 'Hopeful for Week 1'; CBS/FantasyPros Aug 29 'hopeful' (Bowles still vague). Set to 1 because the coach would not commit."
+  - name: Christian Kirk
+    team: SF
+    position: WR
+    gsis_id: "00-0034775"
+    known_missed_weeks: 2
+    reason: "Calf (since Jul 26); side-field work only through Aug 22; ESPN notes a chance he opens the season on IR"
+    status: Questionable
+    return_estimate: "Week 1 in doubt; IR (4+ games) possible"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/3895856/christian-kirk
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Outside FFC top-270 ADP; listed because IR is on the table. Re-check at cutdown."
+  - name: George Kittle
+    team: SF
+    position: TE
+    gsis_id: "00-0033288"
+    known_missed_weeks: 1
+    reason: "Torn Achilles (Jan 2026); activated from active/PUP Aug 23, ahead of schedule; 'a chance' for Week 1 (Thu Sept 10)"
+    status: Questionable
+    return_estimate: "Week 1-2; team confident he is back before Week 5"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/3040151/george-kittle
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Workload to be managed; SF opens Sept 10 in Melbourne vs LA. Sleeper Questionable (Achilles/Surgery)."
+  - name: Tank Dell
+    team: HOU
+    position: WR
+    gsis_id: "00-0038977"
+    known_missed_weeks: 1
+    reason: "Knee (Dec 2024 multi-ligament injury); on his own ramp-up schedule, missed practices mid-Aug; no formal PUP/IR"
+    status: Questionable
+    return_estimate: "Unknown — no Week 1 commitment from HOU"
+    source_url: https://www.espn.com/nfl/team/injuries/_/name/hou/houston-texans
+    source_url_2: https://www.fantasypros.com/nfl/players/nathaniel-dell.php
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Not in ESPN JSON feed (cap). Sleeper Questionable (Knee - ACL + MCL, 2026-08-25). More relevant after Higgins' ACL."
+  # ---------------------------------------------------------------- listed Questionable, expected for Week 1 (0 weeks)
+  - name: Patrick Mahomes
+    team: KC
+    position: QB
+    gsis_id: "00-0033873"
+    known_missed_weeks: 0
+    reason: "Torn left ACL + LCL (Dec 14 2025); received full clearance for camp; Rapoport (Aug 29) 'on track to start Week 1' (Mon Sept 14 vs DEN)"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.profootballrumors.com/2026/08/chiefs-qb-patrick-mahomes-remains-on-track-for-week-1
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Still carried as Questionable on ESPN's feed (2026-08-29T17:08Z); Justin Fields is the fallback. Verifier correction applied — 'cleared for camp', not 'not cleared'."
+  - name: Michael Penix Jr.
+    team: ATL
+    position: QB
+    gsis_id: "00-0039917"
+    known_missed_weeks: 0
+    reason: "Torn left ACL (Week 11 2025, surgery announced Nov 19); cleared for team drills Aug 22, sat the Aug 28 finale; expects to be available Week 1 (Sept 13 at PIT)"
+    status: Questionable
+    return_estimate: "Week 1, if named starter over Tua Tagovailoa"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.nfl.com/news/michael-penix-jr-out-falcons-preseason-finale-falcons-qb1-decision
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "ATL QB1 undecided (see qb_situations); reports lean Penix. Absence risk is health + depth-chart decision."
+  - name: Puka Nacua
+    team: LA
+    position: WR
+    gsis_id: "00-0039075"
+    known_missed_weeks: 0
+    reason: "Groin / psoas soreness; ~2 weeks off the practice field as of Aug 24; team cautious with Week 1 (Thu Sept 10) in mind"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4426515/puka-nacua
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "ADP #3 overall; ESPN est. return 2026-09-10. Sleeper Questionable (2026-08-25)."
+  - name: Breece Hall
+    team: NYJ
+    position: RB
+    gsis_id: "00-0038120"
+    known_missed_weeks: 0
+    reason: "Minor groin strain (Aug 17), 2-3 week timeline; agility drills Aug 24; expected for Week 1 (Sept 13 at TEN)"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.cbssports.com/nfl/news/nfl-training-camp-injury-tracker/
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "CBS tracker 'expected Week 1 available'."
+  - name: Malik Nabers
+    team: NYG
+    position: WR
+    gsis_id: "00-0039337"
+    known_missed_weeks: 0
+    reason: "Torn right ACL (2025); active for most of camp, shed non-contact jersey Aug 24, held out of all preseason games"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs DAL)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4595348/malik-nabers
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Structural injury return; no announced absence."
+  - name: Sam LaPorta
+    team: DET
+    position: TE
+    gsis_id: "00-0039065"
+    known_missed_weeks: 0
+    reason: "Hip (Aug 20); returned to practice Aug 25; Week 1 status 'wasn't guaranteed' earlier but trending positive"
+    status: Questionable
+    return_estimate: "Week 1 likely"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.cbssports.com/nfl/news/nfl-training-camp-injury-tracker/
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "CBS tracker (Aug 28) still lists him 'uncertain for Week 1'."
+  - name: Luther Burden III
+    team: CHI
+    position: WR
+    gsis_id: "00-0040735"
+    known_missed_weeks: 0
+    reason: "Groin (Aug 8, ~1-month prognosis); individual drills Aug 26; 'moving well', trending toward Week 1 (Aug 29)"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 at CAR)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.rotoballer.com/category/nfl/feed
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Missed the entire preseason."
+  - name: Keon Coleman
+    team: BUF
+    position: WR
+    gsis_id: "00-0039901"
+    known_missed_weeks: 0
+    reason: "Sprained right foot/toe (preseason opener); out of the walking boot Aug 27, sat last two exhibitions"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 at HOU)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4635008/keon-coleman
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "ESPN est. return 2026-09-13."
+  - name: Khalil Shakir
+    team: BUF
+    position: WR
+    gsis_id: "00-0037261"
+    known_missed_weeks: 0
+    reason: "Undisclosed injury; missed ~1 week of practice and the last two exhibitions"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 at HOU)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4373678/khalil-shakir
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Nature of injury not disclosed; ESPN est. return 2026-09-13."
+  - name: Josh Downs
+    team: IND
+    position: WR
+    gsis_id: "00-0038997"
+    known_missed_weeks: 0
+    reason: "Calf (missed practice Aug 25-26); extent uncertain"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs BAL)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4688813/josh-downs
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "No timeline given as of Aug 26."
+  - name: Alec Pierce
+    team: IND
+    position: WR
+    gsis_id: "00-0037664"
+    known_missed_weeks: 0
+    reason: "Offseason ankle surgery; activated from active/PUP Aug 27; working out but not playing, building toward Week 1"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs BAL)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.rotowire.com/rss/news.php?sport=NFL
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "RotoWire 8/29 'Working out but will sit Saturday'."
+  - name: Tyler Warren
+    team: IND
+    position: TE
+    gsis_id: "00-0040128"
+    known_missed_weeks: 0
+    reason: "Strained abductor/groin (joint practice ~Aug 19); held out of practice week of Aug 25 to be ready for the opener"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs BAL)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.cbssports.com/nfl/news/nfl-training-camp-injury-tracker/
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Steichen — 'gonna be pretty smart with Tyler this week'. CBS: expected for Week 1."
+  - name: Kenyon Sadiq
+    team: NYJ
+    position: TE
+    gsis_id: "00-0041032"
+    known_missed_weeks: 0
+    reason: "Spring hernia surgery plus a setback; side work only through camp/preseason; Reich says he will be 'worked in slowly' to start the season"
+    status: Questionable
+    return_estimate: "Week 1, limited role"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/5083315/kenyon-sadiq
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Rookie R1 #16; Mason Taylor is the clear NYJ TE1 to open the season."
+  - name: Brian Thomas Jr.
+    team: JAX
+    position: WR
+    gsis_id: "00-0039893"
+    known_missed_weeks: 0
+    reason: "Shoulder (fell on it Aug 25 joint practice); back on field in a no-contact jersey Aug 26; held out of the finale"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs CLE)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4432773/brian-thomas-jr
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Coen said he was 'alright'."
+  - name: Mike Evans
+    team: SF
+    position: WR
+    gsis_id: "00-0031408"
+    known_missed_weeks: 0
+    reason: "Quad, then minor groin injury (Aug 24); missed much of camp; plans to be ready for Week 1 (Thu Sept 10)"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/16737/mike-evans
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Age 33; little camp chemistry with Purdy."
+  - name: Josh Jacobs
+    team: GB
+    position: RB
+    gsis_id: "00-0035700"
+    known_missed_weeks: 0
+    reason: "Groin; separately charged Aug 27 with two misdemeanors (May arrest) — NFL review ongoing, suspension possible"
+    status: Questionable
+    return_estimate: "Week 1; league discipline TBD (court date Nov 17)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4047365/josh-jacobs
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "No suspension announced as of 8/29; ESPN notes the league may wait for the legal process. Verifier 8/29: WLUK/FOX6 Aug 28 — LaFleur 'fully anticipates' keeping Jacobs on the roster while charges are pending; Sleeper Questionable (Groin)."
+  - name: Ashton Jeanty
+    team: LV
+    position: RB
+    gsis_id: "00-0040122"
+    known_missed_weeks: 0
+    reason: "Ankle (Aug 23 practice), extent undisclosed; Kubiak — 'counting on him' for Week 1 (Sept 13 vs MIA)"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4890973/ashton-jeanty
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Sleeper lists Knee (2026-08-28); ESPN says ankle. Mike Washington next in line."
+  - name: Jalen McMillan
+    team: TB
+    position: WR
+    gsis_id: "00-0039855"
+    known_missed_weeks: 0
+    reason: "Knee (early Aug); no preseason games; Bowles (Aug 29) expects him available Week 1 (Sept 13 vs CIN)"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4430834/jalen-mcmillan
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Projected TB WR3 with Evans gone."
+  - name: Jacory Croskey-Merritt
+    team: WAS
+    position: RB
+    gsis_id: "00-0040242"
+    known_missed_weeks: 0
+    reason: "Lower-body injury (Aug 20 practice); missed the final two exhibitions; aiming to return to practice week of Aug 31"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4575131/jacory-croskey-merritt
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "WAS No. 1 RB; injury not specified."
+  - name: Rachaad White
+    team: WAS
+    position: RB
+    gsis_id: "00-0037256"
+    known_missed_weeks: 0
+    reason: "Hamstring (Aug 19); individual drills by Aug 24; sat final two exhibitions"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4697815/rachaad-white
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "Soft-tissue; no timeline given."
+  - name: Jakobi Meyers
+    team: JAX
+    position: WR
+    gsis_id: "00-0034960"
+    known_missed_weeks: 0
+    reason: "Jammed right hand (Aug 19 joint practice); wore a brace, sat the Aug 21 game; clearance to practice unclear as of Aug 22"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs CLE)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/3916433/jakobi-meyers
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "ESPN est. return 2026-09-13."
+  - name: Marvin Mims Jr.
+    team: DEN
+    position: WR
+    gsis_id: "00-0038976"
+    known_missed_weeks: 0
+    reason: "Bruised foot (Aug 28 preseason finale); does not appear serious; practice participation will decide Week 1 (Mon Sept 14 at KC)"
+    status: Questionable
+    return_estimate: "Week 1"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4686472/marvin-mims-jr
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Fresh injury (8/28) — re-check."
+  - name: Xavier Legette
+    team: CAR
+    position: WR
+    gsis_id: "00-0039342"
+    known_missed_weeks: 0
+    reason: "Ankle (Aug 19 joint practice); walking boot until Aug 27; sat the preseason finale"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs CHI)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4430034/xavier-legette
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "CBS injuries page — 'Questionable for Week 1 vs. Chicago'."
+  - name: Zay Flowers
+    team: BAL
+    position: WR
+    gsis_id: "00-0039064"
+    known_missed_weeks: 0
+    reason: "Undisclosed (bruised quad earlier in camp); missed practice Aug 25-26, side work"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 at IND)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4429615/zay-flowers
+    confidence: low
+    last_checked: "2026-08-29"
+    notes: "ESPN — 'bodes well' for Week 1 availability."
+  - name: Michael Pittman
+    team: PIT
+    position: WR
+    gsis_id: "00-0036252"
+    known_missed_weeks: 0
+    reason: "Right ankle/hamstring — missed practice Aug 8-24; back in pads for stretching Aug 24"
+    status: Questionable
+    return_estimate: "Week 1 (Sept 13 vs ATL)"
+    source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
+    source_url_2: https://www.espn.com/nfl/player/_/id/4035687/michael-pittman-jr
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "nflverse roster name is 'Michael Pittman' (no Jr.). ESPN type says hamstring, comment says ankle."

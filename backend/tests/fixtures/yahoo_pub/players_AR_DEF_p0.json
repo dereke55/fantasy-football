@@ -1,0 +1,957 @@
+{
+ "fantasy_content": {
+  "xml:lang": "en-US",
+  "yahoo:uri": "/fantasy/v2/game/nfl/players;sort=AR;position=DEF;start=0;count=100;out=draft_analysis",
+  "time": "21.353006362915ms",
+  "copyright": "Certain Data by Sportradar, Stats Perform and Rotowire",
+  "refresh_rate": "30",
+  "game": [
+   {
+    "game_key": "470",
+    "game_id": "470",
+    "name": "Football",
+    "code": "nfl",
+    "type": "full",
+    "url": "https://football.fantasysports.yahoo.com/f1",
+    "season": "2026",
+    "is_registration_over": 0,
+    "is_game_over": 0,
+    "is_offseason": 0,
+    "is_live_draft_lobby_active": 1
+   },
+   {
+    "players": {
+     "0": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100034"
+        },
+        {
+         "player_id": "100034"
+        },
+        {
+         "name": {
+          "full": "Texans",
+          "first": "Texans",
+          "last": "",
+          "ascii_first": "Texans",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/houston/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100034"
+        },
+        {
+         "editorial_team_key": "nfl.t.34"
+        },
+        {
+         "editorial_team_full_name": "Houston Texans"
+        },
+        {
+         "editorial_team_abbr": "Hou"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/houston/"
+        },
+        {
+         "bye_weeks": {
+          "week": "8"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/hou.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/hou.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "93.1"
+         },
+         {
+          "average_round": "9.9"
+         },
+         {
+          "average_cost": "3.5"
+         },
+         {
+          "percent_drafted": "1.00"
+         },
+         {
+          "preseason_average_pick": "93.1"
+         },
+         {
+          "preseason_average_round": "9.9"
+         },
+         {
+          "preseason_average_cost": "3.4"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "1": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100014"
+        },
+        {
+         "player_id": "100014"
+        },
+        {
+         "name": {
+          "full": "Rams",
+          "first": "Rams",
+          "last": "",
+          "ascii_first": "Rams",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/la-rams/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100014"
+        },
+        {
+         "editorial_team_key": "nfl.t.14"
+        },
+        {
+         "editorial_team_full_name": "Los Angeles Rams"
+        },
+        {
+         "editorial_team_abbr": "LAR"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/la-rams/"
+        },
+        {
+         "bye_weeks": {
+          "week": "11"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/stl.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/stl.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "88.9"
+         },
+         {
+          "average_round": "9.5"
+         },
+         {
+          "average_cost": "3.7"
+         },
+         {
+          "percent_drafted": "1.00"
+         },
+         {
+          "preseason_average_pick": "88.9"
+         },
+         {
+          "preseason_average_round": "9.5"
+         },
+         {
+          "preseason_average_cost": "3.7"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "2": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100007"
+        },
+        {
+         "player_id": "100007"
+        },
+        {
+         "name": {
+          "full": "Broncos",
+          "first": "Broncos",
+          "last": "",
+          "ascii_first": "Broncos",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/denver/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100007"
+        },
+        {
+         "editorial_team_key": "nfl.t.7"
+        },
+        {
+         "editorial_team_full_name": "Denver Broncos"
+        },
+        {
+         "editorial_team_abbr": "Den"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/denver/"
+        },
+        {
+         "bye_weeks": {
+          "week": "10"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/den.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/den.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "101.3"
+         },
+         {
+          "average_round": "10.8"
+         },
+         {
+          "average_cost": "2.5"
+         },
+         {
+          "percent_drafted": "1.00"
+         },
+         {
+          "preseason_average_pick": "101.2"
+         },
+         {
+          "preseason_average_round": "10.8"
+         },
+         {
+          "preseason_average_cost": "2.5"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "3": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100026"
+        },
+        {
+         "player_id": "100026"
+        },
+        {
+         "name": {
+          "full": "Seahawks",
+          "first": "Seahawks",
+          "last": "",
+          "ascii_first": "Seahawks",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/seattle/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100026"
+        },
+        {
+         "editorial_team_key": "nfl.t.26"
+        },
+        {
+         "editorial_team_full_name": "Seattle Seahawks"
+        },
+        {
+         "editorial_team_abbr": "Sea"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/seattle/"
+        },
+        {
+         "bye_weeks": {
+          "week": "11"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/sea.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/sea.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "107.7"
+         },
+         {
+          "average_round": "11.4"
+         },
+         {
+          "average_cost": "2.1"
+         },
+         {
+          "percent_drafted": "1.00"
+         },
+         {
+          "preseason_average_pick": "107.6"
+         },
+         {
+          "preseason_average_round": "11.4"
+         },
+         {
+          "preseason_average_cost": "2.1"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "4": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100021"
+        },
+        {
+         "player_id": "100021"
+        },
+        {
+         "name": {
+          "full": "Eagles",
+          "first": "Eagles",
+          "last": "",
+          "ascii_first": "Eagles",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/philadelphia/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100021"
+        },
+        {
+         "editorial_team_key": "nfl.t.21"
+        },
+        {
+         "editorial_team_full_name": "Philadelphia Eagles"
+        },
+        {
+         "editorial_team_abbr": "Phi"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/philadelphia/"
+        },
+        {
+         "bye_weeks": {
+          "week": "10"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/phi.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/phi.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "123.4"
+         },
+         {
+          "average_round": "13.1"
+         },
+         {
+          "average_cost": "1.2"
+         },
+         {
+          "percent_drafted": "1.00"
+         },
+         {
+          "preseason_average_pick": "123.1"
+         },
+         {
+          "preseason_average_round": "13.1"
+         },
+         {
+          "preseason_average_cost": "1.2"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "5": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100016"
+        },
+        {
+         "player_id": "100016"
+        },
+        {
+         "name": {
+          "full": "Vikings",
+          "first": "Vikings",
+          "last": "",
+          "ascii_first": "Vikings",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/minnesota/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100016"
+        },
+        {
+         "editorial_team_key": "nfl.t.16"
+        },
+        {
+         "editorial_team_full_name": "Minnesota Vikings"
+        },
+        {
+         "editorial_team_abbr": "Min"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/minnesota/"
+        },
+        {
+         "bye_weeks": {
+          "week": "6"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/xe/ipt/50x50w.6.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/xe/ipt/50x50w.6.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "130.7"
+         },
+         {
+          "average_round": "13.8"
+         },
+         {
+          "average_cost": "1.1"
+         },
+         {
+          "percent_drafted": "0.98"
+         },
+         {
+          "preseason_average_pick": "130.4"
+         },
+         {
+          "preseason_average_round": "13.7"
+         },
+         {
+          "preseason_average_cost": "1.1"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "6": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100017"
+        },
+        {
+         "player_id": "100017"
+        },
+        {
+         "name": {
+          "full": "Patriots",
+          "first": "Patriots",
+          "last": "",
+          "ascii_first": "Patriots",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/new-england/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100017"
+        },
+        {
+         "editorial_team_key": "nfl.t.17"
+        },
+        {
+         "editorial_team_full_name": "New England Patriots"
+        },
+        {
+         "editorial_team_abbr": "NE"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/new-england/"
+        },
+        {
+         "bye_weeks": {
+          "week": "11"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/nwe.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/lq/i/us/sp/v/nfl/teams/1/50x50w/nwe.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "127.8"
+         },
+         {
+          "average_round": "13.5"
+         },
+         {
+          "average_cost": "1.1"
+         },
+         {
+          "percent_drafted": "0.99"
+         },
+         {
+          "preseason_average_pick": "127.6"
+         },
+         {
+          "preseason_average_round": "13.4"
+         },
+         {
+          "preseason_average_cost": "1.1"
+         },
+         {
+          "preseason_percent_drafted": "1.0"
+         }
+        ]
+       }
+      ]
+     },
+     "7": {
+      "player": [
+       [
+        {
+         "player_key": "470.p.100030"
+        },
+        {
+         "player_id": "100030"
+        },
+        {
+         "name": {
+          "full": "Jaguars",
+          "first": "Jaguars",
+          "last": "",
+          "ascii_first": "Jaguars",
+          "ascii_last": ""
+         }
+        },
+        {
+         "url": "https://sports.yahoo.com/nfl/teams/jacksonville/"
+        },
+        {
+         "editorial_player_key": "nfl.p.100030"
+        },
+        {
+         "editorial_team_key": "nfl.t.30"
+        },
+        {
+         "editorial_team_full_name": "Jacksonville Jaguars"
+        },
+        {
+         "editorial_team_abbr": "Jax"
+        },
+        {
+         "editorial_team_url": "https://sports.yahoo.com/nfl/teams/jacksonville/"
+        },
+        {
+         "bye_weeks": {
+          "week": "7"
+         }
+        },
+        {
+         "is_keeper": {
+          "status": false,
+          "cost": false,
+          "kept": false
+         }
+        },
+        {
+         "uniform_number": false
+        },
+        {
+         "display_position": "DEF"
+        },
+        {
+         "headshot": {
+          "url": "https://s.yimg.com/xe/ipt/50x50w.3.gif",
+          "size": "small"
+         },
+         "image_url": "https://s.yimg.com/xe/ipt/50x50w.3.gif"
+        },
+        {
+         "is_undroppable": "0"
+        },
+        {
+         "position_type": "DT"
+        },
+        [],
+        {
+         "eligible_positions": [
+          {
+           "position": "DEF"
+          }
+         ]
+        },
+        {
+         "eligible_positions_to_add": []
+        },
+        [],
+        [],
+        {
+         "has_player_notes": 1
+        },
+        [],
+        []
+       ],
+       {
+        "draft_analysis": [
+         {
+          "average_pick": "137.4"
+         },
+         {
+          "average_round": "14.4"
+         },
+         {
+          "average_cost": "1.1"
+         },
+         {
+          "percent_drafted": "0.87"
+         },
+         {
+          "preseason_average_pick": "137.2"
+         },
+         {
+          "preseason_average_round": "14.3"
+         },
+         {
+          "preseason_average_cost": "1.1"
+         },
+         {
+          "preseason_percent_drafted": "0.9"
+         }
+        ]
+       }
+      ]
+     },
+     "count": 8
+    }
+   }
+  ]
+ }
+}

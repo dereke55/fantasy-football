@@ -1,0 +1,51 @@
+fp_page,page_type,ecr_type,player,id,pos,team,ecr,sd,best,worst,sportsdata_id,player_filename,yahoo_id,cbs_id,player_owned_avg,player_owned_espn,player_owned_yahoo,player_image_url,player_square_image_url,rank_delta,bye,mergename,scrape_date,tm
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Ja'Marr Chase,19788,WR,CIN,1.55,0.95,1,4,,jamarr-chase.php,,,99.8,,,,,,6,JaMarr Chase,2026-08-28,CIN
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Jahmyr Gibbs,22968,RB,DET,2.48,1.3,1,7,,jahmyr-gibbs.php,,,99.5,,,,,,6,Jahmyr Gibbs,2026-08-28,DET
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Puka Nacua,23180,WR,LAR,3.19,1.22,1,8,,puka-nacua.php,,,99.7,,,,,,11,Puka Nacua,2026-08-28,LAR
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Bijan Robinson,23133,RB,ATL,4.1,1.43,2,7,,bijan-robinson.php,,,99.4,,,,,,11,Bijan Robinson,2026-08-28,ATL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Jaxon Smith-Njigba,23070,WR,SEA,4.67,1.29,1,8,,jaxon-smith-njigba.php,,,99.7,,,,,,11,Jaxon Smith-Njigba,2026-08-28,SEA
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Amon-Ra St. Brown,19799,WR,DET,5.42,1.26,3,9,,amonra-stbrown.php,,,99.8,,,,,,6,Amon-Ra St Brown,2026-08-28,DET
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,CeeDee Lamb,19202,WR,DAL,9.0,1.82,6,16,,ceedee-lamb.php,,,99.5,,,,,,14,CeeDee Lamb,2026-08-28,DAL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Christian McCaffrey,16393,RB,SF,9.24,4.26,5,24,,christian-mccaffrey.php,,,99.6,,,,,,8,Christian McCaffrey,2026-08-28,SFO
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Justin Jefferson,19236,WR,MIN,9.36,2.3,4,20,,justin-jefferson.php,,,99.4,,,,,,6,Justin Jefferson,2026-08-28,MIN
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Jonathan Taylor,19217,RB,IND,11.93,5.35,7,33,,jonathan-taylor.php,,,99.4,,,,,,13,Jonathan Taylor,2026-08-28,IND
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Drake London,23163,WR,ATL,12.91,3.81,8,26,,drake-london.php,,,99.1,,,,,,11,Drake London,2026-08-28,ATL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,A.J. Brown,18218,WR,NE,14.25,5.45,6,35,,aj-brown.php,,,99.3,,,,,,11,AJ Brown,2026-08-28,NEP
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,James Cook III,22958,RB,BUF,15.97,6.48,7,34,,james-cook.php,,,99.5,,,,,2,7,James Cook,2026-08-28,BUF
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Nico Collins,20130,WR,HOU,16.0,3.86,9,28,,nico-collins.php,,,99.6,,,,,,8,Nico Collins,2026-08-28,HOU
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Chase Brown,25324,RB,CIN,17.86,5.64,8,34,,chase-brown.php,,,98.8,,,,,,6,Chase Brown,2026-08-28,CIN
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Chris Olave,20111,WR,NO,17.99,5.73,9,36,,chris-olave.php,,,98.2,,,,,,8,Chris Olave,2026-08-28,NOS
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Brock Bowers,22955,TE,LV,19.03,5.03,11,57,,brock-bowers.php,,,99.7,,,,,,13,Brock Bowers,2026-08-28,LVR
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,George Pickens,22963,WR,DAL,20.43,6.12,9,40,,george-pickens.php,,,99.3,,,,,,14,George Pickens,2026-08-28,DAL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,De'Von Achane,23136,RB,MIA,20.99,7.12,10,43,,devon-achane.php,,,99.3,,,,,,6,DeVon Achane,2026-08-28,MIA
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Trey McBride,22936,TE,ARI,21.0,6.17,16,57,,trey-mcbride.php,,,99.4,,,,,,14,Trey McBride,2026-08-28,ARI
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,DeVonta Smith,19222,WR,PHI,24.04,6.77,12,45,,devonta-smith.php,,,98.8,,,,,,10,DeVonta Smith,2026-08-28,PHI
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Saquon Barkley,17240,RB,PHI,24.35,6.98,10,39,,saquon-barkley.php,,,99.5,,,,,,10,Saquon Barkley,2026-08-28,PHI
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Malik Nabers,25409,WR,NYG,24.54,9.07,11,51,,malik-nabers.php,,,98.8,,,,,2,8,Malik Nabers,2026-08-28,NYG
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Rashee Rice,23113,WR,KC,24.68,9.11,9,48,,rashee-rice.php,,,99.0,,,,,-2,5,Rashee Rice,2026-08-28,KCC
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Omarion Hampton,25395,RB,LAC,25.57,7.74,7,47,,omarion-hampton.php,,,99.4,,,,,,7,Omarion Hampton,2026-08-28,LAC
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Josh Allen,17298,QB,BUF,25.84,2.66,21,39,,josh-allen-qb.php,,,99.8,,,,,,7,Josh Allen,2026-08-28,BUF
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Kenneth Walker III,23021,RB,KC,26.05,8.38,12,53,,kenneth-walker-rb.php,,,99.2,,,,,,5,Kenneth Walker,2026-08-28,KCC
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Ashton Jeanty,25989,RB,LV,26.37,9.16,11,53,,ashton-jeanty.php,,,99.6,,,,,-6,13,Ashton Jeanty,2026-08-28,LVR
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Garrett Wilson,23072,WR,NYJ,29.62,7.77,12,47,,garrett-wilson.php,,,96.7,,,,,,13,Garrett Wilson,2026-08-28,NYJ
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Zay Flowers,22916,WR,BAL,30.3,8.32,15,48,,zay-flowers.php,,,98.4,,,,,,13,Zay Flowers,2026-08-28,BAL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Lamar Jackson,17233,QB,BAL,32.06,8.8,25,61,,lamar-jackson.php,,,99.2,,,,,,13,Lamar Jackson,2026-08-28,BAL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Jaylen Waddle,19790,WR,DEN,34.78,7.82,18,62,,jaylen-waddle.php,,,97.0,,,,,,10,Jaylen Waddle,2026-08-28,DEN
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Ladd McConkey,26122,WR,LAC,34.85,7.19,18,51,,ladd-mcconkey.php,,,97.4,,,,,,7,Ladd McConkey,2026-08-28,LAC
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Tetairoa McMillan,25417,WR,CAR,35.61,6.89,18,50,,tetairoa-mcmillan.php,,,98.5,,,,,,5,Tetairoa McMillan,2026-08-28,CAR
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Tee Higgins,19211,WR,CIN,36.89,6.93,19,51,,tee-higgins.php,,,97.1,,,,,,6,Tee Higgins,2026-08-28,CIN
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Colston Loveland,26006,TE,CHI,37.44,13.7,22,95,,colston-loveland.php,,,99.5,,,,,,10,Colston Loveland,2026-08-28,CHI
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Drake Maye,23046,QB,NE,37.67,12.69,26,74,,drake-maye.php,,,99.4,,,,,,11,Drake Maye,2026-08-28,NEP
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Derrick Henry,15514,RB,BAL,37.72,8.5,16,47,,derrick-henry.php,,,99.2,,,,,,13,Derrick Henry,2026-08-28,BAL
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Breece Hall,22982,RB,NYJ,39.93,5.96,28,56,,breece-hall.php,,,97.5,,,,,,13,Breece Hall,2026-08-28,NYJ
+/nfl/rankings/ppr-cheatsheets.php,redraft-overall,ro,Emeka Egbuka,23062,WR,TB,40.83,7.26,15,62,,emeka-egbuka.php,,,97.6,,,,,,10,Emeka Egbuka,2026-08-28,TBB
+/nfl/rankings/qb-cheatsheets.php,redraft-qb,rp,Josh Allen,17298,QB,BUF,1.04,0.19,1,2,,josh-allen-qb.php,,,99.8,,,,,,7,Josh Allen,2026-08-28,BUF
+/nfl/rankings/qb-cheatsheets.php,redraft-qb,rp,Lamar Jackson,17233,QB,BAL,2.59,0.96,1,6,,lamar-jackson.php,,,99.2,,,,,,13,Lamar Jackson,2026-08-28,BAL
+/nfl/rankings/qb-cheatsheets.php,redraft-qb,rp,Drake Maye,23046,QB,NE,3.27,1.18,2,7,,drake-maye.php,,,99.4,,,,,,11,Drake Maye,2026-08-28,NEP
+/nfl/rankings/qb-cheatsheets.php,redraft-qb,rp,Joe Burrow,19196,QB,CIN,4.48,1.31,2,8,,joe-burrow.php,,,98.0,,,,,,6,Joe Burrow,2026-08-28,CIN
+/nfl/rankings/qb-cheatsheets.php,redraft-qb,rp,Jayden Daniels,22902,QB,WAS,5.55,2.09,2,13,,jayden-daniels.php,,,98.2,,,,,,7,Jayden Daniels,2026-08-28,WAS
+/nfl/rankings/dynasty-overall.php,dynasty-overall,do,Ja'Marr Chase,19788,WR,CIN,1.21,0.56,1,3,,jamarr-chase.php,,,99.8,,,,,,6,JaMarr Chase,2026-08-28,CIN
+/nfl/rankings/dynasty-overall.php,dynasty-overall,do,Jaxon Smith-Njigba,23070,WR,SEA,2.93,1.22,2,5,,jaxon-smith-njigba.php,,,99.7,,,,,,11,Jaxon Smith-Njigba,2026-08-28,SEA
+/nfl/rankings/dynasty-overall.php,dynasty-overall,do,Puka Nacua,23180,WR,LAR,3.71,0.88,2,5,,puka-nacua.php,,,99.7,,,,,,11,Puka Nacua,2026-08-28,LAR
+/nfl/rankings/dynasty-overall.php,dynasty-overall,do,Bijan Robinson,23133,RB,ATL,3.79,1.26,2,5,,bijan-robinson.php,,,99.4,,,,,,11,Bijan Robinson,2026-08-28,ATL
+/nfl/rankings/dynasty-overall.php,dynasty-overall,do,Jahmyr Gibbs,22968,RB,DET,4.29,1.39,2,6,,jahmyr-gibbs.php,,,99.5,,,,,,6,Jahmyr Gibbs,2026-08-28,DET

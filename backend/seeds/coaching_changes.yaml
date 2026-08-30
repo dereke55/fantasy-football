@@ -1,0 +1,567 @@
+# Curated 2026 coaching / play-caller changes — one row per NFL team (nflverse abbreviations: LA = Rams, LV = Raiders, JAX = Jaguars).
+#
+# WARNING: games.csv 2026 coach columns are stale (ARI/ATL/BUF) — never derive HC changes from it.
+# Every row MUST carry a source_url (http/https), confidence, and last_checked. Edit this YAML + `ingest seeds` + `recompute`.
+#
+# Field notes
+#   hc / hc_new / hc_since   Head coach, new for 2026, first season with the team — Wikipedia "List of current NFL head coaches" (fetched 2026-08-29)
+#   oc / oc_new              Offensive coordinator — Wikipedia "List of current NFL offensive coordinators" (since = 2026 -> oc_new; 21 teams)
+#   dc / dc_new              Defensive coordinator — Wikipedia "List of current NFL defensive coordinators" (since = 2026 -> dc_new; 15 teams)
+#   play_caller              Person who calls OFFENSIVE plays in 2026 (primary caller; preseason one-off delegations are ignored)
+#   play_caller_role         HC | OC | other
+#   play_caller_new          true when play_caller is a different person from the 2025 primary caller (drives the new_play_caller flag)
+#   play_caller_2025         2025 primary caller; midseason handoffs are listed with week ranges
+#   confidence               high | medium | low (task spec). fansports "Authority" % is quoted in notes for play-caller rows; the five
+#                            lowest-Authority rows (DET 72, CAR 74, ATL 75, DEN 75, PHI 78) stay medium for the day-9 re-check.
+#
+# Cross-check (2026-08-29): 10 new HCs; 18 teams with a new primary play-caller (9 new-HC teams — BUF's Joe Brady already called
+# plays as 2025 OC — plus DEN, CAR, PHI, DET, SEA, WAS, TB, LAC, NYJ), which matches 4for4's "18 teams" count (Aug 4 2026).
+# KC (Reid) and CHI (Ben Johnson) changed OC but the HC still calls plays; LA changed OC but McVay still calls plays.
+version: 1
+as_of: "2026-08-29"
+description: Hand-curated 2026 HC/OC/DC and offensive play-caller for all 32 teams, with 2025 play-caller and per-row sources.
+rows:
+  - team: ARI
+    hc: Mike LaFleur
+    hc_new: true
+    hc_since: 2026
+    oc: Nathaniel Hackett
+    oc_new: true
+    dc: Nick Rallis
+    dc_new: false
+    play_caller: Mike LaFleur
+    play_caller_role: HC
+    play_caller_new: true
+    play_caller_2025: Drew Petzing (OC, under HC Jonathan Gannon)
+    source_url: https://www.nfl.com/news/cardinals-oc-nathaniel-hackett-aims-to-help-first-year-hc-mike-lafleur-be-the-best-version-of-himself
+    source_url_2: https://www.azcardinals.com/news/jayden-williams-hope-lafleur-bowl-and-packers-preseason-aftermath
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "LaFleur (ex-LA OC) calls plays; Hackett assists design. Aug 28 team-site recap: LaFleur delegated the Packers preseason finale to QB coach Matt Schaub as a one-off staff-development move. Gannon fired Jan 5; Rallis retained. fansports Authority 94%."
+  - team: ATL
+    hc: Kevin Stefanski
+    hc_new: true
+    hc_since: 2026
+    oc: Tommy Rees
+    oc_new: true
+    dc: Jeff Ulbrich
+    dc_new: false
+    play_caller: Tommy Rees
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Zac Robinson (OC, under HC Raheem Morris)
+    source_url: https://www.nbcsports.com/nfl/profootballtalk/rumor-mill/news/kevin-stefanski-says-tommy-rees-will-call-offensive-plays-for-falcons
+    source_url_2: https://www.nbcsports.com/fantasy/football/player-news/2026-08-27/falcons-seek-explosive-interior-runs-rb-screens
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Stefanski said Jan 27 that Rees calls plays (Rees called CLE plays from Wk 10 2025). August coverage (Aug 26-27) treats Rees as the OC running the offense but no August article re-states the play-caller explicitly; 4for4 (Aug 4) lists ATL among the 18 new play-callers. fansports Authority 75% — day-9 re-check. Morris fired Jan 4."
+  - team: BAL
+    hc: Jesse Minter
+    hc_new: true
+    hc_since: 2026
+    oc: Declan Doyle
+    oc_new: true
+    dc: Anthony Weaver
+    dc_new: true
+    play_caller: Declan Doyle
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Todd Monken (OC, under HC John Harbaugh)
+    source_url: https://www.baltimoreravens.com/news/declan-doyle-will-call-plays-from-booth-anthony-weaver-jesse-minter-sharing-sideline-duties
+    source_url_2: https://www.fansports.com/nfl/play-callers
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Team site Aug 25: 'Offensive Coordinator Declan Doyle has decided to call plays from the coaches' booth during the regular season' (first-time play-caller, ex-CHI OC). Minter is a defensive HC. Harbaugh fired Jan 6. fansports Authority 85%."
+  - team: BUF
+    hc: Joe Brady
+    hc_new: true
+    hc_since: 2026
+    oc: Pete Carmichael Jr.
+    oc_new: true
+    dc: Jim Leonhard
+    dc_new: true
+    play_caller: Joe Brady
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Joe Brady (OC, under HC Sean McDermott)
+    source_url: https://www.si.com/nfl/bills/onsi/breaking-news-buffalo-bills-plan-for-offensive-play-caller-under-joe-brady-revealed
+    source_url_2: https://sports.yahoo.com/articles/why-won-t-josh-allen-175954827.html
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Same play-caller despite new HC: Brady called plays as OC in 2024-25 and keeps them as HC (promoted Jan 27 after McDermott fired Jan 19). Aug 25 Brady on the finale: 'He'll be right there with me, hopefully I'll let him call some plays' (Allen). Carmichael's game-plan/backup role unverified (WGRZ Aug 1: 'shared responsibilities' with Brady). Verifier 8/29: fansports (Jul 9) does NOT mark BUF as a new play-caller, consistent with play_caller_new=false. fansports Authority 95%."
+  - team: CAR
+    hc: Dave Canales
+    hc_new: false
+    hc_since: 2024
+    oc: Brad Idzik
+    oc_new: false
+    dc: Ejiro Evero
+    dc_new: false
+    play_caller: Brad Idzik
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Dave Canales (HC)
+    source_url: https://www.panthers.com/news/dave-canales-offensive-coordinator-brad-idzik-to-call-plays-in-2026
+    source_url_2: https://sports.yahoo.com/articles/panthers-offense-could-end-radically-100004006.html
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Canales handed play-calling to Idzik (OC since 2024, first play-calling job). Aug 16: 'Dave Canales handing off duties to Brad Idzik'; Idzik called both August preseason games. fansports Authority 74% — day-9 re-check."
+  - team: CHI
+    hc: Ben Johnson
+    hc_new: false
+    hc_since: 2025
+    oc: Press Taylor
+    oc_new: true
+    dc: Dennis Allen
+    dc_new: false
+    play_caller: Ben Johnson
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Ben Johnson (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://news.google.com/rss/search?q=Bears+%22Ben+Johnson%22+%22Press+Taylor%22+%22play-caller%22+OR+%22calling+plays%22+OR+%22call+plays%22&hl=en-US&gl=US&ceid=US:en
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "OC Declan Doyle left for BAL; Press Taylor promoted, but Johnson keeps play-calling (fansports Authority 96%). Aug 15 preseason vs CLE Johnson temporarily handed play-calling to an assistant (Antwaan Randle El 'relished chance to call plays', team site Aug 19) — preseason only."
+  - team: CIN
+    hc: Zac Taylor
+    hc_new: false
+    hc_since: 2019
+    oc: Dan Pitcher
+    oc_new: false
+    dc: Al Golden
+    dc_new: false
+    play_caller: Zac Taylor
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Zac Taylor (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "No staff change at HC/OC/DC. fansports Authority 88%."
+  - team: CLE
+    hc: Todd Monken
+    hc_new: true
+    hc_since: 2026
+    oc: Travis Switzer
+    oc_new: true
+    dc: Mike Rutenberg
+    dc_new: true
+    play_caller: Todd Monken
+    play_caller_role: HC
+    play_caller_new: true
+    play_caller_2025: Kevin Stefanski (HC, Wk 1-9); Tommy Rees (OC, Wk 10-18)
+    source_url: https://www.si.com/nfl/browns/onsi/news/browns-head-coach-todd-monken-reveals-who-will-be-calling-plays-on-offense-01kgj9t3ezar
+    source_url_2: https://www.4for4.com/2026/preseason/how-play-calling-tendencies-affect-fantasy-football
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Monken (ex-BAL OC) calls plays; Switzer (ex-BAL run-game coordinator) has no play-calling experience. Stefanski announced Nov 3 2025 that Rees would call plays from Wk 10 (Wikipedia Tommy Rees). 4for4 Aug 4 lists Monken among the new callers. Stefanski fired Jan 5. fansports Authority 94%."
+  - team: DAL
+    hc: Brian Schottenheimer
+    hc_new: false
+    hc_since: 2025
+    oc: Klayton Adams
+    oc_new: false
+    dc: Christian Parker
+    dc_new: true
+    play_caller: Brian Schottenheimer
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Brian Schottenheimer (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_defensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "New DC Christian Parker replaced Matt Eberflus; offense unchanged. fansports Authority 90%."
+  - team: DEN
+    hc: Sean Payton
+    hc_new: false
+    hc_since: 2023
+    oc: Davis Webb
+    oc_new: true
+    dc: Vance Joseph
+    dc_new: false
+    play_caller: Davis Webb
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Sean Payton (HC)
+    source_url: https://www.nfl.com/news/broncos-coach-sean-payton-handing-play-calling-duties-to-new-oc-davis-webb
+    source_url_2: https://sports.yahoo.com/articles/bo-nix-davis-webb-calling-003236250.html
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Payton named Webb (promoted from QB coach; replaced OC Joe Lombardi) primary play-caller but says he 'will still be involved and call some plays'. Aug 18-19: Webb calling plays from the sideline in preseason (Nix: 'first time in a game with him in my helmet'). fansports Authority 75% — day-9 re-check."
+  - team: DET
+    hc: Dan Campbell
+    hc_new: false
+    hc_since: 2021
+    oc: Drew Petzing
+    oc_new: true
+    dc: Kelvin Sheppard
+    dc_new: false
+    play_caller: Drew Petzing
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: John Morton (OC); Dan Campbell (HC) took over play-calling late in 2025
+    source_url: https://sports.yahoo.com/articles/dan-campbell-offers-honest-verdict-203212124.html
+    source_url_2: https://www.fansports.com/nfl/play-callers
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Petzing (ex-ARI OC) 'called the offense from the sideline' in the Aug 15 preseason opener; Campbell: 'Now it's about how much wiggle room he has and what I'm willing to give him' — Campbell retains input. 4for4 (Aug 4) lists 2025 caller as Morton/Campbell; exact week of the 2025 handoff not verified. Verifier 8/29: Gridiron Heroics Aug 27 'Petzing ... After Taking Over Play-Calling Duties' corroborates. fansports Authority 72% (lowest) — day-9 re-check."
+  - team: GB
+    hc: Matt LaFleur
+    hc_new: false
+    hc_since: 2019
+    oc: Adam Stenavich
+    oc_new: false
+    dc: Jonathan Gannon
+    dc_new: true
+    play_caller: Matt LaFleur
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Matt LaFleur (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_defensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "New DC Jonathan Gannon (ex-ARI HC) replaced Jeff Hafley (now MIA HC); offense unchanged. fansports Authority 95%."
+  - team: HOU
+    hc: DeMeco Ryans
+    hc_new: false
+    hc_since: 2023
+    oc: Nick Caley
+    oc_new: false
+    dc: Matt Burke
+    dc_new: false
+    play_caller: Nick Caley
+    play_caller_role: OC
+    play_caller_new: false
+    play_caller_2025: Nick Caley (OC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "No staff change at HC/OC/DC; Caley in year 2 as caller. fansports Authority 86%."
+  - team: IND
+    hc: Shane Steichen
+    hc_new: false
+    hc_since: 2023
+    oc: Jim Bob Cooter
+    oc_new: false
+    dc: Lou Anarumo
+    dc_new: false
+    play_caller: Shane Steichen
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Shane Steichen (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "No staff change at HC/OC/DC. fansports Authority 95%."
+  - team: JAX
+    hc: Liam Coen
+    hc_new: false
+    hc_since: 2025
+    oc: Grant Udinski
+    oc_new: false
+    dc: Anthony Campanile
+    dc_new: false
+    play_caller: Liam Coen
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Liam Coen (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "No staff change at HC/OC/DC. fansports Authority 95%."
+  - team: KC
+    hc: Andy Reid
+    hc_new: false
+    hc_since: 2013
+    oc: Eric Bieniemy
+    oc_new: true
+    dc: Steve Spagnuolo
+    dc_new: false
+    play_caller: Andy Reid
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Andy Reid (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://news.google.com/rss/search?q=Chiefs+Reid+Bieniemy+%22play-caller%22+OR+%22calling+plays%22+OR+%22call+plays%22+2026&hl=en-US&gl=US&ceid=US:en
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "OC Matt Nagy left for NYG; Bieniemy returned as OC but Reid keeps play-calling (Forbes Jan 27 2026 'Why Andy Reid Remains Chiefs Playcaller — Even After Bieniemy's Return'; KC Star Jan 26). fansports Authority 90%."
+  - team: LA
+    hc: Sean McVay
+    hc_new: false
+    hc_since: 2017
+    oc: Nathan Scheelhaase
+    oc_new: true
+    dc: Chris Shula
+    dc_new: false
+    play_caller: Sean McVay
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Sean McVay (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "OC Mike LaFleur left to be ARI HC; Scheelhaase promoted to OC, McVay still calls plays (fansports Authority 98%, highest). McVay handed a preseason game (Aug 15) to Scheelhaase — preseason only."
+  - team: LAC
+    hc: Jim Harbaugh
+    hc_new: false
+    hc_since: 2024
+    oc: Mike McDaniel
+    oc_new: true
+    dc: Chris O'Leary
+    dc_new: true
+    play_caller: Mike McDaniel
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Greg Roman (OC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://sports.yahoo.com/videos/chargers-2026-outlook-mcdaniels-131447802.html
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Ex-MIA HC McDaniel hired as OC/play-caller replacing Greg Roman; Aug 22 Yahoo: 'Mike McDaniel now leading the offense and calling the plays'; 4for4 Aug 4 lists LAC among the 18. DC Chris O'Leary replaced Jesse Minter (BAL HC). fansports Authority 88%."
+  - team: LV
+    hc: Klint Kubiak
+    hc_new: true
+    hc_since: 2026
+    oc: Andrew Janocko
+    oc_new: true
+    dc: Rob Leonard
+    dc_new: true
+    play_caller: Klint Kubiak
+    play_caller_role: HC
+    play_caller_new: true
+    play_caller_2025: Chip Kelly (OC, Wk 1-12; fired Nov 23); Greg Olson (interim OC, Wk 13-18)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://www.4for4.com/2026/preseason/how-play-calling-tendencies-affect-fantasy-football
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Kubiak (ex-SEA OC) calls plays as HC; Janocko (ex-SEA QB coach) is OC — Silver and Black Pride Jun 12 headline: 'Andrew Janocko key to Raiders' coaching staff despite not calling plays'. No August article re-states it explicitly (August coverage is the Cousins/Mendoza QB decision). 2025 callers from Wikipedia 2025 Raiders season page. Carroll fired Jan 5. fansports Authority 90%."
+  - team: MIA
+    hc: Jeff Hafley
+    hc_new: true
+    hc_since: 2026
+    oc: Bobby Slowik
+    oc_new: true
+    dc: Sean Duggan
+    dc_new: true
+    play_caller: Bobby Slowik
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Mike McDaniel (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://www.miamidolphins.com/news/transcript-oc-bobby-slowik-press-conference-august-25
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Hafley is a defensive HC (ex-GB DC); Slowik (ex-HOU OC, promoted from within per PFR tracker) runs the offense — Aug 25 team-site OC press conference confirms the role but does not spell out play-calling; no August source found that says 'Slowik calls plays' explicitly. McDaniel fired Jan 8 (now LAC OC). fansports Authority 85%."
+  - team: MIN
+    hc: Kevin O'Connell
+    hc_new: false
+    hc_since: 2022
+    oc: Wes Phillips
+    oc_new: false
+    dc: Brian Flores
+    dc_new: false
+    play_caller: Kevin O'Connell
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Kevin O'Connell (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "No staff change at HC/OC/DC. fansports Authority 95%."
+  - team: NE
+    hc: Mike Vrabel
+    hc_new: false
+    hc_since: 2025
+    oc: Josh McDaniels
+    oc_new: false
+    dc: Zak Kuhr
+    dc_new: true
+    play_caller: Josh McDaniels
+    play_caller_role: OC
+    play_caller_new: false
+    play_caller_2025: Josh McDaniels (OC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_defensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "New DC Zak Kuhr replaced Terrell Williams; offense unchanged. fansports Authority 92%."
+  - team: "NO"
+    hc: Kellen Moore
+    hc_new: false
+    hc_since: 2025
+    oc: Doug Nussmeier
+    oc_new: false
+    dc: Brandon Staley
+    dc_new: false
+    play_caller: Kellen Moore
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Kellen Moore (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_offensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "No staff change at HC/OC/DC. fansports Authority 92%. (team key quoted because bare NO parses as boolean in YAML 1.1.)"
+  - team: NYG
+    hc: John Harbaugh
+    hc_new: true
+    hc_since: 2026
+    oc: Matt Nagy
+    oc_new: true
+    dc: Dennard Wilson
+    dc_new: true
+    play_caller: Matt Nagy
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Mike Kafka (OC; interim HC from Nov 10, kept play-calling)
+    source_url: https://giantswire.usatoday.com/story/sports/nfl/giants/2026/08/22/new-york-giants-matt-nagy-to-calls-plays-sideline-dolphins/91423436007/
+    source_url_2: https://www.4for4.com/2026/preseason/how-play-calling-tendencies-affect-fantasy-football
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Nagy (ex-KC OC) calls plays under defensive HC Harbaugh; Aug 22 Giants Wire: Nagy to call plays from the sideline vs MIA (staff trying booth vs sideline). Wrinkle: QB coach Brian Callahan called plays in the Aug 28 preseason finale vs NYJ and Harbaugh 'explained why' (Giants Wire Aug 29, not read) — re-check day 9. Verifier 8/29: Heavy Aug 29 'John Harbaugh Has Giants' Contingency Plan in Case Matt Nagy Fails' (https://heavy.com/sports/nfl/new-york-giants/john-harbaugh-contingency-matt-nagy-fails/) still frames Nagy as the regular-season caller; fansports Authority 87%. 2025: Daboll re-assigned play-calling to Kafka for 2025 (Wikipedia Mike Kafka); Kafka kept it as interim HC (Giants.com Nov 12 2025). Daboll fired Nov 10 2025."
+  - team: NYJ
+    hc: Aaron Glenn
+    hc_new: false
+    hc_since: 2025
+    oc: Frank Reich
+    oc_new: true
+    dc: Brian Duker
+    dc_new: true
+    play_caller: Frank Reich
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Tanner Engstrand (OC)
+    source_url: https://www.newyorkjets.com/news/notebook-jets-frank-reich-calling-plays-from-the-box-08-28-2026
+    source_url_2: https://www.fansports.com/nfl/play-callers
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Team site Aug 28: Reich called plays from the coaches' box in Pittsburgh ('I've never called it from upstairs, but I actually really like it'); booth vs sideline for the regular season undecided. Ex-IND HC Reich replaced Engstrand. New DC Brian Duker replaced Steve Wilks. fansports Authority 88%."
+  - team: PHI
+    hc: Nick Sirianni
+    hc_new: false
+    hc_since: 2021
+    oc: Sean Mannion
+    oc_new: true
+    dc: Vic Fangio
+    dc_new: false
+    play_caller: Sean Mannion
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Kevin Patullo (OC)
+    source_url: https://www.nbcsportsphiladelphia.com/nfl/philadelphia-eagles/nick-sirianni-not-concerned-sean-mannion-inexperienced-offensive-coordinator/742483/
+    source_url_2: https://www.aol.com/articles/sean-mannion-explains-eagles-vanilla-122934000.html
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "First-time play-caller (ex-GB QB coach); fifth straight year with a new OC (Wikipedia 2026 Eagles season). Preseason: called from the sideline Aug 15 vs BAL, moved to the box Aug 21 vs NE (Inquirer/Eagles Wire headlines via Bing). Sirianni retains oversight. fansports Authority 78% — day-9 re-check."
+  - team: PIT
+    hc: Mike McCarthy
+    hc_new: true
+    hc_since: 2026
+    oc: Brian Angelichio
+    oc_new: true
+    dc: Patrick Graham
+    dc_new: true
+    play_caller: Mike McCarthy
+    play_caller_role: HC
+    play_caller_new: true
+    play_caller_2025: Arthur Smith (OC)
+    source_url: https://steelersdepot.com/2026/04/new-steelers-oc-brian-angelichio-explains-how-dynamic-will-work-with-mike-mccarthy-as-play-caller/
+    source_url_2: https://lancasteronline.com/sports/nfl/mike-mccarthys-play-calling-debut-for-the-steelers-was-pretty-impressive/article_8b7d5a79-da9b-576e-9e1d-d9ea0d1cdb4f.html
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "McCarthy calls plays; Angelichio (ex-MIN pass-game coordinator) handles scheme/game-plan. Aug 16 AP/LancasterOnline: 'Mike McCarthy's play-calling debut for the Steelers was pretty impressive' (headline + Bing summary; page rate-limited, body not read). Tomlin resigned Jan 13. New DC Patrick Graham (ex-LV). fansports Authority 94%."
+  - team: SEA
+    hc: Mike Macdonald
+    hc_new: false
+    hc_since: 2024
+    oc: Brian Fleury
+    oc_new: true
+    dc: Aden Durde
+    dc_new: false
+    play_caller: Brian Fleury
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Klint Kubiak (OC)
+    source_url: https://ca.sports.yahoo.com/news/seahawks-vs-cowboys-recap-learned-032208917.html
+    source_url_2: https://www.fansports.com/nfl/play-callers
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Aug 16 recap: 'Brian Fleury's first series as Seattle's play-caller lasted 16 plays...'. Fleury promoted from within after Kubiak left to be LV HC. fansports Authority 85%."
+  - team: SF
+    hc: Kyle Shanahan
+    hc_new: false
+    hc_since: 2017
+    oc: Klay Kubiak
+    oc_new: false
+    dc: Raheem Morris
+    dc_new: true
+    play_caller: Kyle Shanahan
+    play_caller_role: HC
+    play_caller_new: false
+    play_caller_2025: Kyle Shanahan (HC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://en.wikipedia.org/wiki/List_of_current_NFL_defensive_coordinators
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "New DC Raheem Morris (ex-ATL HC) replaced Robert Saleh (TEN HC); offense unchanged. fansports Authority 97%."
+  - team: TB
+    hc: Todd Bowles
+    hc_new: false
+    hc_since: 2022
+    oc: Zac Robinson
+    oc_new: true
+    dc: Todd Bowles
+    dc_new: false
+    play_caller: Zac Robinson
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Josh Grizzard (OC)
+    source_url: https://www.buccaneers.com/video/todd-bowles-on-zac-robinson-first-action-as-play-caller-press-conference
+    source_url_2: https://www.buccaneers.com/news/zac-robinson-redesigned-offense-wide-zone-concepts-emeka-egbuka--td-bucs-blitz
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Team site Aug 15/17: 'Todd Bowles on Zac Robinson's First Action as Play-caller'. Robinson (ex-ATL OC) is the fifth new offensive system since 2022 (Leftwich, Canales, Coen, Grizzard). Wikipedia lists Bowles as de facto DC (since 2019) — dc_new false. fansports Authority 90%."
+  - team: TEN
+    hc: Robert Saleh
+    hc_new: true
+    hc_since: 2026
+    oc: Brian Daboll
+    oc_new: true
+    dc: Gus Bradley
+    dc_new: true
+    play_caller: Brian Daboll
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Brian Callahan (HC, Wk 1-3); Bo Hardegree (QB coach, from Wk 4; Callahan fired Oct 13, interim HC Mike McCoy)
+    source_url: https://www.espn.com/nfl/story/_/id/49619516/why-titans-believe-brian-daboll-maximize-cam-ward-potential
+    source_url_2: https://www.nbcsports.com/fantasy/football/player-news/2026-08-25/daboll-downfield-passing-needs-to-improve
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Ex-NYG HC Daboll calls plays under defensive HC Saleh; 4for4 Aug 4 lists TEN among the 18; Aug 25 NBC: 'Titans offensive coordinator Brian Daboll said the team's downfield passing attack has to improve.' 2025: Callahan handed play-calling to Hardegree Sep 23 2025 (tennesseetitans.com); whether Hardegree kept it after Oct 13 is not explicitly verified. New DC Gus Bradley."
+  - team: WAS
+    hc: Dan Quinn
+    hc_new: false
+    hc_since: 2024
+    oc: David Blough
+    oc_new: true
+    dc: Daronte Jones
+    dc_new: true
+    play_caller: David Blough
+    play_caller_role: OC
+    play_caller_new: true
+    play_caller_2025: Kliff Kingsbury (OC)
+    source_url: https://www.fansports.com/nfl/play-callers
+    source_url_2: https://www.msn.com/en-us/sports/nfl/david-blough-s-offense-changes-things-for-commanders-jayden-daniels/ar-AA2aO2Ru
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Kingsbury fired Jan 2026; assistant QB coach Blough promoted to OC (ESPN Jan 11 via Wikipedia 2026 Commanders season). Aug 24 Commanders Wire: Blough 'is installing a new offensive scheme' — August coverage treats him as the offensive lead but no article read says 'Blough calls plays' verbatim. New DC Daronte Jones replaced Joe Whitt. fansports Authority 86%."

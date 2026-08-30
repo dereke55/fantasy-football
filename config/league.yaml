@@ -1,0 +1,42 @@
+# League configuration — the single source of truth for scoring, roster, and draft parameters.
+# STATUS: PLACEHOLDER. Scoring below is Yahoo's default public-league scoring, used only until Derek
+# pastes the real settings from Yahoo League > Settings. Every derived number recomputes on change.
+source: yahoo_default_public_league_scoring   # replace with: yahoo_settings_page (+ date) once real values land
+source_url: https://help.yahoo.com/kb/SLN6448.html   # Yahoo Fantasy Football default scoring (verify when replacing)
+as_of: 2026-08-29
+league:
+  platform: yahoo
+  league_key: null            # e.g. 461.l.12345 (from the league URL) — DAY-1 INPUT
+  num_teams: 10
+  draft_type: snake
+  draft_datetime: null        # ISO 8601 local, before 2026-09-10 — DAY-1 INPUT
+  my_draft_slot: null         # 1..10, or null if not yet assigned
+  keepers:
+    max_per_team: null        # DAY-1 INPUT
+    cost_rule: round_drafted  # keeper occupies the round the player was drafted in last year; team skips that round
+    deadline: null            # Yahoo: managers declare >= 1 hour before draft; commissioner approves
+    assigned_in_yahoo: null   # true once the commissioner has run "Assign Keeper Players"
+roster:
+  slots: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 1, K: 1, DEF: 1 }
+  flex_eligible: [RB, WR, TE]
+  bench: 6
+  ir: 0
+scoring:
+  uses_fractional_points: true
+  uses_negative_points: true
+  # points per unit; yardage keys are per yard (25 yds/pt = 0.04)
+  pass_yd: 0.04
+  pass_td: 4
+  pass_int: -1
+  pass_2pt: 2
+  rush_yd: 0.1
+  rush_td: 6
+  rush_2pt: 2
+  rec: 0.5
+  rec_yd: 0.1
+  rec_td: 6
+  rec_2pt: 2
+  fum_lost: -2
+  ret_td: 6
+  bonuses: []               # e.g. {stat: pass_yd, threshold: 300, points: 2}
+  position_overrides: {}    # e.g. {TE: {rec: 1.0}} — not used (no TE premium)

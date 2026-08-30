@@ -1,0 +1,637 @@
+# Hand-curated 2026 offensive-line context (Phase 5). One row per nflverse team code (32 rows).
+# games.csv coach columns are stale (ARI/ATL/BUF) — never derive HC changes from it; this file is
+# maintained by hand from dated, cited sources. source_url is mandatory on every row.
+#
+# delta: net offseason change in pass-protection / run-blocking quality entering Week 1, -2..+2
+#   (-2 major loss, -1 loss, 0 neutral, +1 upgrade, +2 major upgrade). It measures CHANGE vs the
+#   2025 unit, not absolute quality — see ol_rank_2026 (PFF preseason rank, Aug 12 2026) for level.
+# adds / losses: notable OL movement (FA, trades, draft, retirements). injuries: OL status entering
+# Week 1 as 'Player (status, date)'. r1_pick: round-1 OL rookie or null. ol_rank_2026: PFF rank
+# from source_url_2 (https://www.pff.com/news/nfl-offensive-line-rankings-2026, Gordon McGuinness,
+# Aug 12 2026). confidence: high|medium|low. Re-check on day 9 (Tue Sep 8): WAS Tunsil,
+# CAR Ekwonu/Moton, LAC Biadasz, DET Mays, PIT Iheanachor, CHI Trapilo, NE Will Campbell,
+# late signings Taylor Decker / Jack Conklin.
+version: 1
+as_of: "2026-08-29"
+description: "2026 preseason offensive-line changes per team (delta -2..+2, adds/losses/injuries, R1 pick, PFF rank) with source URLs"
+rows:
+  - team: ARI
+    delta: 0
+    adds:
+      - "G Isaac Seumalo (FA from PIT, 3-yr)"
+      - "OT Matt Pryor (FA from PHI)"
+      - "G Oli Udoh (FA from TEN)"
+      - "OT Elijah Wilkinson (FA from ATL)"
+      - "G Chase Bisontis (R2 #34, Texas A&M)"
+    losses:
+      - "OT Kelvin Beachum (FA)"
+      - "OT Jonah Williams (FA)"
+      - "G/C Evan Brown (to HOU)"
+      - "G Will Hernandez (FA)"
+    injuries:
+      - "Chase Bisontis (IR, torn MCL, Aug 2026)"
+    r1_pick: null
+    ol_rank_2026: 22
+    source_url: "https://fantasyindex.com/2026/08/21/offensive-lines/updated-offensive-line-rankings"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Seumalo upgrades LG but RT (Udoh/Wilkinson/Jacobs) and C (Froholdt) lost 2025 starters Jonah Williams / Evan Brown; Fantasy Index counts three new starters; Bisontis IR leaves Isaiah Adams unchallenged at RG; Paris Johnson Jr. knee history. Net wash."
+  - team: ATL
+    delta: 0
+    adds:
+      - "OT Jawaan Taylor (FA from KC, 1-yr/$5M, Apr 10)"
+      - "OT Wanya Morris (trade from KC, Jun 11)"
+      - "OT Ethan Onianwa (R7 #231)"
+    losses:
+      - "OT Kaleb McGary (retired)"
+      - "OT Ryan Hayes (to TEN)"
+      - "OT Elijah Wilkinson (to ARI)"
+    injuries:
+      - "Storm Norton (PUP, Aug 2026)"
+    r1_pick: null
+    ol_rank_2026: 9
+    source_url: "https://en.wikipedia.org/wiki/Jawaan_Taylor"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Four of five starters return (Matthews LT, Bergeron LG, Lindstrom RG per Fantasy Index); Taylor replaces retired McGary at RT (40 penalties in 3 KC seasons); Morris is the swing tackle. New HC Stefanski / OC Rees calls plays."
+  - team: BAL
+    delta: -1
+    adds:
+      - "G Vega Ioane (R1 #14, Penn State)"
+      - "G John Simpson (FA from NYJ, 3-yr/$30M, Mar 9)"
+      - "C Ethan Pocic (FA from CLE, 1-yr/$4.5M, Jul 17)"
+      - "C Danny Pinter (FA from IND, 1-yr/$2.75M, Mar 17; now IR)"
+    losses:
+      - "C Tyler Linderbaum (to LV, 3-yr/$81M)"
+      - "OT Diego Pounds (trade to KC, Aug 29)"
+      - "OT Basil Okoye (trade to NYG, Aug 29)"
+      - "G Daniel Faalele (to NYG, then JAX)"
+      - "OT Joseph Noteboom (FA)"
+    injuries:
+      - "Danny Pinter (IR, knee, Aug 26)"
+    r1_pick: "G Vega Ioane (#14, Penn State)"
+    ol_rank_2026: 24
+    source_url: "https://en.wikipedia.org/wiki/2026_Baltimore_Ravens_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Interior remade: lost Pro Bowl C Linderbaum; Pocic (back from torn Achilles) / Jovaughn Gwyn compete at C after Pinter's IR; Ioane and Simpson new at G; new OL coach Dwayne Ledford; new HC Minter / OC Doyle."
+  - team: BUF
+    delta: -1
+    adds:
+      - "C Lloyd Cushenberry (FA from TEN, 1-yr, Mar 26)"
+      - "G/C Austin Corbett (FA from CAR, 1-yr, Mar 26)"
+      - "OT Jude Bowry (R4 #102, Boston College)"
+    losses:
+      - "G David Edwards (to NO, 4-yr/$61M, Mar 11)"
+      - "OL Ryan Van Demark (to MIN)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 6
+    source_url: "https://en.wikipedia.org/wiki/2026_Buffalo_Bills_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Lost starting LG Edwards; Alec Anderson / Corbett / Cushenberry compete to replace him; Dawkins-Brown tackles and McGovern/Torrence intact. Brady now HC and still calls plays."
+  - team: CAR
+    delta: -2
+    adds:
+      - "OT Monroe Freeling (R1 #19, Georgia)"
+      - "OT Rasheed Walker (FA from GB, 1-yr, Mar 14)"
+      - "C Sam Hecht (R5 #144, Kansas State)"
+    losses:
+      - "G/C Austin Corbett (to BUF)"
+      - "C/G Cade Mays (to DET, 3-yr/$25M)"
+      - "OT Yosh Nijman (retired)"
+    injuries:
+      - "Ikem Ekwonu (PUP, ruptured patellar tendon Jan 11 2026; Week 1 unlikely, Jul 22)"
+      - "Taylor Moton (NFI, lung blood clots; out indefinitely, Jul 21)"
+    r1_pick: "OT Monroe Freeling (#19, Georgia)"
+    ol_rank_2026: 26
+    source_url: "https://fantasyindex.com/2026/08/21/offensive-lines/updated-offensive-line-rankings"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Both 2025 starting tackles out entering Week 1; rookie Freeling and Walker start outside; PFF: 'would have ranked inside the top 12 if they had their starting tackles'. Interior (Hunt, Lewis, Fortner/Samac) intact. New play-caller Brad Idzik."
+  - team: CHI
+    delta: -1
+    adds:
+      - "C Garrett Bradbury (trade from NE for 2027 5th, Mar 11)"
+      - "OT Jedrick Wills (FA from CLE, 1-yr/$1.2M, Mar 12)"
+      - "C Logan Jones (R2 #57, Iowa)"
+    losses:
+      - "C Drew Dalman (retired Mar 2026, age 27, Pro Bowl 2025)"
+      - "G Ryan Bates (FA)"
+    injuries:
+      - "Ozzy Trapilo (knee/patellar tendon Jan 10; PUP Jul 25, activated Aug 16; Ben Johnson tempered Week 1 expectations Aug 19 — Braxton Jones projected Week-1 LT)"
+    r1_pick: null
+    ol_rank_2026: 5
+    source_url: "https://en.wikipedia.org/wiki/2026_Chicago_Bears_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Dalman's retirement is a clear downgrade at C (Bradbury); Braxton Jones re-signed (1-yr/$10M) and projected Week-1 LT while Trapilo ramps up post-PUP; Thuney/Jackson/Wright (extended 4-yr/$116M Aug 4) intact. Taylor Decker linked but unsigned as of Aug 29."
+  - team: CIN
+    delta: 0
+    adds:
+      - "G Dalton Risner (FA, 1-yr/$3.25M, Mar 2)"
+      - "C Connor Lew (R4 #128, Auburn)"
+    losses:
+      - "G Cordell Volson (to TEN)"
+      - "G Lucas Patrick (to NYG)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 20
+    source_url: "https://en.wikipedia.org/wiki/2026_Cincinnati_Bengals_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "All five starters return (Fantasy Index); Orlando Brown Jr. extended 2-yr/$32M Mar 12; Risner adds interior depth; 2025 second-half emergence of young interior starters is the upside."
+  - team: CLE
+    delta: 1
+    adds:
+      - "OT Spencer Fano (R1 #9, Utah)"
+      - "G Zion Johnson (FA from LAC, 3-yr, Mar 11)"
+      - "C Elgton Jenkins (FA from GB, Mar 11)"
+      - "OT Tytus Howard (trade from HOU for 2026 5th, Mar 11)"
+      - "OT Austin Barber (R3 #86, Florida)"
+    losses:
+      - "G Joel Bitonio (retired Jun 9)"
+      - "G Wyatt Teller (to HOU)"
+      - "C Ethan Pocic (to BAL)"
+      - "OT Jack Conklin (unsigned FA)"
+      - "OT Cam Robinson (FA)"
+    injuries:
+      - "Kendrick Green (IR, Aug 28)"
+    r1_pick: "OT Spencer Fano (#9, Utah)"
+    ol_rank_2026: 31
+    source_url: "https://en.wikipedia.org/wiki/2026_Cleveland_Browns_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Four new starters after a $100M+ spending spree plus rookie LT Fano; talent clearly up vs the 2025 unit but continuity is zero and PFF still ranks it 31st. New HC Monken calls plays; Watson at QB."
+  - team: DAL
+    delta: 0
+    adds:
+      - "OT Broderick Jones (trade from PIT with 2027 4th for 2027 3rd+6th, Aug 29; spinal fusion Mar 2026, cleared PUP, 'not yet 100%')"
+      - "C Matt Hennessy (FA from SF, 1-yr/$1.4M; now IR)"
+      - "OT Drew Shelton (R4 #112, Penn State)"
+    losses:
+      - "G Robert Jones (to SF)"
+      - "C Brock Hoffman (to PIT)"
+      - "OT Hakeem Adeniji (retired)"
+    injuries:
+      - "Matt Hennessy (IR, neck, Jun 18)"
+      - "Tyler Guyton (Questionable, Aug 19)"
+    r1_pick: null
+    ol_rank_2026: 17
+    source_url: "https://www.profootballrumors.com/2026/08/cowboys-to-acquire-t-broderick-jones-from-steelers"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Starting five (Guyton, T. Smith, Beebe, Booker, Steele) intact; Jones is swing-tackle insurance for Steele; interior 'could be the best in football' (PFF); Guyton needs a year-3 bounce-back."
+  - team: DEN
+    delta: 0
+    adds:
+      - "G Alex Palczewski (re-signed 2-yr/$9.5M, Mar 5)"
+    losses:
+      - "C Sam Mustipher (to JAX)"
+    injuries:
+      - "Michael Deiter (IR, hamstring, out for 2026)"
+      - "Nick Gargiulo (PUP, torn ACL Aug 2025)"
+    r1_pick: null
+    ol_rank_2026: 1
+    source_url: "https://en.wikipedia.org/wiki/2026_Denver_Broncos_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "All five starters return from PFF's No. 1 unit (Bolles and Meinerz first-team All-Pro 2025); only backup C depth lost. New primary play-caller Davis Webb; Nix back from ankle surgeries."
+  - team: DET
+    delta: -1
+    adds:
+      - "OT Blake Miller (R1 #17, Clemson)"
+      - "C Cade Mays (FA from CAR, 3-yr/$25M, Mar 12)"
+      - "C/G Juice Scruggs (trade from HOU in Montgomery deal, Mar 11)"
+      - "OT Larry Borom (FA from MIA, 1-yr/$2M, Mar 12)"
+      - "G Ben Bartch (FA from SF, Mar 25)"
+    losses:
+      - "OT Taylor Decker (released Mar 9; unsigned)"
+      - "C Graham Glasgow (released Mar 2)"
+      - "OT Dan Skipper (retired Jan 22)"
+      - "G Kayode Awosika (to LAC)"
+    injuries:
+      - "Cade Mays (Out, wrist fracture, 8-10 weeks from mid-Aug; Aug 19)"
+      - "Seth McLaughlin (Questionable, concussion, Aug 29)"
+      - "Giovanni Manu (NFI, knee, Jul 29)"
+    r1_pick: "OT Blake Miller (#17, Clemson)"
+    ol_rank_2026: 19
+    source_url: "https://fantasyindex.com/2026/08/21/offensive-lines/updated-offensive-line-rankings"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Sewell (95.1 PFF grade) moves to LT replacing Decker, rookie Miller at RT, Scruggs at C with Mays out — three new starters and a new play-caller (Petzing). Phase-5 doc suggested 0; set -1 for the Week-1 C injury and Decker/Glasgow exits (verifier 8/29: CBS injuries page — Mays Out Week 1, expected return Week 7; PFF: 'would have ranked 13th' without the Mays injury). Re-check Mays on day 9."
+  - team: GB
+    delta: -1
+    adds:
+      - "C/G Sean Rhyan (extension 3-yr/$33M, Mar 11)"
+      - "OT Darian Kinnard (re-signed RFA, Mar 9)"
+      - "C Jager Burton (R5 #153, Kentucky)"
+    losses:
+      - "OT Rasheed Walker (to CAR)"
+      - "C Elgton Jenkins (released Mar 9; to CLE)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 28
+    source_url: "https://en.wikipedia.org/wiki/2026_Green_Bay_Packers_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Two 2025 starters gone (LT Walker, C Jenkins); 2024 R1 Jordan Morgan moves to LT, Rhyan to C; PFF calls the group 'mostly unproven' and ranks it 28th. Tyrod Taylor added as backup QB."
+  - team: HOU
+    delta: 2
+    adds:
+      - "OT Braden Smith (FA from IND, Mar 17)"
+      - "G Wyatt Teller (FA from CLE, Mar 17)"
+      - "G Keylan Rutledge (R1 #26, Georgia Tech)"
+      - "G/C Evan Brown (FA from ARI)"
+      - "G Febechi Nwaiwu (R4 #106, Oklahoma)"
+    losses:
+      - "OT Tytus Howard (trade to CLE, Mar 11)"
+      - "C Juice Scruggs (trade to DET, Mar 11)"
+    injuries: []
+    r1_pick: "G Keylan Rutledge (#26, Georgia Tech)"
+    ol_rank_2026: 27
+    source_url: "https://www.cbssports.com/nfl/news/familiar-faces-new-places-biggest-nfl-offseason-moves-2026/"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Significant overhaul: Smith at RT, Teller at LG, Rutledge/Brown inside, Ersery year 2 at LT. Large net talent gain vs the 2025 unit (ESPN ranks Smith the No. 20 impact newcomer), though PFF still has the unit 27th — delta is change, not level."
+  - team: IND
+    delta: -1
+    adds:
+      - "G Jalen Farmer (R4 #113, Kentucky)"
+    losses:
+      - "OT Braden Smith (to HOU)"
+      - "C Danny Pinter (to BAL)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 4
+    source_url: "https://www.cbssports.com/nfl/news/familiar-faces-new-places-biggest-nfl-offseason-moves-2026/"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Elite left side (Nelson, Raimann) and Bortolini at C intact; new RT (Freeland / Goncalves / Jalen Travis) after Smith's exit; PFF still ranks the unit 4th. Daniel Jones returning from Achilles behind it."
+  - team: JAX
+    delta: -1
+    adds:
+      - "G Daniel Faalele (trade from NYG, Aug 19)"
+      - "G Emmanuel Pregnon (R3 #88, Oregon)"
+      - "C Sam Mustipher (FA from DEN)"
+    losses: []
+    injuries:
+      - "Cole Van Lanen (PUP, knee, 2025 season-ending injury)"
+      - "Patrick Mekari (Questionable, back surgery, Aug 19)"
+      - "Garrett DiGiorgio (IR, Aug 19)"
+      - "Wyatt Milum (Questionable, Aug 19)"
+    r1_pick: null
+    ol_rank_2026: 30
+    source_url: "https://fantasyindex.com/2026/08/21/offensive-lines/updated-offensive-line-rankings"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "All five 2025 starters were set to return, but Van Lanen (PUP) and Mekari (back) forced Anton Harrison to LT and opened RG (Walker Little / Milum / Monheim / Pregnon / Faalele). PFF: 'will rank higher when Van Lanen returns'."
+  - team: KC
+    delta: -1
+    adds:
+      - "OT Diego Pounds (trade from BAL for conditional 2028 6th, Aug 29)"
+      - "G Joshua Ezeudu (trade from NYG for 2028 7th, Aug 25)"
+    losses:
+      - "OT Jawaan Taylor (released Mar 4; to ATL)"
+      - "OT Wanya Morris (trade to ATL, Jun 11)"
+      - "OT Donovan Smith (retired)"
+    injuries:
+      - "Josh Simmons (back issue, offseason second opinions; practicing)"
+      - "Trey Smith (Questionable, Aug 19)"
+      - "Matt Waletzko (IR, Aug 21)"
+    r1_pick: null
+    ol_rank_2026: 8
+    source_url: "https://www.profootballrumors.com/2026/08/chiefs-trade-for-ravens-t-diego-pounds"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "RT is an open competition (Jaylon Moore / Ezeudu / Pounds) after Taylor's release — two late trades signal the team is not settled there; Humphrey/T. Smith interior elite; Simmons year 2 at LT. Mahomes returning from ACL; new OC Bieniemy, Reid still calls plays."
+  - team: LA
+    delta: 0
+    adds:
+      - "OT Keagen Trost (R3 #93, Missouri)"
+    losses:
+      - "OT Rob Havenstein (retired, 11 seasons)"
+      - "OT DJ Humphries (to WAS)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 11
+    source_url: "https://en.wikipedia.org/wiki/2026_NFL_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Essentially unchanged per Fantasy Index: Warren McClendon (started most of 2025 while Havenstein was hurt) is the clear RT; Shelton durable at C; swing-tackle depth thinner after Havenstein/Humphries. Ty Simpson (R1 #13) sits behind Stafford."
+  - team: LAC
+    delta: -1
+    adds:
+      - "C Tyler Biadasz (FA from WAS, 3-yr/$30M, Mar 6; now IR)"
+      - "G Cole Strange (FA from MIA)"
+      - "OT Trevor Penning (FA)"
+      - "G Kayode Awosika (FA from DET)"
+      - "C Jake Slaughter (R2 #63, Florida)"
+      - "OT Travis Burke (R4 #117)"
+    losses:
+      - "G Zion Johnson (to CLE)"
+      - "C Bradley Bozeman (retired)"
+      - "OT Mekhi Becton (FA)"
+      - "G Jamaree Salyer (to MIA)"
+      - "C Andre James (to TEN)"
+    injuries:
+      - "Tyler Biadasz (IR, torn ACL + knee ligament damage, Aug 23)"
+      - "Rashawn Slater (Questionable, limited practice, Aug 22)"
+    r1_pick: null
+    ol_rank_2026: 7
+    source_url: "https://fantasyindex.com/2026/08/21/offensive-lines/updated-offensive-line-rankings"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Three new interior starters after 60 sacks allowed in 2025; Biadasz's ACL puts rookie Slaughter at C and Awosika at LG; Slater/Alt (both back from 2025 injuries) health is the swing factor. New OC Mike McDaniel."
+  - team: LV
+    delta: 1
+    adds:
+      - "C Tyler Linderbaum (FA from BAL, 3-yr/$81M, Mar 12; record for a center)"
+      - "G Trey Zuhn III (R3 #91, Texas A&M)"
+      - "G Spencer Burford (FA from SF)"
+    losses:
+      - "G Dylan Parham (to NYJ)"
+      - "G Alex Cappa (FA)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 18
+    source_url: "https://en.wikipedia.org/wiki/2026_Las_Vegas_Raiders_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Linderbaum (ESPN No. 8 impact newcomer) is an elite upgrade at C; Kolton Miller / DJ Glaze tackles return; LG is the soft spot after Parham left; PFF calls the group 'ascending'. New HC Kubiak; Cousins expected to start over No. 1 pick Mendoza."
+  - team: MIA
+    delta: 1
+    adds:
+      - "OT Kadyn Proctor (R1 #12, Alabama)"
+      - "OL Caedan Wallace (trade from NE, Aug 10)"
+      - "G Jamaree Salyer (FA from LAC)"
+      - "OT Charlie Heck (FA from TB)"
+      - "G DJ Campbell (R6 #200, Texas)"
+    losses:
+      - "OT Larry Borom (to DET)"
+      - "G James Daniels (released Feb 16)"
+      - "G Liam Eichenberg (released Mar 2)"
+      - "G Cole Strange (to LAC)"
+      - "OT Kendall Lamm (FA)"
+      - "G Daniel Brunskill (to WAS)"
+    injuries:
+      - "Carter Warren (IR, Aug 29)"
+    r1_pick: "OT Kadyn Proctor (#12, Alabama)"
+    ol_rank_2026: 25
+    source_url: "https://en.wikipedia.org/wiki/2026_Miami_Dolphins_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Rebuild around Proctor at LT with Patrick Paul; Aaron Brewer (top-tier C) extended 3-yr/$52.5M Jun 11; guard spots remain weak. New HC Hafley / OC Slowik; Malik Willis at QB."
+  - team: MIN
+    delta: -1
+    adds:
+      - "OT Ryan Van Demark (FA from BUF, 1-yr/$4.2M, Mar 20)"
+      - "OT Caleb Tiernan (R3 #97, Northwestern)"
+      - "C Gavin Gerhardt (R7 #235, Cincinnati)"
+    losses:
+      - "C Ryan Kelly (retired Mar 6; concussions limited him to 8 games in 2025)"
+      - "OT Justin Skule (to TB)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 12
+    source_url: "https://en.wikipedia.org/wiki/2026_Minnesota_Vikings_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Kelly's retirement leaves Michael Jurgens / rookie Gerhardt at C; Darrisaw (injury-prone), Donovan Jackson, Fries, Brandon Kelly return; new OL coach Keith Carter (promoted). Kyler Murray new QB."
+  - team: NE
+    delta: 1
+    adds:
+      - "G Alijah Vera-Tucker (FA from NYJ, 3-yr/$42M, Mar 12)"
+      - "OT Caleb Lomu (R1 #28, Utah)"
+      - "OT James Hudson (FA from NYG, 1-yr, Mar 23)"
+      - "G Greg Van Roten (FA from NYG, 1-yr/$3M, Aug 18)"
+      - "C Joe Michalski (FA from DEN, Aug 15)"
+      - "G Jack Conley (FA from CLE, Aug 24)"
+    losses:
+      - "C Garrett Bradbury (trade to CHI, Mar 11)"
+      - "OT Vederian Lowe (to SF)"
+      - "OL Caedan Wallace (trade to MIA, Aug 10)"
+      - "OT Thayer Munford (FA)"
+    injuries:
+      - "Ben Brown (Questionable, Aug 19)"
+      - "Marcus Bryant (Questionable, ankle, Aug 22)"
+    r1_pick: "OT Caleb Lomu (#28, Utah)"
+    ol_rank_2026: 13
+    source_url: "https://en.wikipedia.org/wiki/2026_New_England_Patriots_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "AVT is the 'big splash' at LG; Lomu adds a future tackle; Bradbury's exit opens C. Will Campbell (2025 R1 LT) played through a torn knee ligament in 2025 and rehabbed it in the offseason; verifier 8/29: full camp participant ('I feel I did a good job rebuilding strength in my knee' — Boston Herald Aug 7, ESPN Aug 23) and not on ESPN's Aug 29 injury report. A.J. Brown / Romeo Doubs new targets."
+  - team: "NO"
+    delta: 0
+    adds:
+      - "G David Edwards (FA from BUF, 4-yr/$61M, Mar 11)"
+      - "G Jeremiah Wright (R4 #132, Auburn)"
+    losses: []
+    injuries:
+      - "Dillon Radunz (IR, Aug 28)"
+      - "Nick Saldiveri (PUP, Aug 2026)"
+    r1_pick: null
+    ol_rank_2026: 16
+    source_url: "https://en.wikipedia.org/wiki/2026_New_Orleans_Saints_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Edwards is a real LG upgrade, offset by Radunz (IR) and Saldiveri (PUP) thinning the interior; Kelvin Banks Jr. (73.5 PFF grade as a rookie) year 2 at LT; Erik McCoy's health is the key question. Tyler Shough at QB."
+  - team: NYG
+    delta: 1
+    adds:
+      - "G Francis Mauigoa (R1 #10, Miami (FL); starting RG)"
+      - "OT Jermaine Eluemunor (re-signed 3-yr/$39M, Mar 9)"
+      - "G Lucas Patrick (FA from CIN, Apr 6)"
+      - "OT Basil Okoye (trade from BAL, Aug 29)"
+      - "OT J.C. Davis (R6 #192, Illinois)"
+    losses:
+      - "OT James Hudson (to NE)"
+      - "G Greg Van Roten (to NE)"
+      - "G Daniel Faalele (trade to JAX, Aug 19)"
+      - "G Joshua Ezeudu (trade to KC, Aug 25)"
+      - "C Austin Schlottmann (to TEN)"
+      - "G Aaron Stinnie (FA)"
+    injuries:
+      - "Francis Mauigoa (Questionable, stinger, Aug 20)"
+      - "Lucas Patrick (Questionable, Aug 19)"
+      - "John Michael Schmitz Jr. (Questionable, Aug 19)"
+    r1_pick: "G Francis Mauigoa (#10, Miami (FL))"
+    ol_rank_2026: 23
+    source_url: "https://en.wikipedia.org/wiki/2026_New_York_Giants_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Harbaugh regime prioritized the line: Mauigoa starts at RG (pick acquired for Dexter Lawrence), Eluemunor retained; Andrew Thomas excellent but injury history; interior depth churned in August. New HC Harbaugh / OC Nagy; Dart at QB."
+  - team: NYJ
+    delta: -1
+    adds:
+      - "G Dylan Parham (FA from LV)"
+      - "G Anez Cooper (R6, Miami (FL))"
+    losses:
+      - "G Alijah Vera-Tucker (to NE, 3-yr/$42M)"
+      - "G John Simpson (to BAL, 3-yr/$30M)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 21
+    source_url: "https://en.wikipedia.org/wiki/2026_NFL_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Both 2025 starting guards left; Parham replaces one, Tippmann/Myers inside; young tackle pair Fashanu/Membou (PFF: 'emerging partnership') is the strength. Geno Smith new QB; new OC Frank Reich."
+  - team: PHI
+    delta: 0
+    adds:
+      - "OT Markel Bell (R3 #68, Miami (FL))"
+      - "G Micah Morris (R6 #207, Georgia)"
+      - "C Zeke Correll (FA from MIN, Aug 21)"
+    losses:
+      - "OT Brett Toth (to SF)"
+      - "OT Matt Pryor (to ARI)"
+      - "OL coach Jeff Stoutland (departed Feb 4)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 2
+    source_url: "https://en.wikipedia.org/wiki/2026_Philadelphia_Eagles_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "All five starters return (Mailata, Dickerson, Jurgens, Steen, Lane Johnson); Johnson is 36 and played only 10 games in 2025; Stoutland's departure is the only structural change. First-time play-caller Sean Mannion."
+  - team: PIT
+    delta: -1
+    adds:
+      - "OT Max Iheanachor (R1 #21, Arizona State)"
+      - "G Gennings Dunker (R3 #96, Iowa)"
+      - "C/G Brock Hoffman (FA from DAL)"
+    losses:
+      - "G Isaac Seumalo (to ARI)"
+      - "OT Broderick Jones (trade to DAL, Aug 29)"
+      - "G Andrus Peat (retired)"
+      - "G Max Scharping (FA)"
+    injuries:
+      - "Max Iheanachor (upper-body/neck-shoulder injury Aug 6; back at full practice ~Aug 25, preseason debut Aug 27 vs BUF; RT competition with Dylan Cook unresolved Aug 29)"
+    r1_pick: "OT Max Iheanachor (#21, Arizona State)"
+    ol_rank_2026: 14
+    source_url: "https://www.profootballrumors.com/2026/08/cowboys-to-acquire-t-broderick-jones-from-steelers"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Fautanu moves to LT; Dylan Cook / Iheanachor at RT after Jones' exit; Frazier (elite C) and McCormick anchor the interior but Seumalo's departure hurts. Verifier 8/29: Iheanachor is healthy again (Steelers Depot Aug 28 'Film Room: Max Iheanachor Flashes Promise In Debut'; Aug 29 beat writer sees Cook starting 'by default': https://steelersdepot.com/2026/08/beat-writer-sees-steelers-starting-dylan-cook-by-default-over-max-iheanachor/) — the -1 reflects Seumalo + B. Jones exits and an unsettled RT, not an injury. New HC McCarthy calls plays; Rodgers' final season."
+  - team: SEA
+    delta: 0
+    adds:
+      - "OT Josh Jones (FA, 1-yr/$4M, Mar 12)"
+      - "OT Bobby Hart (FA from LAC, Jun 8)"
+      - "G Beau Stephens (R5 #148, Iowa)"
+    losses: []
+    injuries:
+      - "Mason Richman (IR, Aug 29)"
+    r1_pick: null
+    ol_rank_2026: 15
+    source_url: "https://en.wikipedia.org/wiki/2026_Seattle_Seahawks_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Every starter returns (Cross, Zabel, Oluwatimi, Sundell, Lucas) — all homegrown since 2022; only depth added. New OC Brian Fleury (Kubiak left for LV HC)."
+  - team: SF
+    delta: 0
+    adds:
+      - "OT Vederian Lowe (FA from NE, 2-yr/$9.25M, Mar 12)"
+      - "G Robert Jones (FA from DAL, 1-yr, Mar 24; missed 2025 with a neck fracture)"
+      - "OT Brett Toth (FA from PHI, Mar 12)"
+      - "G Carver Willis (R4 #127, Washington)"
+      - "OT Enrique Cruz Jr. (R5 #179, Kansas)"
+    losses:
+      - "G Ben Bartch (to DET)"
+      - "G Spencer Burford (to LV)"
+      - "C Matt Hennessy (to DAL)"
+      - "G Nick Zakelj (released Aug 10)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 10
+    source_url: "https://en.wikipedia.org/wiki/2026_San_Francisco_49ers_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Trent Williams (37, 12th Pro Bowl) still the anchor; LG is an open competition (Connor Colby / Willis / Robert Jones); Lowe is swing-tackle insurance. Mike Evans / Deebo / Kirk new targets."
+  - team: TB
+    delta: 0
+    adds:
+      - "OT Justin Skule (FA from MIN)"
+      - "G Billy Schrauth (R5 #160, Notre Dame)"
+    losses:
+      - "OT Charlie Heck (to MIA)"
+      - "G Mike Jordan (FA)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 3
+    source_url: "https://en.wikipedia.org/wiki/2026_Tampa_Bay_Buccaneers_season"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Wirfs (career-high 2025), Goedeke, Barton, Mauch, Bredeson all return; four of five missed significant time in 2025, so health is the swing factor. New OC Zac Robinson."
+  - team: TEN
+    delta: -1
+    adds:
+      - "C Andre James (FA from LAC)"
+      - "OT Austin Deculus (FA from LAC)"
+      - "G Cordell Volson (FA from CIN, 1-yr/$2.45M, Mar 12)"
+      - "C Austin Schlottmann (FA from NYG)"
+      - "OT Ryan Hayes (FA from ATL)"
+      - "G Fernando Carmona (R5 #142, Arkansas)"
+      - "C Pat Coogan (R6 #194, Indiana)"
+    losses:
+      - "C Lloyd Cushenberry (to BUF)"
+      - "G Kevin Zeitler (2025 starting RG; 1-yr deal expired; still an unsigned FA as of Aug 28 — on ESPN's best-available list)"
+      - "C/G Cade Mays (to DET)"
+      - "G Oli Udoh (to ARI)"
+    injuries: []
+    r1_pick: null
+    ol_rank_2026: 29
+    source_url: "https://www.nfl.com/news/2026-nfl-free-agency-free-agents-notable-departures-for-all-32-teams"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: medium
+    last_checked: "2026-08-29"
+    notes: "Interior gutted (Cushenberry, Zeitler, Mays) and refilled with journeymen; Skoronski elite, Latham / Dan Moore at T. Fantasy Index ranks TEN last in the AFC, PFF 29th. New HC Saleh / OC Daboll; Cam Ward year 2."
+  - team: WAS
+    delta: -2
+    adds:
+      - "OT DJ Humphries (FA from LAR)"
+      - "G/C Daniel Brunskill (FA from MIA)"
+      - "C Matt Gulbin (R6 #209)"
+    losses:
+      - "C Tyler Biadasz (to LAC, 3-yr/$30M)"
+      - "OT George Fant (FA)"
+    injuries:
+      - "Laremy Tunsil (Out, torn triceps Aug 8, surgery, out indefinitely)"
+      - "Nick Allegretti (Questionable, calf, Aug 20)"
+    r1_pick: null
+    ol_rank_2026: 32
+    source_url: "https://fantasyindex.com/2026/08/21/offensive-lines/updated-offensive-line-rankings"
+    source_url_2: "https://www.pff.com/news/nfl-offensive-line-rankings-2026"
+    confidence: high
+    last_checked: "2026-08-29"
+    notes: "Losing five-time Pro Bowl LT Tunsil is a 'huge blow' (PFF ranks the unit 32nd): Brandon Coleman back to LT, Conerly / Humphries at RT, C Allegretti also banged up and Biadasz gone. New OC David Blough; Daniels behind it."

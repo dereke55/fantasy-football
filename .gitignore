@@ -1,0 +1,18 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+# secrets / tokens
+backend/.env
+backend/.tokens/
+# data snapshots (large, regenerable from sources; keep the registry in Postgres)
+data/raw/
+# node
+node_modules/
+frontend/dist/
+# os / editor
+.DS_Store
+.idea/
+.vscode/

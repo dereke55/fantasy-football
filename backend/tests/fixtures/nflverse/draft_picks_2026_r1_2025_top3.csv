@@ -1,0 +1,36 @@
+season,round,pick,team,gsis_id,pfr_player_id,pfr_player_name,position,college
+2026,1,1,LVR,MEN516487,MendFe00,Fernando Mendoza,QB,Indiana
+2026,1,2,NYJ,,BailDa02,David Bailey,OLB,Texas Tech
+2026,1,3,ARI,LOV121782,LoveJe00,Jeremiyah Love,RB,Notre Dame
+2026,1,4,TEN,TAT143045,TateCa00,Carnell Tate,WR,Ohio St.
+2026,1,5,NYG,REE496321,ReesAr00,Arvell Reese,LB,Ohio St.
+2026,1,6,KAN,DEL076452,DelaMa00,Mansoor Delane,CB,LSU
+2026,1,7,WAS,,StylSo01,Sonny Styles,LB,Ohio St.
+2026,1,8,NOR,TYS405541,TysoJo00,Jordyn Tyson,WR,Arizona St.
+2026,1,9,CLE,FAN288396,FanoSp00,Spencer Fano,OT,Utah
+2026,1,10,NYG,MAU290246,MauiFr01,Francis Mauigoa,OT,Miami (FL)
+2026,1,11,DAL,DOW662609,DownCa00,Caleb Downs,S,Ohio St.
+2026,1,12,MIA,PRO114835,ProcKa00,Kadyn Proctor,OT,Alabama
+2026,1,13,LAR,SIM639376,SimpTy00,Ty Simpson,QB,Alabama
+2026,1,14,BAL,IOA451705,IoanOl00,Olaivavega Ioane,OG,Penn St.
+2026,1,15,TAM,BAI741257,BainRu00,Rueben Bain Jr.,DE,Miami (FL)
+2026,1,16,NYJ,SAD482340,SadiKe00,Kenyon Sadiq,TE,Oregon
+2026,1,17,DET,,MillBl01,Blake Miller,OT,Clemson
+2026,1,18,MIN,BAN414915,BankCa01,Caleb Banks,DT,Florida
+2026,1,19,CAR,FRE136741,FreeMo00,Monroe Freeling,OT,Georgia
+2026,1,20,PHI,LEM694125,LemoMa00,Makai Lemon,WR,USC
+2026,1,21,PIT,IHE074158,IheaMa00,Max Iheanachor,OT,Arizona St.
+2026,1,22,LAC,,MesiAk01,Akheem Mesidor,DE,Miami (FL)
+2026,1,23,DAL,LAW442372,LawrMa01,Malachi Lawrence,DE,Central Florida
+2026,1,24,CLE,CON046719,ConcKC00,KC Concepcion,WR,Texas A&M
+2026,1,25,CHI,THI666823,ThieDi00,Dillon Thieneman,S,Oregon
+2026,1,26,HOU,RUT745912,RutlKe01,Keylan Rutledge,G,Georgia Tech
+2026,1,27,MIA,,JohnCh09,Chris Johnson,CB,San Diego St.
+2026,1,28,NWE,LOM719974,LomuCa00,Caleb Lomu,OT,Utah
+2026,1,29,KAN,WOO547869,WoodPe00,Peter Woods,DT,Clemson
+2026,1,30,NYJ,COO816508,CoopOm00,Omar Cooper Jr.,WR,Indiana
+2026,1,31,TEN,FAU124764,FaulKe01,Keldric Faulk,DE,Auburn
+2026,1,32,SEA,PRI206342,PricJa02,Jadarian Price,RB,Notre Dame
+2025,1,1,TEN,00-0040676,WardCa00,Cam Ward,QB,Miami (FL)
+2025,1,2,JAX,00-0040718,HuntTr00,Travis Hunter,WR,Colorado
+2025,1,3,NYG,00-0040677,CartAb00,Abdul Carter,DE,Penn St.

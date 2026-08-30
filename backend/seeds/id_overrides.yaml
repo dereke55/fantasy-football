@@ -1,0 +1,8 @@
+# Manual identity overrides for the players hub (applied last; see app/ingest/players_hub.py).
+# Each row: match by exact normalized name + position (and optional team), then set any of the id fields.
+version: 1
+rows: []
+# example:
+# - match: {name: "Marquise Brown", position: WR}
+#   set: {yahoo_id: "31857"}
+#   note: "Yahoo lists as Hollywood Brown"
