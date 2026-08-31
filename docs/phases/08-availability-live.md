@@ -2,7 +2,7 @@
 
 Purpose: give the board a probability that each player survives to my next pick (8a, closed-form, MVP), sync picks live from Yahoo when — and only when — access is approved and a test harness exists (8b, gated), and later replace the closed form with a Monte Carlo (8c, post-MVP).
 
-Status: Not started
+Status: 8a DONE. **8b (Yahoo live sync) DROPPED for the 2026 draft** — Yahoo quoted a 1–2 week review for API access on 2026-08-31 and the draft is 2026-09-06. Manual entry is the draft-day path, not a fallback. 8c not needed.
 
 Specs: `docs/spec/ranking-model.md` §8–§9, §12 (`pick_schedule`, room ADP, `sd_adp`, P(avail), VONA), `docs/spec/live-draft.md` (OAuth, `draftresults` poller, keeper rows, harness), `docs/spec/api.md` §3.10–3.11 (`/api/availability`, `/api/draft/stream`), `docs/spec/data-model.md` (`keepers`, `pick_schedule`, `draft_picks`).
 
@@ -122,3 +122,39 @@ Gate (8b): fixture test with unfilled + keeper rows; OAuth round-trip survives a
 - Join a Yahoo mock draft for the mock-draft visibility spike and say when it is scheduled.
 - If mocks are invisible: create a throwaway private Yahoo league with autopick and schedule its live draft on day 8–9; share its `league_key`.
 - Decide (day 8) whether to drop live sync for this draft if neither harness exists.
+
+
+## 8b dropped — 2026-08-31
+
+Yahoo's reply to the API access application quotes a **1–2 week** review turnaround. The draft is **Sunday
+Sep 6**, so approval cannot arrive in time. The plan always gated 8b on "approval AND a verified harness"; neither
+will exist, so live sync is out of scope for this draft.
+
+The consequence is that manual entry stops being a fallback and becomes *the* draft-day path — roughly 150 picks
+typed by hand while the clock runs. Keystrokes per pick is therefore the thing worth optimising, which is what
+`QuickPick` addresses (below). Nothing else in the plan depends on 8b: the board, availability, VONA, keepers and
+the freeze all work identically in manual mode.
+
+If approval lands later it is still worth wiring for next season — the poller design and the raw `draftresults`
+parsing notes in `docs/spec/live-draft.md` stay valid.
+
+## QuickPick — the manual draft-day entry path
+
+A single always-focused box above the board. Type two or three letters, press Enter, and the top match is recorded
+against whoever is on the clock; the box clears and re-focuses so consecutive picks need no mouse.
+
+| Key | Action |
+|---|---|
+| `Enter` | record the highlighted match against the team on the clock |
+| `Shift+Enter` | record it as **my** pick |
+| `↓` / `↑` | cycle matches · `Tab` completes the name |
+| `Esc` | leave the box, return to board keys (j/k/d/m) · `q` re-focuses it |
+
+Measured: two picks at four keystrokes each, clock advancing R1P1 → R1P3, "next pick in" 9 → 7, both players
+struck through and dropped from the VONA lists, no reload.
+
+**Match ordering is weighted, not tiered.** Strict tiering put Chase McLaughlin (a kicker, rank 140) and Chase
+Roberts (rank 564) above Ja'Marr Chase (rank 4) for the query "chas", purely because their *first* name matched.
+Under time pressure a fast Enter on that list records the wrong player. Score is now
+`match_tier × 60 + board_rank`, and a surname prefix is treated as strongly as a full-name prefix, because that is
+how players are actually referred to. "chas" now returns Ja'Marr Chase, Chase Brown, Chase McLaughlin, Chase Roberts.

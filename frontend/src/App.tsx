@@ -14,6 +14,7 @@ import { EMPTY_FILTERS, bestAvailable, buildRows, filterPlayers, sortPlayers } f
 import type { BoardFilters, SortDir, SortKey } from './lib/boardModel'
 import { COLUMNS } from './components/columns'
 import { AttributionFooter } from './components/AttributionFooter'
+import { QuickPick } from './components/QuickPick'
 import { Board } from './components/Board'
 import { ConfigMismatchBanner, NoRunState, OfflineBanner } from './components/Banners'
 import { DraftPanel } from './components/DraftPanel'
@@ -24,7 +25,7 @@ import { Toasts } from './components/Toasts'
 import { TopBar } from './components/TopBar'
 import type { Toast } from './components/Toasts'
 
-const SHORTCUTS = 'j / k move · d drafted · m my pick · Enter drawer · Esc close · u undo · / search'
+const SHORTCUTS = 'quick pick: type a name + ⏎ (⇧⏎ = mine) · j/k move · d drafted · m my pick · ⏎ drawer · esc close · u undo · / search'
 
 export default function App() {
   const run = useRun()
@@ -242,6 +243,10 @@ export default function App() {
         case 'Enter': if (selectedId != null) { e.preventDefault(); setDrawerOpen((o) => !o) } break
         case 'Escape': e.preventDefault(); setDrawerOpen(false); break
         case '/': e.preventDefault(); searchRef.current?.focus(); searchRef.current?.select(); break
+        case 'q':
+          e.preventDefault()
+          document.querySelector<HTMLInputElement>('input[placeholder^="type a name"]')?.focus()
+          break
         default: break
       }
     }
@@ -287,6 +292,10 @@ export default function App() {
       />
       {mismatch && <ConfigMismatchBanner hash={run.data?.league_config_sha256 ?? ''} />}
       {run.isError && run.data != null && <OfflineBanner detail={runErr?.message ?? ''} onRetry={retryAll} />}
+
+      <div className="px-3 pt-2 pb-1" style={{ background: 'var(--bg)' }}>
+        <QuickPick players={players} state={state.data} busy={busy} onPick={(id, m) => draft(id, m)} />
+      </div>
 
       <div className="flex flex-1 min-h-0">
         <FilterRail

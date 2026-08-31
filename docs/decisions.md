@@ -165,3 +165,19 @@ asserts each new signal actually fires, so the catalogue cannot silently rot bac
 
 Also: years of experience now appears in the player drawer as "NFL season" (2nd, 3rd, ... or Rookie). It was
 computed in `player_features` and typed in the frontend, but the board API never selected it.
+
+
+## 2026-08-31 — Yahoo live sync dropped for this draft
+
+Yahoo's reply quotes a 1–2 week review for API access; the draft is Sep 6. Phase 8b was always gated on approval
+**and** a verified harness, so it is out of scope. Manual pick entry is now the draft-day path rather than a
+fallback, which changes what is worth building in the remaining days: entry speed and drift resistance, not
+integration.
+
+`QuickPick` (frontend) is the response — type-and-Enter recording against the team on the clock, ~4 keystrokes and
+about two seconds per pick, with the box re-focusing for the next one.
+
+One bug worth recording because it would have cost a real pick: the first matcher ranked strictly by match tier,
+so "chas" returned Chase McLaughlin (K, rank 140) and Chase Roberts (rank 564) above Ja'Marr Chase (rank 4) — their
+first names matched, his surname did. A fast Enter would have recorded a kicker. Scoring is now
+`tier × 60 + board_rank` with surname prefixes weighted like full-name prefixes.
