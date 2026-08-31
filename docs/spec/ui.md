@@ -12,7 +12,9 @@ Source of truth: `/Users/derek/.claude/plans/we-are-going-to-ethereal-newt.md` (
 
 **Deferred (plan, Phase 7)**: "Team view, settings/curated editors, printable sheet, sparklines." Post-MVP tracks that touch the UI: display-only 2025 SoS columns ("proxy" label), sparklines/polish, Monte Carlo availability (8c) replacing the closed-form number, keeper-value helper output (day 7, delivered as a ranked list with WHY bullets — API/CLI first; a board panel only if time allows).
 
-**Cut for this draft (plan)**: Team view, settings/curated editors (edit YAML + reload instead), printable sheet, any SoS multiplier or offense-environment score, news table, Sleeper trending. None of these get a placeholder in the UI.
+**Cut for this draft (plan)**: settings/curated editors (edit YAML + reload instead), printable sheet, any SoS multiplier or offense-environment score, news table, Sleeper trending. None of these get a placeholder in the UI.
+
+**Team view: pulled back in (§5b).** It was cut as a nice-to-have, but Yahoo did not approve API access before the draft, so all ~159 picks are typed by hand while the clock runs. That makes silent desynchronisation — a missed pick, a double entry, a pick credited to the wrong team — the failure mode with no error attached to it, and every availability number downstream goes stale without complaint. The Teams tab exists to make that disagreement findable against Yahoo's own board in seconds.
 
 ## 2. Layout
 
@@ -20,7 +22,7 @@ Single page, dark, full-width. Three regions:
 
 1. **Top bar** — draft status strip: `mode` (manual / Yahoo + fallback banner), on-the-clock (`R3 P23 · Team 3`), **"My next pick in N"** (from `pick_schedule`), picks made / total, run id + config hash (short) with a red badge if `/api/rankings` returned 409 `config_hash_mismatch`, and the CSV export button.
 2. **Board** — the ranked table (§3). Left of it, a narrow filter rail: position chips (ALL / QB / RB / WR / TE / K / DST), preset chips (Sleepers / Busts), "hide drafted" toggle (default off: drafted rows are dimmed, not removed), search box.
-3. **Right panel** — tabs: **Draft** (draft-day controls, §5), **Keepers** (entry form, §6). The **Player drawer** (§4) slides over the right panel when a row is selected.
+3. **Right panel** — tabs: **Draft** (draft-day controls, §5), **Teams** (all ten rosters + drift check, §5b), **Keepers** (entry form, §6). The **Player drawer** (§4) slides over the right panel when a row is selected.
 
 Board fills the viewport height and virtualizes rows (TanStack Table + a row virtualizer) so the Phase 7 gate "400 players render < 2 s" holds with the drawer open.
 
@@ -81,6 +83,30 @@ Plan: "mark drafted, my pick, undo, 'my next pick in N' from `pick_schedule`, VO
 - **Bye-stack warning** — from `DraftState.bye_stack_warnings`: a yellow banner "3 projected starters share bye 11" listing the players; also colors the Bye column for that week.
 - **Manual mode is first-class**: every control works identically whether `mode` is `manual` or `yahoo`; in `yahoo` mode the controls are still enabled (a manual pick is a correction that the next poll reconciles).
 - After every mutation the panel and the board re-render from the returned `state` and a refetch of `/api/rankings` + `/api/availability` — no page reload (Phase 7 gate).
+
+## 5b. Teams (right panel, Teams tab)
+
+The defence against silent drift in a hand-entered draft. Everything is derived from endpoints that already exist; no
+new backend route.
+
+- **Drift check header** — picks recorded / `total_picks`, what the snake says is next (`R2 P13 · T8`), the keeper
+  count, and then either "All 10 teams match the snake" in green or, in red, one line per offending team: `T4 has 3,
+  expected 4 — 1 missing (a pick of theirs recorded on another team?)`. A **Yahoo picks made** input is the one
+  external fact the app cannot derive; entering it reports "we are 2 picks behind — a pick was missed". Drift also
+  shows as a `⚠` on the Teams tab itself, so it is visible from the Draft tab.
+- **Per team**, all ten slots, mine highlighted: the players taken in pick order with round/pick, position chip, name,
+  NFL team, and a `K{cost_round}` badge for keepers; a compact tally of starters filled against `league.slots`
+  (`QB 0/1 RB 2/2 WR 1/3 …` plus `BN n/6`), open slots called out — and on my own row, an unmissable `OPEN QB · WR×2 ·
+  FLEX · K · DST` chip. A pick whose recorded team differs from the team the snake gave that pick to carries a `≠T7`
+  badge on the row itself.
+- **Derivation** (`frontend/src/lib/teamsModel.ts`): `POST /api/draft/picks` always stamps a pick with
+  `on_the_clock(schedule, picks_made)` and only ever appends, so the n-th surviving `draft_picks` row is the n-th live
+  slot of the schedule. Sorting the drafted `/api/rankings` rows by `pick_id` and walking them against
+  `live_pick_no = 1, 2, 3 …` recovers round and overall pick for every team. The owner is `drafted_by` (the *stored*
+  slot, which the "for team" override can make differ from the scheduled slot — exactly the mis-attribution being
+  hunted). Keepers are not `draft_picks` rows: they come from `/api/keepers` and are placed at the `is_keeper_slot`
+  hole the schedule cut for that (team, cost round), so they appear before the draft starts.
+- Clicking any player highlights him on the board (the same selection mechanism as VONA and Best available).
 
 ## 6. Keeper entry (right panel, Keepers tab)
 
@@ -145,6 +171,8 @@ Shortcuts are disabled while focus is in a text input. `d` and `m` never prompt;
 - [ ] Player drawer shows ≥3 WHY bullets, each with source label and `as_of`, for a top-100 veteran and for a rookie
 - [ ] 3-season PPG line renders for a veteran; rookie shows the "No NFL history" state
 - [ ] CSV export button downloads a file whose header matches §3 columns plus `name`, `player_id`, `yahoo_id`, `run_id`
+- [ ] Teams tab lists all 10 rosters in pick order with keepers present before pick 1, and my open starter slots called out
+- [ ] Recording a pick for the wrong team (Draft tab "for team" override) turns the drift check red for both the team that gained the pick and the team that lost it, and badges the row `≠T{slot}`
 - [ ] `j`/`k`/`Enter`/`Esc` work and are ignored while typing in the search or keeper form
 - [ ] Config-hash mismatch (409) shows the blocking banner and does not blank the table
 - [ ] No vendor fantasy-points field is referenced anywhere in `frontend/src` (grep `pts_ppr|pts_half_ppr|pts_std`)

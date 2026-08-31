@@ -22,8 +22,8 @@ Read `docs/PLAN.md` first; it has the MVP cut line, gates and calendar. Track pr
 `backend/alembic` · `config/league.yaml` · `docs/{PLAN.md,phases,spec,runbook-draft-week.md,decisions.md}`.
 
 `frontend/src`: `api/{types,client,queries}.ts` (typed contract mirror, fetch layer that preserves the FastAPI `detail`
-string, TanStack Query keys from `docs/spec/ui.md` §10) · `lib/{format,positions,flags,boardModel}.ts` (number rules,
-position hues, flag registry, filter/sort/tier-band assembly) · `components/*` (one concern per file; `App.tsx` is the
+string, TanStack Query keys from `docs/spec/ui.md` §10) · `lib/{format,positions,flags,boardModel,teamsModel}.ts` (number rules,
+position hues, flag registry, filter/sort/tier-band assembly, per-team roster reconstruction + drift check) · `components/*` (one concern per file; `App.tsx` is the
 composition root and owns filters, sort, highlight, drawer and the keyboard).
 
 Frontend rules: dark theme only, extend the CSS variables in `src/index.css` rather than replacing them. Numbers are

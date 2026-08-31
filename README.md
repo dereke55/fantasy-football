@@ -45,9 +45,19 @@ date/slot). It is currently a **labeled placeholder** (Yahoo default scoring) un
 
 Single dark page at the Vite dev URL. Three regions: the **top bar** (mode, on-the-clock, "my next pick in N" with the
 back-to-back pair for slot 10 of 10, picks made/total, run id + config hash, CSV export), the **board** (all 631 ranked
-players, virtualised) with a filter rail on the left, and a **right panel** with a Draft tab and a Keepers tab. Selecting
-a row and pressing Enter slides the **player drawer** over the panel: WHY bullets with rule id / period / source link,
-the 3-season PPG line, key metrics, the market table and the curated team context.
+players, virtualised) with a filter rail on the left, and a **right panel** with a Draft tab, a Teams tab and a Keepers
+tab. Selecting a row and pressing Enter slides the **player drawer** over the panel: WHY bullets with rule id / period /
+source link, the 3-season PPG line, key metrics, the market table and the curated team context.
+
+The **Teams tab** is the anti-drift check for a hand-entered draft. It reconstructs all ten rosters in pick order —
+round/pick, position, name, NFL team, `K` badge for keepers — plus each team's starters filled against the league's slot
+requirements, and compares every team's pick count with what the snake says it should be by now (`T4 has 3, expected 4`).
+A team's roster comes from `/api/rankings` grouped on `drafted_by`; the round and pick of each entry come from
+`/api/schedule`, because a pick is always stamped with the next unfilled live slot, so the n-th pick recorded is the
+n-th live slot of the snake. Keepers come from `/api/keepers` and sit in the schedule hole their cost round cut, so they
+show up before pick 1. The one fact the app cannot derive — how many picks Yahoo has actually completed — is a small
+input in the header; typing it turns "picks recorded" into a real comparison. Clicking any player highlights him on the
+board.
 
 Board columns, left to right: rank (+ positional rank), player, tier, value tier, pos, team, bye, proj PPG · season,
 value, ECR, Yahoo site-wide ADP, room ADP, gap, P(avail), flags. Tier bands rule the board while it is sorted by rank;

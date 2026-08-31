@@ -12,6 +12,7 @@ import {
 import type { BoardPlayer, NextPick } from './api/types'
 import { EMPTY_FILTERS, bestAvailable, buildRows, filterPlayers, sortPlayers } from './lib/boardModel'
 import type { BoardFilters, SortDir, SortKey } from './lib/boardModel'
+import { buildTeams } from './lib/teamsModel'
 import { COLUMNS } from './components/columns'
 import { AttributionFooter } from './components/AttributionFooter'
 import { QuickPick } from './components/QuickPick'
@@ -21,6 +22,7 @@ import { DraftPanel } from './components/DraftPanel'
 import { FilterRail } from './components/FilterRail'
 import { KeeperPanel } from './components/KeeperPanel'
 import { PlayerDrawer } from './components/PlayerDrawer'
+import { TeamsPanel } from './components/TeamsPanel'
 import { Toasts } from './components/Toasts'
 import { TopBar } from './components/TopBar'
 import type { Toast } from './components/Toasts'
@@ -39,7 +41,7 @@ export default function App() {
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: 'rank', dir: 'asc' })
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [tab, setTab] = useState<'draft' | 'keepers'>('draft')
+  const [tab, setTab] = useState<'draft' | 'teams' | 'keepers'>('draft')
   const [toasts, setToasts] = useState<Toast[]>([])
   const [renderMs, setRenderMs] = useState<number | null>(null)
   const [scrollToIndex, setScrollToIndex] = useState<number | null>(null)
@@ -141,6 +143,24 @@ export default function App() {
     () => new Set((state.data?.bye_stack_warnings ?? []).map((w) => w.bye_week)),
     [state.data],
   )
+
+  /**
+   * Every pick is entered by hand this draft, so the board can silently disagree with Yahoo's.
+   * The reconstruction lives here rather than inside the Teams tab so the tab strip can carry the
+   * warning badge — drift has to be visible from the Draft tab, where Derek actually is.
+   */
+  const teamsModel = useMemo(
+    () => buildTeams({
+      players,
+      schedule: schedule.data?.picks,
+      keepers: keepers.data?.keepers ?? [],
+      league: run.data?.league,
+      picksMade: state.data?.picks_made ?? 0,
+      totalPicks: state.data?.total_picks ?? 0,
+    }),
+    [players, schedule.data, keepers.data, run.data, state.data],
+  )
+  const drifted = teamsModel.offenders.length > 0 || teamsModel.missingFromBoard !== 0
 
   /**
    * Single entry point for the highlight. The ref is written here rather than during render so a
@@ -326,19 +346,24 @@ export default function App() {
           style={{ width: 384, background: 'var(--panel)', borderLeft: '1px solid var(--border)' }}
         >
           <div className="flex shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
-            {(['draft', 'keepers'] as const).map((t) => (
+            {(['draft', 'teams', 'keepers'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
                 className="flex-1 py-1.5 text-[12px] font-semibold uppercase tracking-wider"
+                title={t === 'teams' && drifted ? 'A team\u2019s pick count disagrees with the snake' : undefined}
                 style={{
                   color: tab === t ? 'var(--accent)' : 'var(--muted)',
                   background: tab === t ? 'var(--accent-dim)' : 'transparent',
                   borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent',
                 }}
               >
-                {t === 'draft' ? 'Draft' : `Keepers (${keepers.data?.keepers.length ?? 0})`}
+                {t === 'draft' && 'Draft'}
+                {t === 'teams' && (
+                  <>Teams{drifted && <span style={{ color: 'var(--bad)' }}> ⚠</span>}</>
+                )}
+                {t === 'keepers' && `Keepers (${keepers.data?.keepers.length ?? 0})`}
               </button>
             ))}
           </div>
@@ -358,6 +383,14 @@ export default function App() {
               onUndo={() => undo.mutate()}
               onSelect={selectAndScroll}
               onOpenDrawer={(id) => { select(id); setDrawerOpen(true) }}
+            />
+          ) : tab === 'teams' ? (
+            <TeamsPanel
+              run={run.data}
+              state={state.data}
+              model={teamsModel}
+              selectedId={selectedId}
+              onSelect={selectAndScroll}
             />
           ) : (
             <KeeperPanel

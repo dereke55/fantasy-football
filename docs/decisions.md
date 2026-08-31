@@ -181,3 +181,22 @@ One bug worth recording because it would have cost a real pick: the first matche
 so "chas" returned Chase McLaughlin (K, rank 140) and Chase Roberts (rank 564) above Ja'Marr Chase (rank 4) — their
 first names matched, his surname did. A fast Enter would have recorded a kicker. Scoring is now
 `tier × 60 + board_rank` with surname prefixes weighted like full-name prefixes.
+
+
+## 2026-08-31 — Teams view, and the limits of a drift check
+
+With Yahoo's API out of scope, every pick is typed by hand and the real failure mode is **silent drift** — a missed
+or mis-attributed pick desynchronises the board from the draft with no error anywhere. The TEAMS tab is the defence:
+all ten rosters in pick order, positional tallies against the league's starting requirements, and a drift header
+comparing each team's recorded picks against what the snake says it should have.
+
+Per-team pick order is derived exactly rather than inferred: `POST /api/draft/picks` stamps every pick with the
+schedule slot that was on the clock and only ever appends, so the n-th surviving `draft_picks` row is the n-th live
+slot. Where the stored team differs from the scheduled team (the "for team" override) the row is badged `≠T7` —
+that divergence is precisely the mis-attribution being hunted, so the two are never conflated.
+
+**Known limit, worth stating plainly:** the per-team count catches *mis-attribution*, but not a plain missed pick
+or a double-entry — those consume consecutive snake slots and leave every team's count self-consistent, so only the
+*names* would be wrong. Two mitigations: rosters list names in pick order for a name-by-name scan against Yahoo,
+and the header carries a manual "Yahoo picks made" input, which is the one fact the app cannot derive and turns
+"picks recorded" from a tautology into a real comparison. Kept deliberately.
