@@ -14,8 +14,24 @@ league:
     max_per_team: 1           # Derek's keeper sheet lists a single "Keeper" column
     cost_rule: round_drafted  # keeper occupies the round the player was drafted in; the team skips that round
     deadline: "2026-08-31"
-    assigned_in_yahoo: false
+    assigned_in_yahoo: true         # commissioner sheet received 2026-09-03
     ineligible_rounds: [1, 2, 3, 4]   # Yahoo marked Derek's R1-R4 picks "Not Eligible"
+  # Manager -> draft slot. Derek's slot 10 is CONFIRMED; the other nine are PROVISIONAL, assigned in the order
+  # the commissioner's keeper sheet listed them. Slot only affects WHERE each keeper's round hole falls, which
+  # shifts live pick numbering (and therefore P(avail)) from round 8 onward. Removing the kept players from the
+  # pool, the VBD baselines and the 152-pick draft length are all slot-independent and already exact.
+  draft_order_confirmed: false
+  managers:
+    - { slot: 1,  name: Mike,   keeper: Travis Etienne,   cost_round: 10 }
+    - { slot: 2,  name: Devin,  keeper: Cam Skattebo,     cost_round: 12 }
+    - { slot: 3,  name: Marc,   keeper: Javonte Williams, cost_round: 10 }
+    - { slot: 4,  name: John,   keeper: Drake London,     cost_round: 8 }
+    - { slot: 5,  name: Danny,  keeper: Luther Burden III, cost_round: 14 }
+    - { slot: 6,  name: Jason,  keeper: null,             cost_round: null }
+    - { slot: 7,  name: Tony,   keeper: null,             cost_round: null }
+    - { slot: 8,  name: Junior, keeper: Tyler Warren,     cost_round: 12 }
+    - { slot: 9,  name: Al,     keeper: Caleb Williams,   cost_round: 13 }
+    - { slot: 10, name: Derek,  keeper: Colston Loveland, cost_round: 13 }
 roster:
   # Yahoo: QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF, BN x6, IR
   slots: { QB: 1, WR: 3, RB: 2, TE: 1, FLEX: 1, K: 1, DEF: 1 }

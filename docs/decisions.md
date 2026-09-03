@@ -200,3 +200,34 @@ or a double-entry — those consume consecutive snake slots and leave every team
 *names* would be wrong. Two mitigations: rosters list names in pick order for a name-by-name scan against Yahoo,
 and the header carries a manual "Yahoo picks made" input, which is the one fact the app cannot derive and turns
 "picks recorded" from a tautology into a real comparison. Kept deliberately.
+
+
+## 2026-09-03 — All eight league keepers recorded
+
+The commissioner's sheet arrived. Eight of ten managers kept a player; Jason and Tony kept none.
+
+| Manager | Keeper | Cost round | Board rank | ADP |
+|---|---|---|---|---|
+| John | Drake London (WR ATL) | 8 | 19 | 17 |
+| Marc | Javonte Williams (RB DAL) | 10 | 23 | 34 |
+| Mike | Travis Etienne (RB NO) | 10 | 44 | 40 |
+| Devin | Cam Skattebo (RB NYG) | 12 | 43 | 39 |
+| Junior | Tyler Warren (TE IND) | 12 | 62 | 57 |
+| Derek | Colston Loveland (TE CHI) | 13 | 58 | 48 |
+| Al | Caleb Williams (QB CHI) | 13 | 91 | 78 |
+| Danny | Luther Burden III (WR CHI) | 14 | 65 | 59 |
+
+Effects, all now live: eight players out of the pool (three RB, two WR, two TE, one QB — every one inside the top
+100 by ADP), the draft shortened from 159 to **152 live picks**, VBD baselines shifted, room ADP re-ranked and
+P(avail) recomputed.
+
+**Assumption that needs confirming: the manager → draft slot mapping.** The keeper sheet is not in draft order —
+Derek is listed third but drafts from slot 10 — so the other nine slots were assigned in sheet order and recorded
+in `config/league.yaml` under `league.managers` with `draft_order_confirmed: false`.
+
+What this does and does not affect:
+- **Exact regardless of slot**: which players are gone, the 152-pick length, VBD baselines, room ADP, and every
+  availability number in rounds 1–7 (the earliest keeper hole is round 8).
+- **Depends on the slot**: where each keeper's hole falls, which shifts live pick numbering from round 8 on. Derek's
+  round-12 pick is currently live pick 108 rather than 111, and his last is 143 rather than 150. Correcting the
+  mapping once Yahoo publishes the draft order is a one-line edit per manager plus `ff rank run`.
