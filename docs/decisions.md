@@ -231,3 +231,38 @@ What this does and does not affect:
 - **Depends on the slot**: where each keeper's hole falls, which shifts live pick numbering from round 8 on. Derek's
   round-12 pick is currently live pick 108 rather than 111, and his last is 143 rather than 150. Correcting the
   mapping once Yahoo publishes the draft order is a one-line edit per manager plus `ff rank run`.
+
+
+## 2026-09-03 — Draft-week refresh caught a silent upstream break (ARI → AZ)
+
+The Aug 31 roster cutdown happened after the data was pulled, so a full refresh was run four days before the draft.
+It surfaced a genuine data-quality failure that no gate would have caught on its own.
+
+**nflverse changed Arizona's team code from `ARI` to `AZ`** in the 2026 roster file, while depth charts and weekly
+stats stayed on `ARI`. The players hub takes `team` from the roster, so all 32 Arizona players ended up on a code
+that matched nothing: no team volume from `team_tendencies`, no row in `team_context`. They silently fell back to a
+**vendor-only projection with no team context at all** — Trey McBride (rank 40), Marvin Harrison Jr (75) and
+Jeremiyah Love (32) among them. Only 31 of 32 teams were being projected.
+
+Fixed at the canonical layer: `TEAM_FIX` in `players_hub.py` now normalises `AZ`, `ARZ`, `SFO`, `KCC`, `LVR`, `NOS`
+and the other common variants to the nflverse stats dialect, with `FA` recognised as a real value (unsigned free
+agents) rather than a club. `ingest check-ids` gained a **team-code guard** that fails loudly on any unrecognised
+code and on any count other than 32 canonical teams, so the next dialect drift is caught at ingest rather than by a
+test that happens to count teams. `app/context/build.py` now validates the curated seeds against `CANONICAL_TEAMS`
+instead of whatever dialect the current roster file uses — the seeds were right and the reference was wrong.
+
+Restoring Arizona moved McBride from 40 to **30**.
+
+### Other real changes the refresh brought in
+
+- **Josh Jacobs (GB, ADP 45) fell from RB1 to RB4** behind MarShawn Lloyd, carrying a groin injury. The pipeline
+  reacted on its own: rank 45 → 222 and a `bust` flag. Lloyd rose from 312 to 93 with a `sleeper` flag.
+- **Zach Charbonnet is PUP with a post-surgical ACL and has fallen to RB4** behind Jadarian Price; he correctly lost
+  the sleeper flag he had on 2026-08-31.
+- **Four players moved to IR after the seed was written** — Isiah Pacheco (back), James Conner (foot), Tank Dell
+  (knee) and Jordyn Tyson (hamstring). The curated `known_missed_weeks` had them at 1–2 weeks as Questionable.
+  Updated to a **four-game floor**, which is the NFL rule for IR once the 53-man roster is set, not a guess. Their
+  expected games dropped to 13 and they fell 100+ places apart.
+
+This is the case for the day-before refresh in `docs/runbook-draft-week.md`: three of these would have left a
+materially wrong board.

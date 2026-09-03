@@ -151,26 +151,26 @@ rows:
     gsis_id: "00-0041029"
     known_missed_weeks: 6
     reason: "Hamstring strain in training camp (~Aug 14); out approximately two months; likely to open on IR"
-    status: Doubtful
+    status: IR
     return_estimate: "~mid-October (Week 6-7), then gradual ramp-up"
     source_url: https://www.cbssports.com/nfl/news/nfl-training-camp-injury-tracker/
     source_url_2: https://www.fantasypros.com/nfl/players/jordyn-tyson.php
     confidence: low
-    last_checked: "2026-08-29"
-    notes: "Sleeper Doubtful (2026-08-27); ESPN Saints page Doubtful. Verifier 8/29: Fox News Aug 17 — could be sidelined 'through Week 6'; Yahoo Aug 29 — out 'for the foreseeable future'. IR placement not yet official — if placed on IR at cutdown the minimum is 4 games."
+    last_checked: '2026-09-03'
+    notes: "Now on IR (hamstring strain) rather than Doubtful; the six-week estimate already exceeds the four-game IR minimum, so the figure is unchanged."
   - name: James Conner
     team: ARI
     position: RB
     gsis_id: "00-0033553"
-    known_missed_weeks: 2
+    known_missed_weeks: 4
     reason: "Foot (season-ending 2025 injury); still not in team drills a month into camp; LaFleur 'too early to tell' for Week 1 (Aug 26)"
-    status: Questionable
+    status: IR
     return_estimate: "Availability for the early part of the season uncertain"
     source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
     source_url_2: https://www.espn.com/nfl/player/_/id/3045147/james-conner
     confidence: low
-    last_checked: "2026-08-29"
-    notes: "Avoided PUP at camp open; trade rumors. With Love (ankle) also uncertain, Tyler Allgeier may lead ARI backfield Week 1."
+    last_checked: '2026-09-03'
+    notes: "Placed on IR (foot) after the Aug 31 cutdown; minimum four games. Was Questionable and not yet in team drills when this seed was written."
   # ---------------------------------------------------------------- Week 1 in doubt (1-2 weeks)
   - name: Jeremiyah Love
     team: ARI
@@ -202,15 +202,15 @@ rows:
     team: DET
     position: RB
     gsis_id: "00-0037197"
-    known_missed_weeks: 1
+    known_missed_weeks: 4
     reason: "MCL sprain, then a back injury (Aug 26); Week 1 availability unclear"
-    status: Questionable
+    status: IR
     return_estimate: "Week 1-2"
     source_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries
     source_url_2: https://www.espn.com/nfl/player/_/id/4361529/isiah-pacheco
     confidence: low
-    last_checked: "2026-08-29"
-    notes: "Campbell says knee is not a concern; back 'feeling better' Aug 26. Sleeper Questionable (Knee - MCL)."
+    last_checked: '2026-09-03'
+    notes: "Placed on IR (back) after the Aug 31 cutdown; IR once the 53-man roster is set means a minimum of four games missed. Was Questionable with an MCL sprain when this seed was written on 2026-08-30."
   - name: Emeka Egbuka
     team: TB
     position: WR
@@ -254,15 +254,15 @@ rows:
     team: HOU
     position: WR
     gsis_id: "00-0038977"
-    known_missed_weeks: 1
+    known_missed_weeks: 4
     reason: "Knee (Dec 2024 multi-ligament injury); on his own ramp-up schedule, missed practices mid-Aug; no formal PUP/IR"
-    status: Questionable
+    status: IR
     return_estimate: "Unknown — no Week 1 commitment from HOU"
     source_url: https://www.espn.com/nfl/team/injuries/_/name/hou/houston-texans
     source_url_2: https://www.fantasypros.com/nfl/players/nathaniel-dell.php
     confidence: low
-    last_checked: "2026-08-29"
-    notes: "Not in ESPN JSON feed (cap). Sleeper Questionable (Knee - ACL + MCL, 2026-08-25). More relevant after Higgins' ACL."
+    last_checked: '2026-09-03'
+    notes: "Placed on IR (knee, ACL + MCL) after the Aug 31 cutdown; minimum four games, and a multi-ligament knee makes a longer absence likely."
   # ---------------------------------------------------------------- listed Questionable, expected for Week 1 (0 weeks)
   - name: Patrick Mahomes
     team: KC

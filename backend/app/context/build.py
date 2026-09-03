@@ -25,8 +25,14 @@ CONFIDENCE = {"high", "medium", "low"}
 
 
 def _teams() -> set[str]:
-    df = pl.read_database("select distinct team from raw_nflverse_rosters where season = 2026", connection=engine)
-    return set(df["team"].to_list())
+    """The canonical 32 codes, not whatever dialect the current roster file happens to use.
+
+    Reading raw roster codes made this validator fail the moment nflverse switched Arizona from ARI to AZ
+    (2026-09-03) — the curated seeds were right and the reference was wrong.
+    """
+    from app.ingest.players_hub import CANONICAL_TEAMS
+
+    return set(CANONICAL_TEAMS)
 
 
 def _load(name: str) -> tuple[list[dict], str]:

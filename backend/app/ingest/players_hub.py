@@ -36,7 +36,20 @@ YAHOO_TEAM_MAP = {  # Yahoo editorial_team_abbr -> nflverse
     "LAR": "LA", "LAC": "LAC", "LV": "LV", "Mia": "MIA", "Min": "MIN", "NE": "NE", "NO": "NO", "NYG": "NYG",
     "NYJ": "NYJ", "Phi": "PHI", "Pit": "PIT", "Sea": "SEA", "SF": "SF", "TB": "TB", "Ten": "TEN", "Was": "WAS",
 }
-TEAM_FIX = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "OAK": "LV", "SD": "LAC", "STL": "LA"}
+# Upstream feeds disagree about team codes and the disagreement MOVES: nflverse's 2026 roster switched Arizona
+# from ARI to AZ on 2026-09-03 while depth charts and weekly stats stayed on ARI, which silently cost all 17
+# Arizona players their in-house projection and their team context. Everything is normalised to the nflverse
+# stats dialect here, and `ingest check-ids` fails loudly if an unknown code ever appears again.
+CANONICAL_TEAMS = frozenset({
+    "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX",
+    "KC", "LA", "LAC", "LV", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS",
+})
+TEAM_FIX = {
+    "LAR": "LA", "JAC": "JAX", "WSH": "WAS", "OAK": "LV", "SD": "LAC", "STL": "LA",
+    "AZ": "ARI", "ARZ": "ARI", "SFO": "SF", "KCC": "KC", "LVR": "LV", "NOS": "NO", "TAM": "TB", "GNB": "GB",
+    "NWE": "NE", "NOR": "NO", "SFA": "SF", "CLV": "CLE", "BLT": "BAL", "HST": "HOU",
+}
+NON_TEAM_CODES = frozenset({"FA"})   # unsigned free agents: a real value, not a club
 
 
 def norm_name(name: str | None) -> str:
@@ -401,7 +414,25 @@ def check_ids(max_unmatched_pct: float = 3.0) -> None:
         worst = max(worst, pct)
         out["draft2026_r1_r4_skill"] = {"n": len(picks), "resolved": ok, "unmatched_pct": round(pct, 2)}
         out["players_total"] = c.execute(text("select count(*) from players")).scalar_one()
+
+        # Team-code guard. Upstream dialects drift (nflverse moved Arizona ARI -> AZ on 2026-09-03 while depth
+        # charts and stats stayed on ARI), and the failure is silent: affected players simply lose their team
+        # volume and their curated context, so they quietly fall back to a vendor-only projection.
+        bad = c.execute(text(
+            "select team, count(*) n from players where team is not null and team <> all(:ok) group by team"
+        ), {"ok": list(CANONICAL_TEAMS | NON_TEAM_CODES)}).all()
+        out["unknown_team_codes"] = {t: n for t, n in bad}
+        n_teams = c.execute(text(
+            "select count(distinct team) from players where team = any(:ok)"
+        ), {"ok": list(CANONICAL_TEAMS)}).scalar_one()
+        out["canonical_teams_present"] = n_teams
     typer.echo(out)
+    if out["unknown_team_codes"]:
+        typer.echo(f"GATE FAILED: unrecognised team codes {out['unknown_team_codes']} — add them to TEAM_FIX")
+        raise typer.Exit(code=1)
+    if out["canonical_teams_present"] != 32:
+        typer.echo(f"GATE FAILED: only {out['canonical_teams_present']} of 32 teams present in the hub")
+        raise typer.Exit(code=1)
     if worst > max_unmatched_pct:
         typer.echo(f"GATE FAILED: worst unmatched {worst:.2f}% > {max_unmatched_pct}% — see data/reports/unmatched.csv")
         raise typer.Exit(code=1)
