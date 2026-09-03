@@ -166,7 +166,14 @@ def test_keeper_edit_recomputes_room_adp_and_availability(board):
     probe = next(p for p in avail if p["composite_adp"] > target["composite_adp"] + 20)
     probe_name = probe["name"]
     before = probe
-    add = client.post("/api/keepers", json={"player_id": target["player_id"], "team_slot": 4, "cost_round": 7})
+    # the league caps keepers per team, and most teams already have one — find a team that is free
+    cfg = load_league_config()
+    taken = {k["team_slot"] for k in client.get("/api/keepers").json()["keepers"]}
+    free_slot = next((s for s in range(1, cfg.league.num_teams + 1) if s not in taken), None)
+    if free_slot is None:
+        pytest.skip("every team already has its maximum keepers")
+    add = client.post("/api/keepers",
+                      json={"player_id": target["player_id"], "team_slot": free_slot, "cost_round": 7})
     assert add.status_code == 200 and add.json()["run_id"], "a keeper edit must produce a new ranking run"
     try:
         after_rows = client.get("/api/rankings", params={"limit": 700}).json()["players"]
@@ -174,7 +181,8 @@ def test_keeper_edit_recomputes_room_adp_and_availability(board):
         assert after["room_adp"] != before["room_adp"], "room ADP must re-rank around the removed player"
         assert next(p for p in after_rows if p["player_id"] == target["player_id"])["drafted"] is True
     finally:
-        kid = next(k["id"] for k in client.get("/api/keepers").json()["keepers"] if k["team_slot"] == 4)
+        kid = next(k["id"] for k in client.get("/api/keepers").json()["keepers"]
+                   if k["team_slot"] == free_slot and k["player_id"] == target["player_id"])
         rm = client.delete(f"/api/keepers/{kid}")
         assert rm.status_code == 200
     restored = next(p for p in client.get("/api/rankings", params={"limit": 700}).json()["players"]
