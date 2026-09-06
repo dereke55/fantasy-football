@@ -563,3 +563,25 @@ players who cannot be drafted.
 drafted). Picks 30/31 now correctly lead with Bucky Irving (0.98) and Emeka Egbuka (0.97). Two tests added: one
 asserting the offered pool never intersects the keeper list, one pinning `p_available(None, …) == 1.0` so the
 guard cannot quietly stop testing the mechanism that caused it.
+
+## 2026-09-06 — `ff rank turns` and `ff rank export` answered about the wrong run, and `turns` ignored the draft
+
+Asked whether `turns` is meant to be run during the draft, and the honest answer was no — for three reasons, two
+of which were defects rather than design.
+
+1. **It planned from pick 1 forever.** `mine[:8]` took my first eight schedule slots with no reference to picks
+   already made, so mid-draft it re-planned picks that had already happened. It now takes only slots with
+   `live_pick_no > picks_made`; after 35 picks it correctly opens at round 5, pick 50.
+2. **It used the pre-draft room ADP** against an advancing pick number — the same staleness that made the board's
+   P(avail) column read 100% for a player with a 4% chance. It now re-ranks whoever is left and offsets by the
+   picks made, and measures survival against the pick *before* mine rather than my own.
+3. **`turns` and `export` read `LATEST_RUN`, while the board serves the frozen run.** They agree today only
+   because `recompute --freeze` makes the newest run the frozen one. Any bare `ff rank run` would have split
+   them — and `export` produces the offline fallback CSV, so the sheet Derek drafts from on paper could have
+   described a board nobody was looking at. Both now use `SERVING_RUN`, which resolves exactly as
+   `app.api.board.current_run()` does (frozen first, else newest), with a test asserting the two agree.
+
+`turns` is a **pre-draft planning** tool: it answers "which of my picks should I be targeting whom at". During the
+draft the board is the tool — VONA top-3 per position and the P(avail) column are recomputed live on every pick,
+which `turns` is not. The fixes mean running it mid-draft is now correct rather than misleading, but it is still
+answering a planning question, not a which-player-now question.

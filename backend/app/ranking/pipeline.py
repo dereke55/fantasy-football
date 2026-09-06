@@ -58,6 +58,11 @@ DRAFTABLE_ADP = 220.0
 POS_GAP_MIN = 5.0
 SPEARMAN_FLOOR = 0.80
 LATEST_RUN = "(select run_id from ranking_runs where status='ok' order by started_at desc limit 1)"
+# What the BOARD serves (app.api.board.current_run): the frozen run if there is one, else the newest. The CLI
+# must answer about the same run the board is showing, or a cheat sheet exported on draft morning describes a
+# board nobody is looking at.
+SERVING_RUN = ("(select run_id from ranking_runs where status='ok' "
+               "order by is_frozen desc, started_at desc limit 1)")
 
 
 def _q(sql: str) -> pl.DataFrame:
@@ -531,24 +536,38 @@ def turns(top: int = 6) -> None:
     # A kept or already-drafted player cannot be taken, and keepers carry a null room_adp -- which
     # p_available() reads as "unknown, assume available" and scores 1.0. Left in, the two best keepers in the
     # league sorted straight to the top of every turn as certainties. Same availability rule as the board.
+    # A kept or already-drafted player cannot be taken, and keepers carry a null room_adp -- which
+    # p_available() reads as "unknown, assume available" and scores 1.0. Left in, the two best keepers in the
+    # league sorted straight to the top of every turn as certainties. Same availability rule as the board.
     board = _q(f"""select k.*, p.name from rankings k
                    join players p on p.id = k.player_id
                    left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
                    left join keepers ke on ke.player_id = k.player_id
-                   where k.run_id = {LATEST_RUN} and k.vorp is not null and not k.is_kdst
+                   where k.run_id = {SERVING_RUN} and k.vorp is not null and not k.is_kdst
                      and d.id is null and ke.id is null""")
-    cands = [Candidate(r["player_id"], r["position"], max(0.0, r["vorp"]), r["room_adp"], r["sd_adp"] or 10.0)
+    made = int(_q("select count(*) n from draft_picks where undone_at is null and not is_keeper")["n"][0])
+    # The stored room_adp is a PRE-DRAFT rank. Re-rank whoever is left and offset by the picks already made, so
+    # running this mid-draft answers about the board as it stands rather than as it started.
+    live_room = {r["player_id"]: float(made + i)
+                 for i, r in enumerate(sorted([r for r in board.to_dicts() if r["composite_adp"] is not None],
+                                              key=lambda r: r["composite_adp"]), start=1)}
+    cands = [Candidate(r["player_id"], r["position"], max(0.0, r["vorp"]),
+                       live_room.get(r["player_id"]), r["sd_adp"] or 10.0)
              for r in board.to_dicts()]
-    names = {r["player_id"]: (r["name"], r["position"], r["team"], r["vorp"], r["room_adp"])
+    names = {r["player_id"]: (r["name"], r["position"], r["team"], r["vorp"], live_room.get(r["player_id"]))
              for r in board.to_dicts()}
     keepers = load_keepers(cfg)
     sched = build_pick_schedule(cfg.league.num_teams, cfg.roster.rounds, keepers)
-    mine = [s for s in sched if s.team_slot == slot and s.live_pick_no is not None]
+    # only picks still ahead of me: mine[:8] from the top of the draft was a plan for a draft that already moved on
+    mine = [s for s in sched if s.team_slot == slot and s.live_pick_no is not None and s.live_pick_no > made]
+    if not mine:
+        typer.echo("no picks left for my slot")
+        return
     for s_ in mine[:8]:
         pick = s_.live_pick_no
         rows = []
         for c in sorted(cands, key=lambda x: -x.value):
-            pa = p_available(c.room_adp, c.sd_adp, pick)
+            pa = 1.0 if pick - 1 <= made else p_available(c.room_adp, c.sd_adp, pick - 1)
             if pa < 0.25:
                 continue
             n = names[c.player_id]
@@ -570,7 +589,7 @@ def export(path: str = "draft_board.csv", limit: int = 300) -> None:
                 k.p_avail_next, k.vona, array_to_string(k.flags, '|') flags, f.depth_rank, f.e_games
                 from rankings k join players p on p.id = k.player_id
                 left join player_features f on f.player_id = k.player_id
-                where k.run_id = {LATEST_RUN}
+                where k.run_id = {SERVING_RUN}
                 order by k.overall_rank limit {limit}""")
     df.write_csv(path)
     typer.echo({"rows": df.height, "path": path, "generated_at": datetime.now(UTC).isoformat()})

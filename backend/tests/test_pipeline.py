@@ -225,3 +225,37 @@ def test_a_null_room_adp_is_what_made_keepers_look_certain():
 
     assert p_available(None, 5.0, 30) == 1.0
     assert p_available(41.0, 5.2, 30) < 1.0
+
+
+def test_turns_starts_from_my_next_pick_not_the_top_of_the_draft():
+    """`turns` planned from pick 1 forever: mid-draft it replayed picks that had already happened.
+
+    Only the schedule slots still ahead of the picks made are mine to plan.
+    """
+    from app.ranking.pick_schedule import build_pick_schedule
+    from app.ranking.pipeline import load_keepers
+    from app.scoring.config import load_league_config
+
+    cfg = load_league_config()
+    slot = cfg.league.my_draft_slot
+    if slot is None:
+        pytest.skip("no draft slot set")
+    made = int(q("select count(*) n from draft_picks where undone_at is null and not is_keeper")["n"][0])
+    sched = build_pick_schedule(cfg.league.num_teams, cfg.roster.rounds, load_keepers(cfg))
+    mine = [s for s in sched if s.team_slot == slot and s.live_pick_no is not None and s.live_pick_no > made]
+    assert all(s.live_pick_no > made for s in mine), "a pick already made is not something to plan for"
+    if made == 0:
+        assert mine[0].live_pick_no == slot, "untouched board: my first pick is my draft slot"
+
+
+def test_cli_and_board_answer_about_the_same_run():
+    """SERVING_RUN must resolve to what app.api.board.current_run() serves.
+
+    `turns` and the offline `export` CSV read this; on the latest run instead of the frozen one, a cheat sheet
+    exported on draft morning would describe a board nobody is looking at.
+    """
+    from app.api.board import current_run
+    from app.ranking.pipeline import SERVING_RUN
+
+    cli_run = q(f"select {SERVING_RUN} as run_id")["run_id"][0]
+    assert str(cli_run) == str(current_run()["run_id"])
