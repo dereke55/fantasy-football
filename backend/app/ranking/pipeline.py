@@ -528,8 +528,15 @@ def turns(top: int = 6) -> None:
     if slot is None:
         typer.secho("set league.my_draft_slot in config/league.yaml first", fg=typer.colors.RED)
         raise typer.Exit(code=2)
-    board = _q(f"""select k.*, p.name from rankings k join players p on p.id = k.player_id
-                   where k.run_id = {LATEST_RUN} and k.vorp is not null and not k.is_kdst""")
+    # A kept or already-drafted player cannot be taken, and keepers carry a null room_adp -- which
+    # p_available() reads as "unknown, assume available" and scores 1.0. Left in, the two best keepers in the
+    # league sorted straight to the top of every turn as certainties. Same availability rule as the board.
+    board = _q(f"""select k.*, p.name from rankings k
+                   join players p on p.id = k.player_id
+                   left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
+                   left join keepers ke on ke.player_id = k.player_id
+                   where k.run_id = {LATEST_RUN} and k.vorp is not null and not k.is_kdst
+                     and d.id is null and ke.id is null""")
     cands = [Candidate(r["player_id"], r["position"], max(0.0, r["vorp"]), r["room_adp"], r["sd_adp"] or 10.0)
              for r in board.to_dicts()]
     names = {r["player_id"]: (r["name"], r["position"], r["team"], r["vorp"], r["room_adp"])

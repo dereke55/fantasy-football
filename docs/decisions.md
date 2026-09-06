@@ -546,3 +546,20 @@ State: 0 picks, 8 keepers, my slot 10, first pick R1 P10, keeper Colston Lovelan
 
 Injury-driven E[games] carried into the frozen board (the values a later pull could still move): Egbuka 14.2 Q ·
 Love 13.7 Q · Monangai 13.2 Q · Kittle 13.8 Q · Tyson 11.0 IR · Charbonnet 9.0 PUP · Aiyuk 0.0 DNR.
+
+## 2026-09-06 — `ff rank turns` offered keepers as certainties
+
+Walking through the board with Derek, `ff rank turns` listed Drake London and Javonte Williams as the two best
+players available at picks 30 and 31, both at 100%. Both are keepers — the board itself correctly strikes them
+through and dims them.
+
+Cause: `turns` selected the pool with only `vorp is not null and not is_kdst`, with no keeper/drafted filter.
+Kept players are excluded from room ADP by design, so their `room_adp` is null, and `p_available()` treats a null
+room ADP as "undrafted/unknown → assume available" and returns exactly 1.0. Being both high-VORP and scored 1.0,
+they sorted to the top of every turn. Anyone planning a turn around that output would be planning around two
+players who cannot be drafted.
+
+`turns` now applies the same availability rule as `/api/rankings` and `/api/availability` (not kept, not already
+drafted). Picks 30/31 now correctly lead with Bucky Irving (0.98) and Emeka Egbuka (0.97). Two tests added: one
+asserting the offered pool never intersects the keeper list, one pinning `p_available(None, …) == 1.0` so the
+guard cannot quietly stop testing the mechanism that caused it.

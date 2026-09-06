@@ -197,3 +197,31 @@ def test_ties_below_kdst_do_not_reorder_players_with_distinct_value():
         assert a["vorp"] >= b["vorp"], "VORP must never increase as overall_rank increases"
         if a["vorp"] == b["vorp"] and a["composite_adp"] is not None and b["composite_adp"] is not None:
             assert a["composite_adp"] <= b["composite_adp"], "tied VORP must break by ADP"
+
+
+def test_turns_never_offers_a_player_who_cannot_be_drafted():
+    """`ff rank turns` is a draft-day tool, so its pool must obey the same rule as the board.
+
+    Keepers carry a null room_adp, which p_available() reads as "unknown, assume available" and scores 1.0, so
+    the two best keepers in the league sorted straight to the top of every turn as certainties.
+    """
+    from app.ranking.pipeline import LATEST_RUN
+
+    offered = q(f"""select p.name from rankings k
+                    join players p on p.id = k.player_id
+                    left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
+                    left join keepers ke on ke.player_id = k.player_id
+                    where k.run_id = {LATEST_RUN} and k.vorp is not null and not k.is_kdst
+                      and d.id is null and ke.id is null""")
+    kept = q("select p.name from keepers k join players p on p.id = k.player_id")
+    assert not kept.is_empty(), "setup: the league has keepers"
+    overlap = set(offered["name"]) & set(kept["name"])
+    assert not overlap, f"turns would offer kept players: {sorted(overlap)}"
+
+
+def test_a_null_room_adp_is_what_made_keepers_look_certain():
+    """Pins the mechanism, so the guard above cannot silently stop testing anything."""
+    from app.ranking.availability import p_available
+
+    assert p_available(None, 5.0, 30) == 1.0
+    assert p_available(41.0, 5.2, 30) < 1.0
