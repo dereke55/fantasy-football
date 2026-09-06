@@ -90,6 +90,15 @@ export function useUndoPick(onDone?: (msg: string) => void, onError?: (msg: stri
   })
 }
 
+export function useResetDraft(onDone?: (msg: string) => void, onError?: (msg: string) => void) {
+  const invalidate = useInvalidateBoard()
+  return useMutation({
+    mutationFn: api.resetDraft,
+    onSuccess: (d) => { invalidate(); onDone?.(`cleared ${d.cleared} pick${d.cleared === 1 ? '' : 's'}`) },
+    onError: (e: Error) => onError?.(e.message),
+  })
+}
+
 export function useAddKeeper(onDone?: (note?: string) => void, onError?: (msg: string) => void) {
   const invalidate = useInvalidateBoard()
   return useMutation({

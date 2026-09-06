@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, boardCsvUrl } from './api/client'
 import {
-  useAddKeeper, useAvailability, useDeleteKeeper, useDraftState, useKeepers, useMakePick,
+  useAddKeeper, useAvailability, useDeleteKeeper, useDraftState, useKeepers, useMakePick, useResetDraft,
   usePlayerProfile, useRankings, useRun, useSchedule, useUndoPick,
 } from './api/queries'
 import type { BoardPlayer, NextPick } from './api/types'
@@ -99,6 +99,8 @@ export default function App() {
     (msg) => pushToast(msg, 'bad'),
   )
   const undo = useUndoPick(() => pushToast('Undid the last pick', 'good'), (msg) => pushToast(msg, 'bad'))
+  const resetDraft = useResetDraft((msg) => pushToast(`Draft reset — ${msg}; keepers kept`, 'good'),
+                                   (msg) => pushToast(msg, 'bad'))
   const addKeeper = useAddKeeper(
     (note) => { setKeeperError(null); setKeeperNote(note ?? null); pushToast('Keeper added — pick schedule re-cut', 'good') },
     (msg) => { setKeeperError(msg); pushToast(msg, 'bad') },
@@ -383,6 +385,7 @@ export default function App() {
               onTeamOverride={setTeamOverride}
               onDraft={draft}
               onUndo={() => undo.mutate()}
+              onReset={() => resetDraft.mutate()}
               onSelect={selectAndScroll}
               onOpenDrawer={(id) => { select(id); setDrawerOpen(true) }}
             />

@@ -403,3 +403,58 @@ def _q_dupes() -> list:
         return [dict(r) for r in s.execute(text(
             "select overall_pick, count(*) n from draft_picks where undone_at is null "
             "group by overall_pick having count(*) > 1")).mappings()]
+
+
+def test_reset_clears_the_draft_but_never_the_keepers():
+    """Practice runs need a way back to an untouched board without pressing undo N times.
+
+    Keepers are what cut the holes in the pick schedule and move the VBD baselines the board was frozen with, so
+    a reset that took them with it would silently change the model, not just the picks.
+    """
+    keepers_before = client.get("/api/keepers").json()["keepers"]
+    sched_before = client.get("/api/schedule").json()
+    run_before = client.get("/api/run").json()["run_id"]
+    try:
+        made = _fill_board(client, 12, {"Josh Allen"})
+        assert made > 0, "setup: some picks should be recorded"
+        assert client.get("/api/state").json()["picks_made"] == made
+
+        bare = client.post("/api/draft/reset", json={})
+        assert bare.status_code == 409, "a reset without confirm must be refused"
+        assert client.get("/api/state").json()["picks_made"] == made, "the refused reset must change nothing"
+
+        r = client.post("/api/draft/reset", json={"confirm": True})
+        assert r.status_code == 200
+        assert r.json()["cleared"] == made
+        st = r.json()["state"]
+        assert st["picks_made"] == 0
+        # the keeper is a roster slot, not a pick: it survives
+        assert [p["name"] for p in st["my_roster"]] == [
+            p["name"] for p in client.get("/api/state").json()["my_roster"]]
+        assert all(p["is_keeper"] for p in st["my_roster"]), "only keepers should remain on my roster"
+    finally:
+        client.post("/api/draft/reset", json={"confirm": True})
+
+    assert client.get("/api/keepers").json()["keepers"] == keepers_before, "keepers must be untouched"
+    assert client.get("/api/schedule").json() == sched_before, "the pick schedule must be unchanged"
+    assert client.get("/api/run").json()["run_id"] == run_before, "a reset must not re-rank or re-freeze"
+
+
+def test_reset_soft_deletes_so_a_practice_run_stays_auditable():
+    from sqlalchemy import text
+
+    from app.db import session_scope
+
+    try:
+        made = _fill_board(client, 3, set())
+        with session_scope() as s:
+            before = s.execute(text("select count(*) from draft_picks")).scalar_one()
+        client.post("/api/draft/reset", json={"confirm": True})
+        with session_scope() as s:
+            after = s.execute(text("select count(*) from draft_picks")).scalar_one()
+            active = s.execute(text("select count(*) from draft_picks where undone_at is null")).scalar_one()
+        assert after == before, f"reset deleted {before - after} rows — it must soft-delete like undo"
+        assert active == 0
+        assert made == 3
+    finally:
+        client.post("/api/draft/reset", json={"confirm": True})

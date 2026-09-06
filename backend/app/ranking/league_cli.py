@@ -135,5 +135,31 @@ def picks() -> None:
                f"{len(specs)} keeper(s) recorded across the league.")
 
 
+@cli.command("reset-draft")
+def reset_draft(yes: bool = typer.Option(False, "--yes", "-y", help="skip the confirmation prompt")) -> None:
+    """Clear every recorded pick — for wiping a practice run before the real draft.
+
+    Keepers, the draft order and the frozen ranking run are untouched: keepers live in their own table and cut
+    the holes in the pick schedule, so clearing them would move the baselines the board was frozen with. Picks
+    are soft-deleted exactly as `undo` does, so a practice run stays in the audit trail.
+    """
+    from sqlalchemy import text
+
+    from app.db import session_scope
+
+    with session_scope() as s:
+        n = s.execute(text("select count(*) from draft_picks where undone_at is null")).scalar_one()
+    if not n:
+        typer.echo("no picks to clear")
+        return
+    if not yes and not typer.confirm(f"clear all {n} pick(s)? keepers and the draft order are kept"):
+        typer.echo("aborted")
+        raise typer.Exit(code=1)
+    with session_scope() as s:
+        cleared = s.execute(text("update draft_picks set undone_at = now() where undone_at is null")).rowcount
+        kept = s.execute(text("select count(*) from keepers")).scalar_one()
+    typer.echo({"cleared": int(cleared), "keepers_kept": int(kept)})
+
+
 if __name__ == "__main__":
     cli()

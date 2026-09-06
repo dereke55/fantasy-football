@@ -303,6 +303,28 @@ def undo_pick() -> dict:
     return {"ok": True, "state": _state()}
 
 
+class ResetIn(BaseModel):
+    confirm: bool = False
+
+
+@router.post("/draft/reset")
+def reset_draft(body: ResetIn) -> dict:
+    """Clear every pick and hand back an untouched board — for practice runs before the real draft.
+
+    Keepers, the draft order, the league config and the frozen run are all untouched: keepers live in their own
+    table and define the pick schedule, so wiping them would change the baselines the board was frozen with.
+    Picks are soft-deleted exactly as `undo` does, so the practice run stays in the audit trail rather than
+    vanishing. `confirm` is required so a stray POST mid-draft cannot wipe the board.
+    """
+    if not body.confirm:
+        raise HTTPException(status_code=409,
+                            detail="reset needs confirm=true — this clears every pick on the board")
+    with session_scope() as s:
+        cleared = s.execute(text(
+            "update draft_picks set undone_at = now() where undone_at is null")).rowcount
+    return {"ok": True, "cleared": int(cleared or 0), "state": _state()}
+
+
 # --------------------------------------------------------------------------- live availability inputs
 
 def _live_room_adp(run_id, made: int) -> dict[int, float]:

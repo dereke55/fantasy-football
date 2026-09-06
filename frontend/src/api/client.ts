@@ -55,6 +55,10 @@ export const api = {
   makePick: (body: { player_id: number; my_pick?: boolean; team_slot?: number }) =>
     request<PickMutationResponse>('/api/draft/picks', { method: 'POST', body: JSON.stringify(body) }),
   undoPick: () => request<PickMutationResponse>('/api/draft/undo', { method: 'POST' }),
+  // confirm is required server-side so a stray POST mid-draft cannot wipe the board
+  resetDraft: () => request<PickMutationResponse & { cleared: number }>('/api/draft/reset', {
+    method: 'POST', body: JSON.stringify({ confirm: true }),
+  }),
 
   addKeeper: (body: { player_id: number; team_slot: number; cost_round: number; status?: string }) =>
     request<KeeperMutationResponse>('/api/keepers', { method: 'POST', body: JSON.stringify(body) }),

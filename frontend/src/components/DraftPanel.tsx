@@ -3,6 +3,8 @@
  * with its two actions, the best available echo, the bye-stack warning, my roster and VONA.
  * Manual entry is first-class — the controls behave identically whatever `mode` says.
  */
+import { useEffect, useState } from 'react'
+
 import type { AvailabilityResponse, BoardPlayer, DraftState, RunInfo } from '../api/types'
 import { int, one, pct } from '../lib/format'
 import { FlagChips, PosChip } from './Chips'
@@ -21,6 +23,7 @@ interface Props {
   onTeamOverride: (slot: number | null) => void
   onDraft: (playerId: number, mine: boolean) => void
   onUndo: () => void
+  onReset: () => void
   onSelect: (playerId: number) => void
   onOpenDrawer: (playerId: number) => void
 }
@@ -39,10 +42,22 @@ function Section({ title, right, children }: { title: string; right?: React.Reac
 
 export function DraftPanel({
   run, state, availability, selected, best, byeWarnWeeks, busy, teamOverride, onTeamOverride,
-  onDraft, onUndo, onSelect, onOpenDrawer,
+  onDraft, onUndo, onReset, onSelect, onOpenDrawer,
 }: Props) {
   const teams = run?.league.teams ?? 10
   const canUndo = (state?.picks_made ?? 0) > 0
+  /**
+   * Reset clears the whole board, so it asks twice: the first click arms it, the second does it, and it
+   * disarms itself after a few seconds. A modal would be worse here — during a draft the one thing you cannot
+   * afford is a dialog stealing the keyboard.
+   */
+  const [armed, setArmed] = useState(false)
+  useEffect(() => {
+    if (!armed) return
+    const t = setTimeout(() => setArmed(false), 4000)
+    return () => clearTimeout(t)
+  }, [armed])
+  useEffect(() => { setArmed(false) }, [state?.picks_made])
   const round = state?.on_the_clock?.round ?? null
 
   return (
@@ -135,6 +150,20 @@ export function DraftPanel({
             title="POST /api/draft/undo — removes the most recent manual pick"
           >
             ↶ Undo <kbd className="mono text-[10px]">u</kbd>
+          </button>
+          <button
+            type="button"
+            disabled={busy || !canUndo}
+            onClick={() => { if (armed) { onReset(); setArmed(false) } else { setArmed(true) } }}
+            className="rounded px-2 py-1 text-[11.5px]"
+            style={{
+              background: armed ? 'rgba(248,81,73,0.14)' : 'transparent',
+              border: `1px solid ${armed ? 'var(--bad)' : 'var(--border)'}`,
+              color: armed ? 'var(--bad)' : 'var(--muted)',
+            }}
+            title="POST /api/draft/reset — clears every pick; keepers and the draft order are kept"
+          >
+            {armed ? `Clear all ${state?.picks_made ?? 0}?` : '⟲ Reset'}
           </button>
           <label className="ml-auto flex items-center gap-1 text-[10.5px]" style={{ color: 'var(--muted)' }}>
             for team

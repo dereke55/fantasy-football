@@ -585,3 +585,27 @@ of which were defects rather than design.
 draft the board is the tool — VONA top-3 per position and the P(avail) column are recomputed live on every pick,
 which `turns` is not. The fixes mean running it mid-draft is now correct rather than misleading, but it is still
 answering a planning question, not a which-player-now question.
+
+## 2026-09-06 — Draft reset, so a practice run can be undone in one action
+
+There was no way back from a practice run except pressing `u` once per pick. Fine for three picks, useless for
+thirty, and the one thing you do not want to be doing at 20:40 on draft night.
+
+`POST /api/draft/reset` clears every recorded pick. What it deliberately does **not** touch:
+
+- **Keepers.** They live in their own table, cut the holes in the pick schedule and move the VBD baselines the
+  board was frozen with — clearing them would silently change the model, not just the picks.
+- **The draft order** (config) and **the frozen ranking run**. A reset re-ranks nothing and re-freezes nothing.
+
+Picks are **soft-deleted** (`undone_at` stamped), exactly as `undo` does, so a practice run stays in the audit
+trail rather than vanishing. `confirm: true` is required — a bare POST is refused with 409 — so a stray request
+mid-draft cannot wipe the board.
+
+Two front doors: `uv run ff league reset-draft` (prompts unless `--yes`), and a Reset button beside Undo in the
+draft panel. The button asks twice — the first click arms it and relabels it `Clear all N?` in red, the second
+commits, and it disarms itself after four seconds or whenever the pick count changes. Deliberately not a modal:
+during a draft the last thing you want is a dialog stealing the keyboard.
+
+Verified end to end in the browser: 12 practice picks → first click arms and destroys nothing (picks still 12) →
+second click clears to 0 with keepers still 8, roster back to the keeper alone, and the toast "Draft reset —
+cleared 12 picks; keepers kept".

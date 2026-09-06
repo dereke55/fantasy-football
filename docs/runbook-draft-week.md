@@ -83,6 +83,7 @@ Preparation (draft_time − 60 min):
 - [ ] Draft slot in `config/league.yaml` matches the Yahoo draft order (late-bound: set it now if it was "TBD"); `pick_schedule` shows my picks and "my next pick in N".
 - [ ] All keepers for all 10 teams entered; each keeper-consumed slot shows as `is_keeper_slot` and the owning team is skipped in that round.
 - [ ] Offline fallback CSV (frozen run) open in a second window.
+- [ ] **If you did a practice run, clear it**: the Reset button beside Undo in the draft panel (click once to arm, again to confirm) or `uv run ff league reset-draft`. Keepers, the draft order and the frozen run are kept; picks are soft-deleted, so the practice run stays in the audit trail. Confirm the board reads `0 / 152` and the clock is on R1 P1 before the real draft starts.
 - [ ] If 8b shipped: token refreshed (< 55 min old), poller started at draft_time − 60 min, cadence 60 s in `predraft`; confirm it captured the draft order and the pre-filled keeper rows, and that SSE is connected on the board.
 - [ ] Confirm no daily job is scheduled during the draft window (no Yahoo pub pool pull, no Sleeper players pull, no roster/player calls).
 - [ ] Final pre-draft refresh at draft_time − 60 min: `uv run ff ingest all && uv run ff ingest check-ids && uv run ff recompute --freeze`, then confirm the top bar shows the new run_id and the gate passed. Skip it if the draft is on/after Sep 10 (serve the frozen run instead).
