@@ -18,6 +18,8 @@ export interface LeagueInfo {
 }
 
 export interface RunInfo {
+  /** slot -> manager, from config/league.yaml (Yahoo draft order). Lets the board name a team instead of "T7". */
+  managers?: Record<string, { name: string | null; keeper: string | null; cost_round: number | null }>
   run_id: string
   generated_at: string
   is_frozen: boolean

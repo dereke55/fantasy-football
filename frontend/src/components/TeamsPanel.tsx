@@ -30,6 +30,9 @@ export function TeamsPanel({ run, state, model, selectedId, onSelect }: Props) {
    * turns "picks recorded" from a tautology into a real comparison — everything else on this panel
    * is derived from our own entries and would agree with itself even if we had missed three picks.
    */
+  /** Slot -> manager name, so a card reads "Danny" rather than "Team 8" while picks are being recorded. */
+  const managerName = (slot: number): string | null => run?.managers?.[String(slot)]?.name ?? null
+
   const [yahoo, setYahoo] = useState('')
   const yahooMade = yahoo.trim() === '' ? null : Number(yahoo)
   const yahooDelta = yahooMade != null && Number.isFinite(yahooMade) ? model.picksMade - yahooMade : null
@@ -56,7 +59,7 @@ export function TeamsPanel({ run, state, model, selectedId, onSelect }: Props) {
 
         <div className="mono text-[10.5px]" style={{ color: 'var(--muted)' }}>
           {otc
-            ? <>snake says next is <span style={{ color: 'var(--text)' }}>R{otc.round} P{otc.live_pick} · T{otc.team_slot}</span>{otc.is_mine ? ' (me)' : ''}</>
+            ? <>snake says next is <span style={{ color: 'var(--text)' }}>R{otc.round} P{otc.live_pick} · {managerName(otc.team_slot) ?? `T${otc.team_slot}`}</span>{otc.is_mine ? ' (me)' : ''}</>
             : 'draft complete'}
           {' · '}{model.keeperCount} keeper{model.keeperCount === 1 ? '' : 's'}
         </div>
@@ -137,6 +140,7 @@ export function TeamsPanel({ run, state, model, selectedId, onSelect }: Props) {
           <TeamCard
             key={t.slot}
             team={t}
+            manager={managerName(t.slot)}
             rounds={run?.league.rounds ?? 16}
             selectedId={selectedId}
             onSelect={onSelect}
@@ -154,8 +158,14 @@ export function TeamsPanel({ run, state, model, selectedId, onSelect }: Props) {
 }
 
 function TeamCard({
-  team, rounds, selectedId, onSelect,
-}: { team: TeamSummary; rounds: number; selectedId: number | null; onSelect: (id: number) => void }) {
+  team, manager, rounds, selectedId, onSelect,
+}: {
+  team: TeamSummary
+  manager: string | null
+  rounds: number
+  selectedId: number | null
+  onSelect: (id: number) => void
+}) {
   const off = team.delta !== 0
   const border = off ? 'rgba(248,81,73,0.55)' : team.isMine ? 'rgba(88,166,255,0.5)' : 'var(--border)'
 
@@ -177,7 +187,7 @@ function TeamCard({
           }}
         >T{team.slot}</span>
         <span className="text-[11.5px] font-semibold" style={{ color: team.isMine ? 'var(--accent)' : 'var(--text)' }}>
-          {team.isMine ? 'My team' : `Team ${team.slot}`}
+          {team.isMine ? `${manager ?? 'My team'} (me)` : (manager ?? `Team ${team.slot}`)}
         </span>
         {team.keepers > 0 && (
           <span className="mono text-[9.5px] font-bold" style={{ color: 'var(--warn)' }} title="keepers held">

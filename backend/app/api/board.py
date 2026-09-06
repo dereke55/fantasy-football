@@ -67,6 +67,7 @@ def get_run() -> dict:
         "config_hash_matches": run["league_config_sha256"] == live_hash,
         "scoring_source": cfg.source,
         "weights": run["weights"],
+        "managers": (_league_row() or {}).get("draft_order") or {},
         "league": {"teams": cfg.league.num_teams, "rounds": cfg.roster.rounds,
                    "my_slot": cfg.league.my_draft_slot, "draft_time": cfg.league.draft_datetime,
                    "slots": cfg.roster.slots, "flex_eligible": cfg.roster.flex_eligible,

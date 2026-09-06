@@ -34,14 +34,26 @@ def _league_id(create: bool = True) -> int | None:
 
 @cli.command("init")
 def init() -> None:
-    """Create or refresh the league row from config/league.yaml."""
+    """Create or refresh the league row from config/league.yaml, including the manager -> slot map."""
+    import json
+    from pathlib import Path
+
+    import yaml
+
+    from app.config import settings
+
     cfg = load_league_config()
     lid = _league_id()
+    raw = yaml.safe_load(Path(settings.league_config).read_text())
+    managers = ((raw or {}).get("league") or {}).get("managers") or []
+    order = {str(m["slot"]): {"name": m.get("name"), "keeper": m.get("keeper"),
+                              "cost_round": m.get("cost_round")} for m in managers}
     with session_scope() as s:
         s.execute(text("update leagues set num_teams=:t, rounds=:r, draft_time=:time, my_team_slot=:slot, "
-                       "draft_type=:dt where id=:id"),
+                       "draft_type=:dt, draft_order=cast(:ord as jsonb) where id=:id"),
                   {"t": cfg.league.num_teams, "r": cfg.roster.rounds, "time": cfg.league.draft_datetime,
-                   "slot": cfg.league.my_draft_slot, "dt": cfg.league.draft_type, "id": lid})
+                   "slot": cfg.league.my_draft_slot, "dt": cfg.league.draft_type, "id": lid,
+                   "ord": json.dumps(order)})
     typer.echo({"league_id": lid, "league_key": cfg.league.league_key, "teams": cfg.league.num_teams,
                 "rounds": cfg.roster.rounds, "my_slot": cfg.league.my_draft_slot,
                 "draft_time": cfg.league.draft_datetime})
