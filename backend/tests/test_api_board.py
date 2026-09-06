@@ -60,8 +60,13 @@ def test_my_next_pick_matches_the_snake_for_my_slot(cfg):
     st = client.get("/api/state").json()
     if cfg.league.my_draft_slot is None:
         pytest.skip("no draft slot set")
-    assert st["my_next_pick"]["live_pick"] == cfg.league.my_draft_slot
-    assert st["picks_until_mine"] == cfg.league.my_draft_slot - 1
+    # Derive from where the draft actually is rather than assuming an untouched board: asserting live_pick == 10
+    # made this test a tripwire for any earlier test that left a pick behind, which is not what it is checking.
+    made = st["picks_made"]
+    assert st["my_next_pick"]["live_pick"] > made
+    assert st["picks_until_mine"] == st["my_next_pick"]["live_pick"] - made - 1
+    if made == 0:
+        assert st["my_next_pick"]["live_pick"] == cfg.league.my_draft_slot
 
 
 def test_availability_weights_by_open_slots():
@@ -355,3 +360,46 @@ def test_kdst_appear_in_the_panel_only_once_they_are_worth_a_pick():
                     assert adps, f"{pos} block should not be empty"
     finally:
         _undo_all(client)
+
+
+def test_racing_submissions_lose_cleanly_rather_than_500():
+    """Two picks in flight both read the same picks_made and aim at the same slot.
+
+    The partial unique index keeps the board correct -- exactly one wins -- but the loser surfaced as a bare 500,
+    which on a double-tapped Enter in QuickPick leaves you unable to tell whether your pick landed.
+    """
+    import threading
+
+    board = client.get("/api/rankings", params={"limit": 60}).json()["players"]
+    ids = [p["player_id"] for p in board if not p["drafted"]][:4]
+    assert len(ids) == 4, "setup: need undrafted players"
+    results: list[int] = []
+
+    def go(pid: int) -> None:
+        results.append(client.post("/api/draft/picks", json={"player_id": pid}).status_code)
+
+    try:
+        threads = [threading.Thread(target=go, args=(i,)) for i in ids]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        assert 500 not in results, f"a losing racer returned 500: {results}"
+        assert all(c in (200, 409) for c in results), results
+        assert 200 in results, "at least one submission must win"
+        # whatever happened, the board must not have double-booked a slot
+        dupes = _q_dupes()
+        assert not dupes, f"two active picks share an overall_pick: {dupes}"
+    finally:
+        _undo_all(client)
+
+
+def _q_dupes() -> list:
+    from sqlalchemy import text
+
+    from app.db import session_scope
+
+    with session_scope() as s:
+        return [dict(r) for r in s.execute(text(
+            "select overall_pick, count(*) n from draft_picks where undone_at is null "
+            "group by overall_pick having count(*) > 1")).mappings()]

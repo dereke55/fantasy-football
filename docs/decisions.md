@@ -496,3 +496,22 @@ Note for draft day: running `pytest` re-freezes. The keeper tests add and remove
 `_recompute`, which now carries the freeze forward — so the frozen run_id churns even though the resulting board
 is identical (verified). Harmless, but re-run `ff recompute --freeze` afterwards if you want the serving run to
 be the one the documented chain produced, and don't run the suite mid-draft.
+
+## 2026-09-06 — A racing pick submission returned a bare 500
+
+Chasing a one-off test failure (`test_my_next_pick_matches_the_snake_for_my_slot`, which passed in isolation and
+in four consecutive full runs) turned up a real defect next to it.
+
+`make_pick` reads `picks_made`, resolves the on-the-clock slot, then inserts. Two submissions in flight both read
+the same count and aim at the same slot. The data was never at risk — `uq_draft_picks_active UNIQUE (league_id,
+overall_pick) WHERE undone_at IS NULL` means exactly one wins — but the loser's `IntegrityError` escaped as a
+bare **500 Internal Server Error**. Verified by firing concurrent submissions at the live API.
+
+On draft night that is the worst possible message: a double-tapped Enter in QuickPick shows "Internal Server
+Error" and leaves you unable to tell whether the pick landed, at the one moment there is no time to check. It now
+returns 409 with `pick N was just recorded by another submission — the board has moved on; check the last pick
+before re-entering`, which the client already renders (the fetch layer preserves the FastAPI `detail` string).
+
+The flaky test was separately made order-independent: it asserted `live_pick == my_draft_slot`, which silently
+assumed an untouched board and made it a tripwire for any earlier test leaving a pick behind rather than a check
+of the snake. It now derives from the actual `picks_made` and only asserts the slot when the board is untouched.

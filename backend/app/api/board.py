@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from app.db import engine, session_scope
 from app.ranking.pick_schedule import KeeperSpec, build_pick_schedule, next_live_pick, on_the_clock
@@ -270,12 +271,23 @@ def make_pick(body: PickIn) -> dict:
     if slot_row is None:
         raise HTTPException(status_code=409, detail="draft is complete")
     team_slot = body.team_slot or (cfg.league.my_draft_slot if body.my_pick else slot_row.team_slot)
-    with session_scope() as s:
-        s.execute(text(
-            "insert into draft_picks (league_id, overall_pick, round, team_slot, player_id, is_keeper, source) "
-            "values (:l, :o, :r, :t, :p, false, 'manual')"),
-            {"l": league["id"], "o": slot_row.overall_pick, "r": slot_row.round, "t": team_slot,
-             "p": body.player_id})
+    try:
+        with session_scope() as s:
+            s.execute(text(
+                "insert into draft_picks (league_id, overall_pick, round, team_slot, player_id, is_keeper, source) "
+                "values (:l, :o, :r, :t, :p, false, 'manual')"),
+                {"l": league["id"], "o": slot_row.overall_pick, "r": slot_row.round, "t": team_slot,
+                 "p": body.player_id})
+    except IntegrityError as exc:
+        # Two submissions in flight both read the same picks_made and aim at the same slot. The partial unique
+        # index (league_id, overall_pick) where undone_at is null keeps the board correct -- exactly one wins --
+        # but the loser used to surface as a bare 500, which on a double-tapped Enter leaves you unable to tell
+        # whether your pick landed. Say what happened instead, so the client just re-reads state.
+        raise HTTPException(
+            status_code=409,
+            detail=f"pick {slot_row.overall_pick} was just recorded by another submission — "
+                   "the board has moved on; check the last pick before re-entering",
+        ) from exc
     return {"ok": True, "state": _state()}
 
 
