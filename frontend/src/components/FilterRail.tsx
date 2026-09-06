@@ -32,6 +32,12 @@ export const FilterRail = forwardRef<HTMLInputElement, Props>(function FilterRai
 
   const dirty = filters.pos != null || filters.presets.length > 0 || filters.search !== '' || filters.hideDrafted
 
+  /** Clear the box and keep the caret in it — clearing to retype is the common case, not clearing to leave. */
+  const clearSearch = () => {
+    set({ search: '' })
+    if (searchRef && typeof searchRef !== 'function') searchRef.current?.focus()
+  }
+
   return (
     <aside
       className="flex flex-col gap-3 p-2.5 shrink-0 overflow-y-auto"
@@ -41,15 +47,41 @@ export const FilterRail = forwardRef<HTMLInputElement, Props>(function FilterRai
         <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--muted)' }}>
           Search <span className="mono" style={{ opacity: 0.7 }}>/</span>
         </label>
-        <input
-          ref={searchRef}
-          value={filters.search}
-          onChange={(e) => set({ search: e.target.value })}
-          placeholder="name / team"
-          spellCheck={false}
-          className="w-full rounded px-2 py-1 text-[12px] outline-none"
-          style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
-        />
+        <div className="relative">
+          <input
+            ref={searchRef}
+            value={filters.search}
+            onChange={(e) => set({ search: e.target.value })}
+            onKeyDown={(e) => {
+              // Escape clears a non-empty box and keeps the caret, so a mistyped name is one key from retyped.
+              // An empty box falls through to the global handler, which blurs back to board navigation.
+              if (e.key === 'Escape' && filters.search !== '') {
+                e.preventDefault()
+                e.stopPropagation()
+                clearSearch()
+              }
+            }}
+            placeholder="name / team"
+            spellCheck={false}
+            className="w-full rounded py-1 pl-2 text-[12px] outline-none"
+            // room for the clear button so a long name never runs underneath it
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)', paddingRight: filters.search ? 20 : 8 }}
+          />
+          {filters.search !== '' && (
+            <button
+              type="button"
+              // mousedown would blur the input first and fight the refocus below
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={clearSearch}
+              aria-label="Clear search"
+              title="Clear search (Esc)"
+              className="absolute right-0 top-0 flex h-full w-5 items-center justify-center text-[13px] leading-none"
+              style={{ color: 'var(--muted)' }}
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       <div>
