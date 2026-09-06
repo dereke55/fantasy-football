@@ -112,13 +112,15 @@ export default function App() {
   /* ---------- derived board ---------- */
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters])
   const sorted = useMemo(() => sortPlayers(filtered, sort.key, sort.dir), [filtered, sort])
+  /* K/DST are given VBD 0 and park mid-board, so the star only considers them from the K/DST rounds. */
+  const currentRound = state.data?.on_the_clock?.round ?? null
   // Bands are meaningful in ranked order (our value) and in ECR order; each follows the tier that is
   // monotonic under that sort (see buildRows).
   const bands = (sort.key === 'rank' || sort.key === 'ecr') && sort.dir === 'asc'
   const bandBy = sort.key === 'ecr' ? ('tier' as const) : ('value_tier' as const)
   const items = useMemo(
-    () => buildRows(sorted, { bands, posFilter: filters.pos, bandBy }),
-    [sorted, bands, filters.pos, bandBy],
+    () => buildRows(sorted, { bands, posFilter: filters.pos, bandBy, round: currentRound }),
+    [sorted, bands, filters.pos, bandBy, currentRound],
   )
 
   const playerIds = useMemo(() => sorted.map((p) => p.player_id), [sorted])
@@ -137,7 +139,7 @@ export default function App() {
     return c
   }, [players])
 
-  const best = useMemo(() => bestAvailable(filtered) ?? null, [filtered])
+  const best = useMemo(() => bestAvailable(filtered, currentRound) ?? null, [filtered, currentRound])
   const selected: BoardPlayer | null = selectedId != null ? (byId.get(selectedId) ?? null) : null
   const byeWarnWeeks = useMemo(
     () => new Set((state.data?.bye_stack_warnings ?? []).map((w) => w.bye_week)),

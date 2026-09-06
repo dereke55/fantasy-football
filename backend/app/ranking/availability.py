@@ -40,6 +40,30 @@ def expected_best_value(cands: list[Candidate], at_pick: int) -> float:
     return best
 
 
+def expected_best_excluding(cands: list[Candidate], at_pick: int) -> dict[int, float]:
+    """E[value of the best OTHER candidate available at `at_pick`], for every candidate, in one pass.
+
+    Calling expected_best_value() once per player is O(n^2) and the board needs this for every row. Removing one
+    candidate only drops one factor from the running product, so define the tail expectation recursively --
+    E_from[i] = v_i*p_i + (1-p_i)*E_from[i+1] -- and the answer for candidate k is the head sum up to k plus
+    Q_k * E_from[k+1], where Q_k is the product of (1-p_j) below k. That is O(n) and, unlike dividing the factor
+    back out, stays stable when a candidate is certain to be available (p -> 1 makes the divisor 0).
+    """
+    ordered = sorted(cands, key=lambda c: c.value, reverse=True)
+    ps = [p_available(c.room_adp, c.sd_adp, at_pick) for c in ordered]
+    n = len(ordered)
+    e_from = [0.0] * (n + 1)
+    for i in range(n - 1, -1, -1):
+        e_from[i] = ordered[i].value * ps[i] + (1.0 - ps[i]) * e_from[i + 1]
+    out: dict[int, float] = {}
+    head, q = 0.0, 1.0
+    for k in range(n):
+        out[ordered[k].player_id] = head + q * e_from[k + 1]
+        head += ordered[k].value * ps[k] * q
+        q *= 1.0 - ps[k]
+    return out
+
+
 def vona(
     player: Candidate,
     same_position_pool: list[Candidate],

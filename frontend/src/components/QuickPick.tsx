@@ -67,8 +67,10 @@ export function QuickPick({
   const otc = state?.on_the_clock
   const mine = otc?.is_mine ?? false
 
-  const submit = (asMine: boolean) => {
-    const p = matches[i]
+  const submit = (asMine: boolean, index = i) => {
+    // Take the index explicitly: setI() does not apply before submit() runs, so a click that beat its own
+    // mouse-enter re-render used to record whichever player was highlighted before.
+    const p = matches[index]
     if (!p || busy) return
     onPick(p.player_id, asMine)
     setQ('')
@@ -121,7 +123,7 @@ export function QuickPick({
             <li
               key={p.player_id}
               onMouseEnter={() => setI(n)}
-              onMouseDown={(e) => { e.preventDefault(); setI(n); submit(false) }}
+              onMouseDown={(e) => { e.preventDefault(); setI(n); submit(false, n) }}
               className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer"
               style={{ background: n === i ? 'var(--border)' : 'transparent' }}
             >

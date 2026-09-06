@@ -68,13 +68,26 @@ export function sortPlayers(players: BoardPlayer[], key: SortKey, dir: SortDir):
  * say, ECR descending would otherwise star the *worst* player on the board, which is exactly the
  * wrong thing to make unmissable thirty seconds before a pick.
  */
-export function bestAvailable(players: BoardPlayer[]): BoardPlayer | undefined {
+/** K/DST carry VBD 0, so they land mid-board on rank alone (spec §12 keeps them to the last rounds). */
+export const KDST_FROM_ROUND = 12
+
+/**
+ * The best pick still on the board. Kickers and defences are skipped until the rounds where they are
+ * actually worth a pick: they are given VBD 0, which parks them around rank 125 — ahead of ~430 real
+ * players — so from round 9 the star, and the default highlight that follows it, was a kicker.
+ */
+export function bestAvailable(players: BoardPlayer[], round: number | null = null): BoardPlayer | undefined {
+  const skipKdst = round == null || round < KDST_FROM_ROUND
   let best: BoardPlayer | undefined
+  let fallback: BoardPlayer | undefined
   for (const p of players) {
     if (p.drafted) continue
+    if (!fallback || p.rank < fallback.rank) fallback = p
+    if (skipKdst && p.is_kdst) continue
     if (!best || p.rank < best.rank) best = p
   }
-  return best
+  // if a filter has left nothing but kickers, still name one rather than showing an empty panel
+  return best ?? fallback
 }
 
 export type RowItem =
@@ -97,9 +110,9 @@ export const BAND_H = 26
  */
 export function buildRows(
   players: BoardPlayer[],
-  opts: { bands: boolean; posFilter: string | null; bandBy?: 'value_tier' | 'tier' },
+  opts: { bands: boolean; posFilter: string | null; bandBy?: 'value_tier' | 'tier'; round?: number | null },
 ): RowItem[] {
-  const best = bestAvailable(players)
+  const best = bestAvailable(players, opts.round ?? null)
   const items: RowItem[] = []
   const seenTiers = new Set<number>()
   let lastValueTier: number | null = null

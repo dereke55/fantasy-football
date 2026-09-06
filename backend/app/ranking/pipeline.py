@@ -176,7 +176,10 @@ def build_board(cfg: LeagueConfig | None = None) -> tuple[pl.DataFrame, dict]:
     )
 
     # ---- 4. ranks and tiers ----
-    df = df.sort("vorp", descending=True, nulls_last=True).with_columns(
+    # K and DST are deliberately given VBD 0, so every one of them ties and the sort among them was arbitrary:
+    # Cairo Santos (ADP 329) ranked above Ka'imi Fairbairn (ADP 132). Consensus ADP is the only ordering that
+    # means anything for them (spec §12), and it is a better tiebreak than input order for anyone else who ties.
+    df = df.sort(["vorp", "composite_adp"], descending=[True, False], nulls_last=True).with_columns(
         overall_rank=pl.int_range(1, pl.len() + 1),
     ).with_columns(pos_rank=pl.col("overall_rank").rank("ordinal").over("position").cast(pl.Int64))
     tier_map: dict[int, int] = {}
@@ -454,7 +457,11 @@ def run(freeze: bool = typer.Option(False, help="Mark this run frozen (the draft
     sp = spearman_vs_market(board)
     run_id = save(board, meta, cfg, duration=round(time.time() - t0, 2), spearman=sp)
     if freeze:
+        # Exactly one run is ever frozen: current_run() takes the newest frozen row, so leaving the old one
+        # marked would keep a second, silently-shadowed "draft-day board" in the table.
         with session_scope() as s:
+            s.execute(text("update ranking_runs set is_frozen = false where is_frozen and run_id != :r"),
+                      {"r": str(run_id)})
             s.execute(text("update ranking_runs set is_frozen = true where run_id = :r"), {"r": str(run_id)})
     typer.echo({"run_id": str(run_id), "players": board.height,
                 "why_bullets": len(getattr(board, "_why_bullets", [])),

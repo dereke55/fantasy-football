@@ -1,4 +1,5 @@
 """Ranking-pipeline tests against the real database and the latest persisted run."""
+import itertools
 import json
 
 import polars as pl
@@ -163,3 +164,36 @@ def test_support_catalogue_is_wide_enough_to_fire(board):
     for sig in ("inherits_vacated_opportunity", "our_model_sees_more_than_the_vendor",
                 "underperformed_expected_points", "team_context_tailwind"):
         assert sig in seen, f"{sig} never fires"
+
+
+def test_kdst_are_ordered_by_adp_not_arbitrarily():
+    """K and DST are given VBD 0, so every one of them ties and the sort among them had no meaning.
+
+    Cairo Santos (ADP 329) outranked Ka'imi Fairbairn (ADP 132) purely by input order, which is the ordering
+    Derek would have drafted from in the last two rounds. Spec §12: rank them by consensus ADP.
+    """
+    rows = q("""select r.overall_rank, r.composite_adp, r.position
+                 from rankings r
+                 where r.run_id = (select run_id from ranking_runs where is_frozen and status='ok'
+                                   order by started_at desc limit 1)
+                   and r.is_kdst and r.composite_adp is not null
+                 order by r.overall_rank""").to_dicts()
+    if len(rows) < 3:
+        pytest.skip("no K/DST in the frozen run")
+    adps = [r["composite_adp"] for r in rows]
+    assert adps == sorted(adps), f"K/DST must ascend by ADP, got {adps[:6]}"
+
+
+def test_ties_below_kdst_do_not_reorder_players_with_distinct_value():
+    """The ADP tiebreak must only ever move players whose VORP is exactly equal."""
+    rows = q("""select r.overall_rank, r.vorp, r.composite_adp
+                 from rankings r
+                 where r.run_id = (select run_id from ranking_runs where is_frozen and status='ok'
+                                   order by started_at desc limit 1)
+                   and r.vorp is not null
+                 order by r.overall_rank""").to_dicts()
+    assert rows, "frozen run should have ranked players"
+    for a, b in itertools.pairwise(rows):
+        assert a["vorp"] >= b["vorp"], "VORP must never increase as overall_rank increases"
+        if a["vorp"] == b["vorp"] and a["composite_adp"] is not None and b["composite_adp"] is not None:
+            assert a["composite_adp"] <= b["composite_adp"], "tied VORP must break by ADP"

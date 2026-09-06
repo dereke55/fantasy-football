@@ -1,3 +1,5 @@
+import pytest
+
 from app.ranking.adjustments import age_factor, expected_games
 from app.ranking.availability import Candidate, expected_best_value, p_available, vona
 from app.ranking.room_adp import gap_z, our_pick_equivalent, room_adp
@@ -64,3 +66,28 @@ def test_age_and_expected_games():
 
 def test_value_tiers():
     assert value_tiers([20, 19.8, 15, 14.9, 10], weekly_sd=6.0) == [1, 1, 2, 2, 3]
+
+
+def test_expected_best_excluding_matches_the_direct_computation():
+    """The O(n) leave-one-out must agree with re-running the O(n^2) version, including when p -> 1."""
+    from app.ranking.availability import Candidate, expected_best_excluding, expected_best_value
+
+    cands = [
+        Candidate(1, "RB", 90.0, 5.0, 4.0),
+        Candidate(2, "RB", 70.0, 12.0, 6.0),
+        Candidate(3, "RB", 55.0, 40.0, 8.0),    # nearly certain to be available at pick 20
+        Candidate(4, "RB", 30.0, 400.0, 10.0),  # certain: the divide-back-out shortcut would blow up here
+        Candidate(5, "RB", 10.0, 3.0, 2.0),     # nearly certain to be gone
+    ]
+    got = expected_best_excluding(cands, 20)
+    for c in cands:
+        want = expected_best_value([o for o in cands if o.player_id != c.player_id], 20)
+        assert got[c.player_id] == pytest.approx(want, abs=1e-9), f"player {c.player_id}"
+
+
+def test_expected_best_excluding_handles_degenerate_pools():
+    from app.ranking.availability import Candidate, expected_best_excluding
+
+    assert expected_best_excluding([], 10) == {}
+    solo = [Candidate(1, "TE", 40.0, 30.0, 5.0)]
+    assert expected_best_excluding(solo, 10) == {1: 0.0}, "with nobody else left there is nothing to wait for"

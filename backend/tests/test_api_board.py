@@ -217,7 +217,7 @@ def test_availability_never_offers_a_kept_or_drafted_player():
     assert not offered & drafted
 
 
-def _fill_board(client_, n: int, mine: set[str]) -> None:
+def _fill_board(client_, n: int, mine: set[str]) -> int:
     board = client_.get("/api/rankings", params={"limit": 700}).json()["players"]
     pool = sorted([p for p in board if not p["drafted"] and p["composite_adp"]], key=lambda p: p["composite_adp"])
     taken = 0
@@ -229,6 +229,7 @@ def _fill_board(client_, n: int, mine: set[str]) -> None:
             body.update({"my_pick": True, "team_slot": 10})
         if client_.post("/api/draft/picks", json=body).status_code == 200:
             taken += 1
+    return taken
 
 
 def _undo_all(client_) -> None:
@@ -290,3 +291,67 @@ def test_slot_weights_are_ordered_and_explainable():
     for pos, b in av.items():
         assert 0.0 < b["slot_weight"] <= 1.0
         assert b["slot_reason"], f"{pos} weight must be explainable on screen"
+
+
+def test_p_avail_and_vona_track_the_live_draft():
+    """The two decision columns must describe where the draft IS, not where it started.
+
+    Both were computed once, at freeze time, for my first pick against a pre-draft room ADP. By round 5 the
+    board reported P(avail) = 100% for a running back whose real chance of surviving was 4%, and VONA -45.0 for
+    the most valuable pick on the board -- on a sortable column, and in the panel used on every pick.
+    """
+    try:
+        board = client.get("/api/rankings", params={"limit": 700}).json()
+        before = {p["player_id"]: p for p in board["players"]}
+        start_horizon = board["p_avail_horizon"]
+        _fill_board(client, 40, set())
+        after = client.get("/api/rankings", params={"limit": 700}).json()
+        assert after["p_avail_horizon"]["live_pick"] > start_horizon["live_pick"], "the horizon must advance"
+
+        rows = {p["player_id"]: p for p in after["players"]}
+        avail = [p for p in after["players"] if not p["drafted"] and p["value"] is not None]
+        assert avail, "setup: players should remain"
+        moved = [p for p in avail if p["p_avail"] != before[p["player_id"]]["p_avail"]]
+        assert moved, "P(avail) did not respond to 40 picks coming off the board"
+
+        for p in after["players"]:
+            if p["drafted"]:
+                assert p["p_avail"] is None and p["vona"] is None, "a drafted player has nothing to wait for"
+            elif p["p_avail"] is not None:
+                assert 0.0 <= p["p_avail"] <= 1.0
+
+        # the board and the VONA panel must not disagree about the same player
+        panel = client.get("/api/availability").json()
+        for pos, blk in panel["positions"].items():
+            for c in blk["candidates"]:
+                row = rows.get(c["player_id"])
+                if row is None or row["is_kdst"]:
+                    continue
+                assert c["p_avail"] == pytest.approx(row["p_avail"], abs=0.02), f"{c['name']} P(avail)"
+                assert c["vona"] == pytest.approx(row["vona"], abs=0.2), f"{c['name']} VONA in {pos}"
+    finally:
+        _undo_all(client)
+
+
+def test_kdst_appear_in_the_panel_only_once_they_are_worth_a_pick():
+    """Spec 12: K/DST carry no VBD, so they are ranked by ADP and hidden until the K/DST rounds."""
+    early = client.get("/api/availability").json()["positions"]
+    assert "K" not in early and "DEF" not in early, "a kicker in round 1 is a wasted pick"
+    try:
+        # drive the draft to the round where kickers become real
+        while True:
+            st = client.get("/api/state").json()
+            nxt = st["my_next_pick"]
+            if nxt is None or nxt["round"] >= 12:
+                break
+            if not _fill_board(client, 10, set()):
+                break
+        late = client.get("/api/availability").json()["positions"]
+        if client.get("/api/state").json()["my_next_pick"]:
+            assert "K" in late or "DEF" in late, "K/DST must be offered once the draft reaches them"
+            for pos in ("K", "DEF"):
+                if pos in late:
+                    adps = [c["player_id"] for c in late[pos]["candidates"]]
+                    assert adps, f"{pos} block should not be empty"
+    finally:
+        _undo_all(client)

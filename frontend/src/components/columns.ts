@@ -30,7 +30,7 @@ export const COLUMNS: ColumnDef[] = [
   { id: 'adp_yahoo_site', header: 'Yahoo', title: 'Yahoo ADP (site-wide) — not this room', width: '58px', align: 'right', sortKey: 'adp_yahoo_site', defaultDir: 'asc' },
   { id: 'room_adp', header: 'Room', title: 'Keeper-adjusted ADP for this 10-team room', width: '58px', align: 'right', sortKey: 'room_adp', defaultDir: 'asc' },
   { id: 'gap', header: 'Gap', title: 'Signed picks between our rank and room ADP; hover for the z-score', width: '42px', align: 'right', sortKey: 'gap', defaultDir: 'desc' },
-  { id: 'p_avail', header: 'P(avail)', title: 'Probability the player is still there at my next pick', width: '60px', align: 'right', sortKey: 'p_avail', defaultDir: 'desc' },
+  { id: 'p_avail', header: 'P(avail)', title: 'Probability the player survives every pick between now and my next one (recomputed live as picks come in; while I am on the clock it looks ahead to the pick after this)', width: '60px', align: 'right', sortKey: 'p_avail', defaultDir: 'desc' },
   { id: 'flags', header: 'Flags', width: 'minmax(100px, 124px)', align: 'left', sortKey: null, defaultDir: 'asc' },
 ]
 

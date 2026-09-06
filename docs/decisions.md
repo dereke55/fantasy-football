@@ -351,3 +351,81 @@ Exactly one run is frozen at any time, and the audit trail records the chain.
 size of a pool we do not control. FFC's half-ppr board shrank from 232 to 227 rows during draft season and the
 test failed while resolution was in fact perfect (227/227). It now compares against `raw_snapshots.row_count` for
 the latest registered FFC snapshot, which is what the assertion always meant.
+
+## 2026-09-06 — Code review before the draft: the board's two decision columns were frozen at pick 10
+
+A full review the afternoon of draft day, driven by simulating drafts against the live API rather than reading
+code. Five defects, four of them in the path Derek uses on every pick.
+
+### 1. P(avail) and VONA described the draft's opening position, forever (critical)
+
+`pipeline.py` computes `p_avail_next` and `vona` once, at `next_live_pick(sched, my_slot, 0)` — my FIRST pick,
+against a room ADP that excludes keepers but knows nothing about who has since come off the board. Nothing
+recomputed them: only a keeper edit triggers `_recompute`, never a pick. Simulating 40 picks in ADP order:
+
+```
+                       BOARD (frozen)      TRUTH (live)
+Bucky Irving  P(avail)          1.00              0.06
+              VONA            -44.97            +21.02
+```
+
+The board told me a running back was **certain** to last until my next pick when he had a 6% chance, and scored
+the most valuable pick available at −45.0. `P(avail)` is a sortable column and VONA is rendered in DraftPanel for
+both the selected player and best-available, so both were in front of me on every pick.
+
+Fixed by recomputing both live in `/api/rankings`:
+- `_live_room_adp()` re-ranks *what is left* by ADP and offsets by the picks already made, so the room is modelled
+  as continuing to take the best available from here. The stored `room_adp`/`gap`/`gap_z` are left alone — they are
+  pre-draft market judgements and the sleeper/bust flags are built on them.
+- `_decision_horizon()` returns the pick being reasoned about. While I am ON THE CLOCK my next pick is this one,
+  every available player survives to it trivially, and the real question is what I can get at the pick *after* —
+  so the horizon steps forward when `picks_until_mine` is 0.
+- `expected_best_excluding()` gives every player's leave-one-out expectation in O(n) instead of O(n²), using the
+  recursion `E_from[i] = v_i·p_i + (1−p_i)·E_from[i+1]` rather than dividing the excluded factor back out, which
+  is unstable exactly when a candidate is certain to be available.
+
+### 2. K and DST were ordered arbitrarily (spec §12 violation)
+
+They are deliberately given VBD 0, so all 40 of them tie and the sort among them fell back to input order:
+Cairo Santos (ADP 329) ranked above Ka'imi Fairbairn (ADP 132), and Chad Ryland (ADP 654, undrafted in most
+leagues) sat at rank 130. That is the ordering the last two rounds would have been drafted from. The board now
+breaks ties on consensus ADP. Diffing the rebuilt run against the old one: 90 players moved, **every one of them
+had an exactly equal VORP** to its neighbour, and no player with a distinct value moved at all. It also improved a
+real tie — Ashton Jeanty (ADP 19) now sits above Javonte Williams (ADP 32) instead of below him on input order.
+
+### 3. "Best available" recommended a kicker from round 9
+
+VBD 0 parks K/DST around rank 125, ahead of ~430 real players, and `bestAvailable()` is pure rank — so the green
+star, and the default keyboard highlight that follows it, became a kicker well before kickers are worth a pick.
+It now skips K/DST until round 12, matching the VONA panel, and falls back to naming one if a filter leaves
+nothing else. The panel gained the K/DST blocks it was always supposed to show from round 12 (`showKdst` was dead
+code because the endpoint filtered them out unconditionally), ranked by ADP since VBD cannot rank them.
+
+### 4. The VONA panel disagreed with the board on below-replacement players
+
+The panel used a signed `value_now` while its own candidate pool clamps at `max(0, vorp)`, so it subtracted a
+clamped expectation from an unclamped value: Sam Darnold showed −3.0 in the panel and 0.0 on the board. A negative
+VORP means "worse than a freely available replacement" and the gain from drafting him is 0, not negative. Now
+clamped in both. Worst board/panel disagreement across a simulated 140-pick draft: 0.09, i.e. rounding.
+
+### 5. QuickPick could record the wrong player on a click
+
+`onMouseDown` called `setI(n)` and then `submit()`, which read `i` from the render closure — so a click that beat
+its own mouse-enter re-render recorded whichever player was previously highlighted. Mouse-enter almost always
+lands first, which is why it never showed up, but "records the wrong player under time pressure" is the one
+failure this box exists to avoid. `submit()` now takes the index explicitly.
+
+### Also fixed
+
+`ff rank run --freeze` marked the new run frozen without unfreezing the old one, leaving a second silently
+shadowed "draft-day board" in the table (`current_run()` takes the newest). Exactly one run is frozen now, matching
+the keeper-edit path.
+
+### Checked and found correct
+
+Yahoo's non-fractional-yardage rounding (moot: the league uses fractional points, so scoring a season total and
+summing weekly scores agree); the `E[games]=0` on Brandon Aiyuk (Reserve/DNR, sourced, confidence high — he
+correctly falls to replacement value); `keeper_value` divisions (a round only becomes a key when it has a live
+pick, so the denominators cannot be 0); the polars UInt32 rank-underflow class (every surviving `rank()` is cast
+before subtraction, or only ever compared); the drift check's claim that the n-th surviving `draft_picks` row is
+the n-th live slot (holds across undo, since ids stay monotonic and undo only removes the last pick).

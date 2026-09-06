@@ -88,7 +88,7 @@ def get_rankings(limit: int = Query(600, le=1000)) -> dict:
                k.overall_rank as rank, k.pos_rank, k.tier, k.value_tier,
                k.ppg_blend as proj_ppg, k.season_value as proj_season, k.e_games,
                k.vorp as value, k.vols, k.ecr, k.ecr_sd, k.yahoo_adp as adp_yahoo_site,
-               k.ffc_adp, k.sleeper_adp, k.composite_adp, k.room_adp, k.gap, k.gap_z,
+               k.ffc_adp, k.sleeper_adp, k.composite_adp, k.room_adp, k.sd_adp, k.gap, k.gap_z,
                k.p_avail_next as p_avail, k.vona, k.flags, k.signals, k.is_kdst, k.is_keeper,
                b.bye_week as bye,
                f.depth_rank, f.injury_prone, f.structural_injury_return, f.current_injury_status,
@@ -107,6 +107,12 @@ def get_rankings(limit: int = Query(600, le=1000)) -> dict:
         """, run=run["run_id"], limit=limit)
     cfg = load_league_config()
     my_slot = cfg.league.my_draft_slot
+    # P(avail) is the one board column that goes stale the moment the draft starts. The stored `p_avail_next`
+    # was computed once, for my FIRST pick, against a pre-draft room ADP; by round 5 it was reporting 100% for
+    # players with a 4% chance and it is a sortable column. Recompute it against where the draft actually is.
+    st = _state()
+    before_pick, horizon = _decision_horizon(st)
+    live_room = _live_room_adp(run["run_id"], st["picks_made"]) if before_pick is not None else {}
     for r in rows:
         # A kept player is off the board exactly like a drafted one — that is what "kept" means. Reporting it
         # here rather than making every client join /api/keepers keeps one definition of "available".
@@ -114,11 +120,49 @@ def get_rankings(limit: int = Query(600, le=1000)) -> dict:
         owner = r["drafted_by"] if r["drafted_by"] is not None else r["kept_by"]
         r["drafted_by"] = owner
         r["is_mine"] = owner == my_slot if owner is not None else False
+        r["live_room_adp"] = live_room.get(r["player_id"])
+        r["p_avail"] = (None if r["drafted"] or before_pick is None
+                        else _p_avail_at(r["live_room_adp"], r["sd_adp"], before_pick, st["picks_made"]))
         r["tags"] = [t for t in (
             "injury_prone" if r.pop("injury_prone", None) else None,
             "structural_injury_return" if r.pop("structural_injury_return", None) else None,
         ) if t]
-    return {"run_id": str(run["run_id"]), "count": len(rows), "players": rows}
+    _apply_live_vona(rows, st, cfg, before_pick, live_room)
+    return {"run_id": str(run["run_id"]), "count": len(rows), "players": rows,
+            "p_avail_horizon": horizon}
+
+
+def _apply_live_vona(rows: list[dict], st: dict, cfg, before_pick: int | None,
+                     live_room: dict[int, float]) -> None:
+    """Overwrite the stored VONA with one computed for where the draft is and what my roster already holds.
+
+    The stored column is frozen at "my first pick, empty roster", which by round 5 had the best available running
+    back at -45.0 while he was in fact the most valuable pick on the board. DraftPanel renders this for the
+    selected player and for best-available, so it has to track the live state.
+    """
+    from app.ranking.availability import Candidate, expected_best_excluding
+
+    if before_pick is None:
+        for r in rows:
+            r["vona"] = None
+        return
+    made = st["picks_made"]
+    by_pos: dict[str, list[Candidate]] = {}
+    for r in rows:
+        if r["drafted"] or r["value"] is None or r["is_kdst"]:
+            continue
+        by_pos.setdefault(r["pos"], []).append(
+            Candidate(r["player_id"], r["pos"], max(0.0, r["value"]),
+                      live_room.get(r["player_id"]), r["sd_adp"] or 10.0))
+    exp = {pos: (expected_best_excluding(cs, before_pick) if before_pick > made else {})
+           for pos, cs in by_pos.items()}
+    weights = {pos: _slot_weight(pos, st, cfg)[0] for pos in by_pos}
+    for r in rows:
+        e = exp.get(r["pos"], {}).get(r["player_id"])
+        if r["drafted"] or r["value"] is None or r["is_kdst"] or r["pos"] not in weights:
+            r["vona"] = None
+        else:
+            r["vona"] = round(weights[r["pos"]] * (max(0.0, r["value"]) - (e or 0.0)), 2)
 
 
 # --------------------------------------------------------------------------- draft state
@@ -247,6 +291,59 @@ def undo_pick() -> dict:
     return {"ok": True, "state": _state()}
 
 
+# --------------------------------------------------------------------------- live availability inputs
+
+def _live_room_adp(run_id, made: int) -> dict[int, float]:
+    """Expected live pick number for each still-available player, counted from where the draft actually is.
+
+    The stored `room_adp` is a PRE-DRAFT quantity: it re-ranks the pool with keepers removed and knows nothing
+    about who has since come off the board. Comparing it against an advancing pick number is what made the board
+    report P(avail) = 100% for a player whose real chance of surviving was 4%. Re-ranking what is left and
+    offsetting by the picks already made says the room keeps taking the best available in ADP order from here.
+    """
+    rows = _q("""select k.player_id, k.composite_adp from rankings k
+                 left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
+                 left join keepers ke on ke.player_id = k.player_id
+                 where k.run_id = :run and d.id is null and ke.id is null and k.composite_adp is not null""",
+              run=run_id)
+    rows.sort(key=lambda r: r["composite_adp"])
+    return {r["player_id"]: float(made + i) for i, r in enumerate(rows, start=1)}
+
+
+def _decision_horizon(st: dict) -> tuple[int | None, dict | None]:
+    """The pick the board should reason about, and the last pick that happens before it.
+
+    "Will he be there at my next pick?" is only a useful question while that pick is still ahead of me. On the
+    clock my next pick is this one, every available player survives to it trivially, and the decision I am
+    actually making is what I can still get at the pick AFTER this one -- so the horizon steps forward when
+    picks_until_mine is 0.
+    """
+    cfg = load_league_config()
+    my_slot = cfg.league.my_draft_slot
+    if not my_slot:
+        return None, None
+    sched = build_pick_schedule(cfg.league.num_teams, cfg.roster.rounds, _keeper_specs())
+    made = st["picks_made"]
+    mine = [s for s in sched
+            if s.team_slot == my_slot and s.live_pick_no is not None and s.live_pick_no > made]
+    if not mine:
+        return None, None
+    target = mine[1] if st.get("picks_until_mine") == 0 and len(mine) > 1 else mine[0]
+    return target.live_pick_no - 1, {"round": target.round, "live_pick": target.live_pick_no,
+                                     "overall_pick": target.overall_pick}
+
+
+def _p_avail_at(room: float | None, sd: float | None, before_pick: int, made: int) -> float | None:
+    """P(a player survives every pick between now and my horizon pick). No intervening picks -> certainty."""
+    from app.ranking.availability import p_available
+
+    if room is None:
+        return None
+    if before_pick <= made:
+        return 1.0
+    return round(p_available(room, sd or 10.0, before_pick), 3)
+
+
 # --------------------------------------------------------------------------- availability / VONA
 
 # What the NEXT player at a position is actually worth to the roster. A binary "open slot or half" was too crude
@@ -257,6 +354,7 @@ BENCH_DECAY = 0.55        # each additional one is worth less than the last
 BENCH_FLOOR = 0.10
 QB_BACKUP = 0.15          # a second QB can only ever cover a bye or an injury at one slot
 KDST_BACKUP = 0.03        # kickers and defences are streamed, never stockpiled
+KDST_FROM_ROUND = 12      # docs/spec/ranking-model.md §12: a kicker before this is a wasted pick
 
 
 def _slot_weight(pos: str, st: dict, cfg) -> tuple[float, str]:
@@ -276,46 +374,57 @@ def _slot_weight(pos: str, st: dict, cfg) -> tuple[float, str]:
 @router.get("/availability")
 def get_availability(top: int = 3) -> dict:
     """VONA top-N per position at my next pick, weighted by which of my slots are still open."""
-    from app.ranking.availability import Candidate, expected_best_value, p_available
+    from app.ranking.availability import Candidate, expected_best_value
 
     run = current_run()
     cfg = load_league_config()
     st = _state()
-    nxt = st["my_next_pick"]
-    if not nxt:
+    before_pick, horizon = _decision_horizon(st)
+    if not horizon or before_pick is None:
         return {"my_next_pick": None, "positions": {}}
-    pick = nxt["live_pick"]
-    rows = _q("""select k.player_id, p.name, k.position, k.team, k.vorp, k.room_adp, k.sd_adp
+    made = st["picks_made"]
+    live_room = _live_room_adp(run["run_id"], made)
+    rows = _q("""select k.player_id, p.name, k.position, k.team, k.vorp, k.composite_adp, k.sd_adp, k.is_kdst
                  from rankings k join players p on p.id = k.player_id
                  left join draft_picks d on d.player_id = k.player_id and d.undone_at is null
                  left join keepers ke on ke.player_id = k.player_id
                  -- a kept player cannot be drafted, so he is not a candidate (same rule as /api/rankings)
-                 where k.run_id = :run and k.vorp is not null and not k.is_kdst
-                   and d.id is null and ke.id is null""",
-              run=run["run_id"])
+                 where k.run_id = :run and d.id is null and ke.id is null
+                   and (k.vorp is not null or k.is_kdst)
+                   and (not k.is_kdst or :kdst)""",
+              run=run["run_id"], kdst=horizon["round"] >= KDST_FROM_ROUND)
     by_pos: dict[str, list] = {}
     for r in rows:
         by_pos.setdefault(r["position"], []).append(r)
     out: dict[str, Any] = {}
     for pos, rs in by_pos.items():
-        cands = [Candidate(r["player_id"], pos, max(0.0, r["vorp"] or 0.0), r["room_adp"], r["sd_adp"] or 10.0)
+        cands = [Candidate(r["player_id"], pos, max(0.0, r["vorp"] or 0.0),
+                           live_room.get(r["player_id"]), r["sd_adp"] or 10.0)
                  for r in rs]
         weight, reason = _slot_weight(pos, st, cfg)
-        ranked = sorted(rs, key=lambda r: -(r["vorp"] or 0))[:top]
+        # K and DST are deliberately given no VBD, so sorting them by it would return an arbitrary three.
+        # Consensus ADP is the only ordering that means anything for them (spec §12).
+        kdst = rs[0]["is_kdst"]
+        ranked = (sorted(rs, key=lambda r: (r["composite_adp"] is None, r["composite_adp"]))[:top] if kdst
+                  else sorted(rs, key=lambda r: -(r["vorp"] or 0))[:top])
         items = []
         for r in ranked:
             others = [c for c in cands if c.player_id != r["player_id"]]
-            exp = expected_best_value(others, pick)
+            exp = 0.0 if kdst or before_pick <= made else expected_best_value(others, before_pick)
+            # Clamp at replacement, exactly as the candidate pool does. A negative VORP means "worse than a
+            # freely available replacement", and the gain from drafting him is 0, not negative -- leaving it
+            # signed here subtracted a clamped expectation from an unclamped value and disagreed with the board.
+            value_now = round(max(0.0, r["vorp"] or 0.0), 1)
             items.append({
                 "player_id": r["player_id"], "name": r["name"], "team": r["team"],
-                "value_now": round(r["vorp"], 1),
+                "value_now": value_now,
                 "expected_value_at_next": round(exp, 1),
-                "vona": round(weight * (r["vorp"] - exp), 1),
-                "p_avail": round(p_available(r["room_adp"], r["sd_adp"] or 10.0, pick), 3),
+                "vona": round(weight * (value_now - exp), 1),
+                "p_avail": _p_avail_at(live_room.get(r["player_id"]), r["sd_adp"], before_pick, made),
             })
         out[pos] = {"slot_weight": weight, "slot_reason": reason,
                     "open_slots": st["open_slots"].get(pos, 0), "candidates": items}
-    return {"my_next_pick": nxt, "positions": out}
+    return {"my_next_pick": horizon, "positions": out}
 
 
 def _recompute(reason: str) -> str | None:

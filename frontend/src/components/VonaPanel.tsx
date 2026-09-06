@@ -63,7 +63,8 @@ export function VonaPanel({
                   >{cd.vona > 0 ? `+${one(cd.vona)}` : one(cd.vona)}</span>
                   <span
                     className="num mono text-[10.5px]"
-                    style={{ color: cd.p_avail >= 0.66 ? 'var(--good)' : cd.p_avail <= 0.2 ? 'var(--bad)' : 'var(--warn)' }}
+                    style={{ color: cd.p_avail == null ? 'var(--muted)'
+                      : cd.p_avail >= 0.66 ? 'var(--good)' : cd.p_avail <= 0.2 ? 'var(--bad)' : 'var(--warn)' }}
                   >{pct(cd.p_avail)}</span>
                 </button>
               ))}

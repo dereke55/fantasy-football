@@ -64,6 +64,7 @@ export interface BoardPlayer {
   sleeper_adp: number | null
   composite_adp: number | null
   room_adp: number | null
+  live_room_adp?: number | null
   gap: number | null
   gap_z: number | null
   p_avail: number | null
@@ -168,7 +169,7 @@ export interface VonaCandidate {
   value_now: number
   expected_value_at_next: number
   vona: number
-  p_avail: number
+  p_avail: number | null
 }
 
 export interface VonaPosition {
