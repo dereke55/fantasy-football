@@ -458,3 +458,41 @@ metadata (Sleeper stamps `last_modified` on every response) while the ADP and pr
 FFC and the FantasyPros mirror deduped outright, which matches their once-a-day cadence. The frozen run is now
 `0875dcdc`, built on the 12:17 Sleeper/Yahoo snapshots and the 10:40 FFC/ECR snapshots, gates passing
 (Spearman 0.923, every top-100 player ≥ 3 WHY bullets, market layer current).
+
+## 2026-09-06 12:29 CDT — Pre-draft re-freeze (runbook §"Freeze procedure")
+
+Full chain run and verified end to end ~8 h before the 20:45 CDT draft, to prove the refresh path works before
+the moment it matters rather than at draft − 60 min:
+
+```
+uv run ff ingest all         58 s   ID gate PASSED
+uv run ff ingest check-ids   < 1 s  PASSED
+uv run ff recompute --freeze  5 s   features -> market -> ranking -> WHY
+```
+
+| | |
+|---|---|
+| run_id | `1116e5dd` |
+| frozen_at | 2026-09-06 12:29:32 CDT |
+| league_config_sha256 | `35a02bc48073` |
+| git_sha | `74f1dfd` |
+| model_version | 2026.1 |
+| players / WHY bullets | 634 / 3615 |
+
+Input snapshots: `fantasypros_mirror` 0ffb88b7 (09-06 10:40) · `ffc` 9cc13335 (09-06 10:40) ·
+`sleeper` 902d5c23 (09-06 12:26) · `yahoo_pub` 26e35922 (09-06 12:26). FFC and the FantasyPros mirror are on the
+10:40 pull because their 12:26 re-pull deduped — they publish once a day, and the new market-currency gate
+correctly distinguishes that from being behind.
+
+Guards: Spearman(top-150 vs ECR) 0.9233 ≥ 0.80 · every top-100 player ≥ 3 WHY bullets · market layer current ·
+exactly one frozen run · id gate 300/300 ECR, 381/381 Yahoo, 300/300 Sleeper, 43/43 2026 R1–R4 skill, 32/32 teams.
+
+**The board did not move**: 634 players, 0 changes to overall_rank, ppg_blend, composite_adp or e_games against
+the 10:40 board. Three refreshes today have produced an identical board, so the market has settled.
+
+Draft state at freeze: 0 picks, one keeper (Colston Loveland, TE, Derek/slot 10).
+
+Note for draft day: running `pytest` re-freezes. The keeper tests add and remove a keeper, and each edit triggers
+`_recompute`, which now carries the freeze forward — so the frozen run_id churns even though the resulting board
+is identical (verified). Harmless, but re-run `ff recompute --freeze` afterwards if you want the serving run to
+be the one the documented chain produced, and don't run the suite mid-draft.
