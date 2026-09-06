@@ -494,8 +494,23 @@ def check() -> None:
     typer.secho(f"[{'PASS' if ok_b else 'FAIL'}] every top-100 player has >= 3 WHY bullets "
                 f"({thin.height} short: {thin['name'].head(8).to_list()})",
                 fg=typer.colors.GREEN if ok_b else typer.colors.RED)
+    # A board can pass every model gate and still be built on yesterday's ADP: `rank run` reads rank_snapshots,
+    # and only the market step refreshes that from the raw pull. On draft day 2026 the raw tables held a 12:17
+    # pull while the market layer still served 10:40, and nothing said so. Compare the two directly.
+    # Compare per (source, endpoint): a re-pull whose content matched is registered as `skipped_dupe`, not `ok`,
+    # so only a genuinely newer payload for the SAME endpoint counts as the market layer being behind.
+    stale = _q("""select distinct r.source
+                  from rank_snapshots r
+                  join raw_snapshots s on s.id = r.snapshot_id
+                  where exists (select 1 from raw_snapshots s2
+                                where s2.source = s.source and s2.endpoint = s.endpoint
+                                  and s2.status = 'ok' and s2.fetched_at > s.fetched_at)""")
+    ok_m = stale.is_empty()
+    typer.secho(f"[{'PASS' if ok_m else 'FAIL'}] market layer is current with the raw snapshots"
+                + ("" if ok_m else f" — behind for {stale['source'].to_list()}; run `ff recompute`"),
+                fg=typer.colors.GREEN if ok_m else typer.colors.RED)
     typer.echo({"players": r["n_players_ranked"], "why_bullets": r["n_why_bullets"]})
-    if not (ok_sp and ok_b):
+    if not (ok_sp and ok_b and ok_m):
         typer.echo("GATE FAILED")
         raise typer.Exit(code=1)
     typer.echo("GATE PASSED")

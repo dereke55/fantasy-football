@@ -9,6 +9,29 @@ app.add_typer(ingest_app, name="ingest")
 
 
 @app.command()
+def recompute(freeze: bool = typer.Option(False, help="Freeze the resulting run as the draft-day board")) -> None:
+    """Rebuild everything downstream of the raw tables: features -> market -> ranking (no network).
+
+    The runbook has always described this step, but it was never a command, so the daily job was three separate
+    invocations and it was possible -- and easy -- to run `ingest all` then `rank run` and silently rebuild the
+    board on the PREVIOUS pull's ADP: `rank run` reads `rank_snapshots`, and only `market build` refreshes it
+    from the raw tables. Doing it in one command removes the chance of half-refreshing the board on draft day.
+    """
+    import time
+
+    from app.features import build as features_build
+    from app.market import build as market_build
+    from app.ranking import pipeline as ranking_pipeline
+
+    t0 = time.time()
+    # pass real values: calling a typer-decorated function bare hands it the OptionInfo defaults
+    typer.echo("features ..."); features_build.build(seasons=None)
+    typer.echo("market   ..."); market_build.build()
+    typer.echo("ranking  ..."); ranking_pipeline.run(freeze=freeze)
+    typer.echo({"recompute_seconds": round(time.time() - t0, 1), "frozen": freeze})
+
+
+@app.command()
 def health() -> None:
     """Check database connectivity."""
     from app.main import health as _health

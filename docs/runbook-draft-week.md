@@ -32,7 +32,8 @@ Run in this order, once per day, never during the draft. Every pull is registere
   - Yahoo pub ADP `pub-api-ro.fantasysports.yahoo.com/fantasy/v2/game/nfl/players;sort=AR;start=N;count=100;out=draft_analysis?format=json` (~6 pages of 100 + DEF + K passes, 2 s spacing, once/day, **never during the draft**).
 - [ ] `ingest check-ids` (re-run after every ingest): top-300 ECR, top-300 Sleeper projection rows, top-400 Yahoo pool, every 2026 R1–R4 QB/RB/WR/TE pick resolve; `unmatched.csv` < 3% and reviewed.
 - [ ] Review the snapshot registry: every source has a new `raw_snapshots` row with a row count today, or is explicitly marked "reused last good snapshot" in the job log.
-- [ ] `recompute` (no network, must finish in < 5 min): scoring → features → market composite (nightly OLS refit of `sd_adp` on FFC) → ranking → WHY → new `ranking_runs` row (git sha, league-config hash, seed hashes, input snapshot ids).
+- [ ] `uv run ff recompute` (no network, must finish in < 5 min): features → market composite (OLS refit of `sd_adp` on FFC) → ranking → WHY → new `ranking_runs` row (git sha, league-config hash, seed hashes, input snapshot ids). Add `--freeze` on the freeze evening / before the draft.
+  - **Run this, not `ff rank run` on its own.** `rank run` reads `rank_snapshots`, and only the market step refreshes that table from the raw pull — so `ingest all` followed by `rank run` silently rebuilds the board on the PREVIOUS pull's ADP. This was live on draft day 2026 and is why `ff recompute` exists.
 - [ ] Model guard: Spearman(our overall rank, ECR) on top-150 ≥ 0.8; every top-100 player incl. rookies has ≥3 bullets. A failing guard does not replace the pinned run.
 - [ ] Curated tables: if any seed YAML changed (`coaching_changes`, `qb_situations`, `ol_changes`, `known_missed_weeks`, `id_overrides`), every changed row has `source_url`, `confidence`, `last_checked`; reload and note in `docs/decisions.md`.
 
@@ -84,6 +85,7 @@ Preparation (draft_time − 60 min):
 - [ ] Offline fallback CSV (frozen run) open in a second window.
 - [ ] If 8b shipped: token refreshed (< 55 min old), poller started at draft_time − 60 min, cadence 60 s in `predraft`; confirm it captured the draft order and the pre-filled keeper rows, and that SSE is connected on the board.
 - [ ] Confirm no daily job is scheduled during the draft window (no Yahoo pub pool pull, no Sleeper players pull, no roster/player calls).
+- [ ] Final pre-draft refresh at draft_time − 60 min: `uv run ff ingest all && uv run ff ingest check-ids && uv run ff recompute --freeze`, then confirm the top bar shows the new run_id and the gate passed. Skip it if the draft is on/after Sep 10 (serve the frozen run instead).
 
 During the draft:
 

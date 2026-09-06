@@ -429,3 +429,32 @@ correctly falls to replacement value); `keeper_value` divisions (a round only be
 pick, so the denominators cannot be 0); the polars UInt32 rank-underflow class (every surviving `rank()` is cast
 before subtraction, or only ever compared); the drift check's claim that the n-th surviving `draft_picks` row is
 the n-th live slot (holds across undo, since ids stay monotonic and undo only removes the last pick).
+
+## 2026-09-06 — `ingest all` + `rank run` rebuilt the board on the PREVIOUS pull's ADP
+
+Asked on draft day whether the rankings needed refreshing, I ran `ff ingest all` (which wrote new Yahoo and
+Sleeper snapshots at 12:17) and then `ff rank run`, and the board did not move by a single rank. That looked like
+"nothing changed upstream", but it was not: `rank_snapshots` — the normalised market table the ranking reads —
+still pointed at the **10:40** pull for every source. Only `ff market build` refreshes it from the raw tables,
+and it was never wired into either command.
+
+So the documented daily job (`ingest all` → `check-ids` → recompute) had a silent hole: `recompute` was described
+in the runbook and listed in the README's command table, but **no such command existed**. Running the two
+commands that do exist rebuilds the board on stale ADP and reports success.
+
+Fixes:
+- `ff recompute [--freeze]` now exists and runs the chain the docs always claimed: features → market → ranking →
+  WHY. It takes ~5 s (runbook budget: 5 min). The runbook and README now say to use it and say why `ff rank run`
+  alone is not enough.
+- `ff rank check` gained a third gate: the market layer must not be behind the raw snapshots. It compares per
+  (source, endpoint), because a re-pull whose content matched is registered `skipped_dupe` rather than `ok` —
+  comparing per source alone made a fresh `nflverse/schedules` pull mark `fantasypros_mirror` stale. Verified it
+  fires by pointing the check at the older FFC snapshot.
+- The draft-day checklist gained an explicit "final refresh at draft_time − 60 min" line.
+
+**After running the real chain, the board still did not move**: 634 players, 0 rank changes, 0 PPG changes, 0
+composite-ADP changes against the 10:40 board. Yahoo and Sleeper produced new content hashes from volatile
+metadata (Sleeper stamps `last_modified` on every response) while the ADP and projection values were identical;
+FFC and the FantasyPros mirror deduped outright, which matches their once-a-day cadence. The frozen run is now
+`0875dcdc`, built on the 12:17 Sleeper/Yahoo snapshots and the 10:40 FFC/ECR snapshots, gates passing
+(Spearman 0.923, every top-100 player ≥ 3 WHY bullets, market layer current).

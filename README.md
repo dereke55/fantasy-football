@@ -86,7 +86,7 @@ Shortcuts are ignored while focus is in a text input or a select, so typing a pl
 | `ff health` | DB connectivity |
 | `ff ingest …` | Pull sources into snapshots + Postgres (Phase 1a) |
 | `ff ingest check-ids` | Crosswalk gate: top-N of every source resolves to a player id |
-| `ff recompute` | Scoring → features → rankings → WHY from stored snapshots, no network (< 5 min) |
+| `ff recompute [--freeze]` | features → market composite → rankings → WHY from stored snapshots, no network (~5 s). **Use this, not `ff rank run` alone** — only the market step refreshes `rank_snapshots`, so `rank run` by itself rebuilds the board on the previous pull's ADP |
 | `ff freeze` | Pin the draft-day snapshot to a run id + config hash |
 
 (Commands are added as their phase lands; see `docs/phases/`.)

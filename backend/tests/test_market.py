@@ -28,6 +28,11 @@ def market(snaps) -> pl.DataFrame:
     return compute_market(snaps)
 
 
+def _rows(sql: str) -> list[dict]:
+    with session_scope() as s:
+        return [dict(r) for r in s.execute(text(sql)).mappings()]
+
+
 def _one(sql: str) -> dict | None:
     with session_scope() as s:
         row = s.execute(text(sql)).mappings().first()
@@ -101,3 +106,33 @@ def test_name_normalization_handles_accents_and_suffixes():
     assert norm_name("Michael Pittman Jr.") == "michael pittman"
     assert norm_name("James Cook III") == "james cook"
     assert norm_name("Ja'Marr Chase") == "jamarr chase"
+
+
+def test_market_layer_is_current_with_the_raw_snapshots():
+    """`ff rank run` reads rank_snapshots; only the market step refreshes it from the raw tables.
+
+    On draft day 2026 `ingest all` wrote a 12:17 pull while rank_snapshots still served 10:40, so a "refreshed"
+    board was silently rebuilt on the previous pull's ADP and nothing said so. A re-pull whose content matched is
+    registered `skipped_dupe`, not `ok`, so only a genuinely newer payload for the SAME endpoint counts.
+    """
+    behind = _rows("""select distinct r.source, s.endpoint,
+                          s.fetched_at market_on,
+                          (select max(s2.fetched_at) from raw_snapshots s2
+                           where s2.source = s.source and s2.endpoint = s.endpoint and s2.status = 'ok') newest
+                   from rank_snapshots r
+                   join raw_snapshots s on s.id = r.snapshot_id
+                   where exists (select 1 from raw_snapshots s2
+                                 where s2.source = s.source and s2.endpoint = s.endpoint
+                                   and s2.status = 'ok' and s2.fetched_at > s.fetched_at)""")
+    assert behind is None or not behind, f"market layer is behind the raw pull — run `ff recompute`: {behind}"
+
+
+def test_recompute_runs_the_whole_chain():
+    """The runbook described `recompute` long before it was a command; the daily job was three invocations."""
+    from typer.testing import CliRunner
+
+    from app.cli import app
+
+    out = CliRunner().invoke(app, ["recompute", "--help"])
+    assert out.exit_code == 0
+    assert "market" in out.stdout and "features" in out.stdout, "recompute must cover the whole chain"
