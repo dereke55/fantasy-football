@@ -1,6 +1,7 @@
 /**
- * VONA top-3 per position from /api/availability. The slot weight is shown next to each position
- * so the number stays explainable: an open starter counts full VBD, a bench-only need half.
+ * VONA top-3 per position from /api/availability. The slot weight is shown next to each position so the
+ * number stays explainable: a player who fills a starting slot (or the FLEX) counts full VBD, while a backup
+ * QB who can never start in a 1-QB lineup counts almost nothing however many points he projects for.
  * K and DST are hidden before round 12 (docs/spec/ranking-model.md §12).
  */
 import type { AvailabilityResponse } from '../api/types'
@@ -34,9 +35,11 @@ export function VonaPanel({
                 className="rounded px-1 text-[10px] font-bold"
                 style={{ color: c.fg, background: c.bg, border: `1px solid ${c.border}` }}
               >{pos === 'DEF' ? 'DST' : pos}</span>
-              <span className="text-[10px]" style={{ color: 'var(--muted)' }}>
-                {v.open_slots} open · weight ×{v.slot_weight}
-              </span>
+              <span
+                className="text-[10px] truncate"
+                style={{ color: v.slot_weight < 0.5 ? 'var(--warn)' : 'var(--muted)' }}
+                title={`VONA is scaled ×${v.slot_weight} — ${v.slot_reason}`}
+              >×{v.slot_weight} · {v.slot_reason}</span>
             </div>
             <div className="flex flex-col gap-0.5">
               {v.candidates.map((cd) => (

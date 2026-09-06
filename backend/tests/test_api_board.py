@@ -67,9 +67,11 @@ def test_my_next_pick_matches_the_snake_for_my_slot(cfg):
 def test_availability_weights_by_open_slots():
     a = client.get("/api/availability").json()
     assert a["my_next_pick"]
+    st = client.get("/api/state").json()
     for pos, blk in a["positions"].items():
-        assert blk["slot_weight"] in (0.5, 1.0)
-        assert (blk["slot_weight"] == 1.0) == (blk["open_slots"] > 0), pos
+        assert 0.0 < blk["slot_weight"] <= 1.0
+        starts = blk["open_slots"] > 0 or (pos in st["flex_eligible"] and st["flex_open"] > 0)
+        assert (blk["slot_weight"] == 1.0) == starts, pos
         for c in blk["candidates"]:
             assert 0.0 <= c["p_avail"] <= 1.0
             assert c["vona"] == pytest.approx(
@@ -213,3 +215,78 @@ def test_availability_never_offers_a_kept_or_drafted_player():
     offered = {c["player_id"] for blk in a["positions"].values() for c in blk["candidates"]}
     assert not offered & kept, "a kept player was offered as a draft candidate"
     assert not offered & drafted
+
+
+def _fill_board(client_, n: int, mine: set[str]) -> None:
+    board = client_.get("/api/rankings", params={"limit": 700}).json()["players"]
+    pool = sorted([p for p in board if not p["drafted"] and p["composite_adp"]], key=lambda p: p["composite_adp"])
+    taken = 0
+    for p in pool:
+        if taken >= n:
+            break
+        body = {"player_id": p["player_id"]}
+        if p["name"] in mine:
+            body.update({"my_pick": True, "team_slot": 10})
+        if client_.post("/api/draft/picks", json=body).status_code == 200:
+            taken += 1
+
+
+def _undo_all(client_) -> None:
+    while client_.post("/api/draft/undo").status_code == 200:
+        pass
+
+
+def test_roster_need_outranks_raw_value(cfg):
+    """The board must not recommend a player it cannot start.
+
+    In a 1-QB league the highest-scoring player left is often a quarterback, and a fourth running back often has
+    more raw value than a second startable receiver. VONA weights each position by what the NEXT player there is
+    actually worth to the roster, so neither wins once the slot is filled.
+    """
+    try:
+        _fill_board(client, 95, {"Josh Allen", "CeeDee Lamb", "Saquon Barkley", "Breece Hall", "Nico Collins"})
+        st = client.get("/api/state").json()
+        assert any(p["position"] == "QB" for p in st["my_roster"]), "setup: a QB should be rostered"
+        assert st["open_slots"]["QB"] == 0
+
+        av = client.get("/api/availability").json()["positions"]
+        qb = av["QB"]
+        assert qb["slot_weight"] <= 0.2, "a backup QB cannot start in a 1-QB lineup"
+        assert "cannot start" in qb["slot_reason"]
+
+        best = {pos: b["candidates"][0] for pos, b in av.items() if b["candidates"]}
+        # the QB is still the loudest raw number for his position, but must not be the top recommendation
+        top_by_vona = max(best.items(), key=lambda kv: kv[1]["vona"])[0]
+        assert top_by_vona != "QB", f"recommended a backup QB ({best['QB']['name']})"
+        # and a deeper-bench position must not beat a shallower one on raw value alone
+        deeper_rb = ("RB" in best and "WR" in best
+                     and av["RB"]["slot_weight"] < av["WR"]["slot_weight"]
+                     and best["RB"]["value_now"] > best["WR"]["value_now"])
+        if deeper_rb:
+            assert best["RB"]["vona"] < best["WR"]["vona"], (
+                "a deep-bench RB with higher raw value should still rank below a startable WR")
+    finally:
+        _undo_all(client)
+
+
+def test_flex_counts_as_a_starting_slot():
+    """FLEX was skipped entirely, so a third RB looked like a bench body when he can actually start."""
+    try:
+        _fill_board(client, 30, {"Saquon Barkley", "Breece Hall"})
+        st = client.get("/api/state").json()
+        assert "flex_open" in st and "bench_by_pos" in st
+        av = client.get("/api/availability").json()["positions"]
+        if st["flex_open"] > 0:
+            for pos in st["flex_eligible"]:
+                if pos in av and st["open_slots"].get(pos, 0) == 0:
+                    assert av[pos]["slot_weight"] == 1.0, f"{pos} can fill the open FLEX"
+                    assert "FLEX" in av[pos]["slot_reason"]
+    finally:
+        _undo_all(client)
+
+
+def test_slot_weights_are_ordered_and_explainable():
+    av = client.get("/api/availability").json()["positions"]
+    for pos, b in av.items():
+        assert 0.0 < b["slot_weight"] <= 1.0
+        assert b["slot_reason"], f"{pos} weight must be explainable on screen"

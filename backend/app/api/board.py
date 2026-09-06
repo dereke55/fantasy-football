@@ -166,6 +166,11 @@ def _state() -> dict:
         if pos == "FLEX":
             continue
         open_slots[pos] = max(0, n - filled.get(pos, 0))
+    # FLEX was previously skipped, which quietly told the model a third running back was a bench body when he can
+    # actually start. Surplus at any flex-eligible position competes for the FLEX slots.
+    flex_total = cfg.roster.slots.get("FLEX", 0) * 1
+    surplus = sum(max(0, filled.get(p, 0) - cfg.roster.slots.get(p, 0)) for p in cfg.roster.flex_eligible)
+    flex_open = max(0, flex_total - surplus)
     return {
         "mode": "manual",
         "picks_made": made,
@@ -179,6 +184,9 @@ def _state() -> dict:
         "picks_until_mine": until,
         "my_roster": my_players,
         "open_slots": open_slots,
+        "flex_open": flex_open,
+        "flex_eligible": cfg.roster.flex_eligible,
+        "bench_by_pos": {p: max(0, filled.get(p, 0) - cfg.roster.slots.get(p, 0)) for p in filled},
         "bye_stack_warnings": warnings,
         "recent_picks": picks[-8:],
     }
@@ -241,12 +249,37 @@ def undo_pick() -> dict:
 
 # --------------------------------------------------------------------------- availability / VONA
 
+# What the NEXT player at a position is actually worth to the roster. A binary "open slot or half" was too crude
+# in both directions: it treated a third running back (who can start at FLEX) the same as a backup quarterback
+# (who in a 1-QB league can never start), and it ignored the FLEX slot entirely.
+BENCH_FIRST = 0.35        # first bench body at a flex-eligible position: injury and bye cover that can start
+BENCH_DECAY = 0.55        # each additional one is worth less than the last
+BENCH_FLOOR = 0.10
+QB_BACKUP = 0.15          # a second QB can only ever cover a bye or an injury at one slot
+KDST_BACKUP = 0.03        # kickers and defences are streamed, never stockpiled
+
+
+def _slot_weight(pos: str, st: dict, cfg) -> tuple[float, str]:
+    if st["open_slots"].get(pos, 0) > 0:
+        return 1.0, "fills a starting slot"
+    if pos in cfg.roster.flex_eligible and st.get("flex_open", 0) > 0:
+        return 1.0, "fills the FLEX"
+    if pos in ("K", "DEF", "DST"):
+        return KDST_BACKUP, "already rostered — streamed weekly"
+    if pos == "QB":
+        return QB_BACKUP, "backup QB — cannot start in a 1-QB lineup"
+    depth = st.get("bench_by_pos", {}).get(pos, 0)
+    w = max(BENCH_FLOOR, BENCH_FIRST * (BENCH_DECAY ** max(0, depth - 1)))
+    return round(w, 3), f"bench depth {depth} — can cover injuries and byes"
+
+
 @router.get("/availability")
 def get_availability(top: int = 3) -> dict:
     """VONA top-N per position at my next pick, weighted by which of my slots are still open."""
     from app.ranking.availability import Candidate, expected_best_value, p_available
 
     run = current_run()
+    cfg = load_league_config()
     st = _state()
     nxt = st["my_next_pick"]
     if not nxt:
@@ -267,8 +300,7 @@ def get_availability(top: int = 3) -> dict:
     for pos, rs in by_pos.items():
         cands = [Candidate(r["player_id"], pos, max(0.0, r["vorp"] or 0.0), r["room_adp"], r["sd_adp"] or 10.0)
                  for r in rs]
-        # an open starting slot is worth the full value; a bench-only need is worth half (docs/spec/ui.md §5)
-        weight = 1.0 if st["open_slots"].get(pos, 0) > 0 else 0.5
+        weight, reason = _slot_weight(pos, st, cfg)
         ranked = sorted(rs, key=lambda r: -(r["vorp"] or 0))[:top]
         items = []
         for r in ranked:
@@ -281,7 +313,8 @@ def get_availability(top: int = 3) -> dict:
                 "vona": round(weight * (r["vorp"] - exp), 1),
                 "p_avail": round(p_available(r["room_adp"], r["sd_adp"] or 10.0, pick), 3),
             })
-        out[pos] = {"slot_weight": weight, "open_slots": st["open_slots"].get(pos, 0), "candidates": items}
+        out[pos] = {"slot_weight": weight, "slot_reason": reason,
+                    "open_slots": st["open_slots"].get(pos, 0), "candidates": items}
     return {"my_next_pick": nxt, "positions": out}
 
 
@@ -300,9 +333,20 @@ def _recompute(reason: str) -> str | None:
     board, meta = build_board(cfg)
     run_id = save(board, meta, cfg, duration=round(time.time() - t0, 2),
                   spearman=spearman_vs_market(board))
+    # The freeze pins the INPUTS (snapshots + config hash) so the board is reproducible; it must not swallow a
+    # keeper correction. current_run() prefers the frozen run, so a recompute that left the freeze behind would
+    # build a new run nobody ever saw. This reads only stored data, so the inputs are identical to the frozen
+    # run's -- only keeper state moved -- and the freeze moves with it. Exactly one run stays frozen.
+    prev = _one("select run_id from ranking_runs where is_frozen and status='ok' order by started_at desc limit 1")
     with session_scope() as s:
         s.execute(text("update ranking_runs set note = :n where run_id = :r"),
                   {"n": f"auto-recompute: {reason}", "r": str(run_id)})
+        if prev:
+            s.execute(text("update ranking_runs set is_frozen = false where run_id = :p"),
+                      {"p": str(prev["run_id"])})
+            s.execute(text("update ranking_runs set is_frozen = true, note = coalesce(note,'') || :n "
+                           "where run_id = :r"),
+                      {"n": f" (carried the freeze forward from {str(prev['run_id'])[:8]})", "r": str(run_id)})
     return str(run_id)
 
 

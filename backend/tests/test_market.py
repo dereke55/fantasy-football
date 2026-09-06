@@ -5,7 +5,9 @@ Phase 6 ranking model depends on: per-source coverage, the composite, the disagr
 """
 import polars as pl
 import pytest
+from sqlalchemy import text
 
+from app.db import session_scope
 from app.ingest.players_hub import norm_name
 from app.market.build import (
     GATE_ONE_SOURCE_DEPTH,
@@ -26,11 +28,25 @@ def market(snaps) -> pl.DataFrame:
     return compute_market(snaps)
 
 
+def _one(sql: str) -> dict | None:
+    with session_scope() as s:
+        row = s.execute(text(sql)).mappings().first()
+        return dict(row) if row else None
+
+
 def test_all_four_sources_present_and_resolved(snaps):
     per_source = dict(snaps.group_by("source").len().iter_rows())
     assert set(per_source) == {"fantasypros_mirror", "yahoo_pub", "ffc", "sleeper"}
     assert per_source["fantasypros_mirror"] > 400 and per_source["sleeper"] > 400
-    assert per_source["ffc"] >= 232, "every FFC row must resolve to a player (defenses match on team)"
+    # Every FFC row must resolve to a player (defenses match on team). Asserting a hardcoded count instead
+    # asserts the size of a pool we do not control -- FFC's half-ppr board shrank from 232 to 227 rows during
+    # draft season and failed this test while resolution was in fact perfect. Compare to what upstream served.
+    served = _one("""select row_count from raw_snapshots where source='ffc' and endpoint like '%half-ppr%'
+                     and status='ok' order by fetched_at desc limit 1""")
+    assert served and served["row_count"], "no registered FFC snapshot to check resolution against"
+    assert per_source["ffc"] == served["row_count"], (
+        f'{served["row_count"] - per_source["ffc"]} FFC rows failed to resolve to a player')
+    assert per_source["ffc"] > 200, "FFC pool collapsed -- check the endpoint"
     assert snaps["player_id"].null_count() == 0
 
 

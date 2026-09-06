@@ -173,6 +173,7 @@ export interface VonaCandidate {
 
 export interface VonaPosition {
   slot_weight: number
+  slot_reason: string
   open_slots: number
   candidates: VonaCandidate[]
 }

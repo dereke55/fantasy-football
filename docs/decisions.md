@@ -293,3 +293,61 @@ extension shipped into the real draft a few hours before it starts is a worse ri
 Worth revisiting for 2027, when there is time to test it across several mocks — and by then Yahoo's API access
 (applied for 2026-08-30, quoted at 1–2 weeks) should have landed, which is a structured feed and strictly better
 than scraping a rendered page.
+
+## 2026-09-06 — VONA weights every position by what the roster can actually start
+
+**Problem.** Asked whether the board understood that a rostered position is worth less than an empty one, the
+honest answer was "only partly", and testing it exposed two flaws.
+
+1. **FLEX was invisible.** `_state()` built `open_slots` from the named starting slots and skipped `FLEX`
+   entirely, so once RB1/RB2 were filled a third running back looked like a bench body — when he can actually
+   start every week. Any surplus at a flex-eligible position now consumes a FLEX slot, and a player who fills the
+   remaining FLEX gets full weight.
+2. **The weight was binary.** `1.0 if open_slots > 0 else 0.5` gave a backup quarterback — who can never start in
+   a 1-QB lineup — the same 0.5 as a third running back who can. In the late rounds the highest projected player
+   left on the board is very often a quarterback, so the board kept recommending one.
+
+**Fix.** `_slot_weight()` returns a weight *and* the sentence explaining it, which the VONA panel renders:
+
+| Case | Weight | Shown as |
+|---|---|---|
+| Fills a starting slot | 1.00 | fills a starting slot |
+| Flex-eligible, FLEX open | 1.00 | fills the FLEX |
+| Backup QB (1-QB lineup) | 0.15 | backup QB — cannot start in a 1-QB lineup |
+| K/DST already rostered | 0.03 | already rostered — streamed weekly |
+| Bench depth *n* | 0.35 × 0.55^(n−1), floor 0.10 | bench depth n — can cover injuries and byes |
+
+The bench curve is decay, not a cliff: the first backup at a position has real value (injuries and byes), the
+fourth has very little. `BENCH_FLOOR` keeps it above zero so a genuinely elite player still surfaces.
+
+**Verified** by simulating 95 picks with Josh Allen on my roster. Raw value vs. VONA:
+
+```
+Jakobi Meyers   WR  raw 19.7  VONA 2.6   (×0.35  bench WR)
+Kyle Monangai   RB  raw 22.7  VONA 1.5   (×0.106 bench depth 3)
+Travis Kelce    TE  raw 16.9  VONA 1.3   (×0.193 bench depth 2)
+Patrick Mahomes QB  raw 18.5  VONA 0.5   (×0.15  backup QB)
+```
+
+Monangai has the highest raw value of the four and correctly ranks below Meyers; Mahomes projects for more points
+than Kelce or Meyers and correctly ranks last. This is display-and-recommendation logic only — it scales VONA in
+`/api/availability`, which is computed live. The frozen run's rankings, VORP and WHY bullets are untouched.
+
+## 2026-09-06 — A keeper edit now carries the freeze forward
+
+**Bug, found by a test that had been failing for the wrong reason.** `current_run()` prefers the frozen run.
+`_recompute()` (on every keeper add/remove) built a *new, unfrozen* run — so after the hard freeze, keeper
+corrections produced a run that nothing ever served. The board would have gone on showing the previous keeper
+set's baselines, room ADP and pick schedule, silently. Six such orphaned runs were sitting in `ranking_runs`.
+
+The freeze exists to pin the **inputs** (snapshots + config hash) so the board is reproducible, not to reject a
+keeper correction: `_recompute` reads only stored data, so its inputs are identical to the frozen run's and only
+keeper state moved. It now unfreezes the superseded run and freezes the new one, noting which run it came from.
+Exactly one run is frozen at any time, and the audit trail records the chain.
+
+## 2026-09-06 — Test FFC resolution against the snapshot, not a hardcoded count
+
+`assert per_source["ffc"] >= 232` was meant to check that every FFC row resolves to a player, but it asserted the
+size of a pool we do not control. FFC's half-ppr board shrank from 232 to 227 rows during draft season and the
+test failed while resolution was in fact perfect (227/227). It now compares against `raw_snapshots.row_count` for
+the latest registered FFC snapshot, which is what the assertion always meant.
