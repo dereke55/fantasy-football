@@ -266,3 +266,30 @@ Restoring Arizona moved McBride from 40 to **30**.
 
 This is the case for the day-before refresh in `docs/runbook-draft-week.md`: three of these would have left a
 materially wrong board.
+
+
+## 2026-09-06 — Yahoo draft-room automation investigated in a live mock: NO-GO
+
+Joined a live 10-team Yahoo mock draft on draft day and inspected the draft client from inside the page
+(`/draftclient/f1/{league_id}/{slot}`). Findings, in order of how much they mattered:
+
+**What works.** The room renders picks as plain text that is trivially parseable:
+`Last: J. TAYLOR (RB · IND) Robert`, alongside `Craig's Pick • You're up in 7 Picks • Round 1, Pick 2` and a page
+title that counts down (`7 picks until your turn`). A MutationObserver watching for that text pattern would catch
+picks as they happen, and matching on text rather than class names would survive a restyle.
+
+**Why it is still a no-go for this draft.** Only the **most recent** pick exists in the DOM. Clicking the "Picks"
+tab did not surface a full history (virtualised or fetched on demand), so there is no list to reconcile against.
+That forces the fragile design rather than the robust one: the extension must catch **every** pick as a discrete
+event, with no way to detect that it missed one. Compounding factors: class names are obfuscated
+(`_ys_1o5vjbq`), the page carries 21 iframes, and pick text is abbreviated (`C. LAMB`, `J. TAYLOR`) so every pick
+needs fuzzy resolution against name + position + team — exactly the kind of thing that resolves 46 picks correctly
+and then silently attributes the 47th to the wrong player.
+
+**Decision:** not built. Manual entry via QuickPick is measured at ~2 s and four keystrokes per pick, the dry run
+put 30 picks through in 0.8 s, and the Teams view drift check catches mis-attribution. An untested event-catching
+extension shipped into the real draft a few hours before it starts is a worse risk than the typing it saves.
+
+Worth revisiting for 2027, when there is time to test it across several mocks — and by then Yahoo's API access
+(applied for 2026-08-30, quoted at 1–2 weeks) should have landed, which is a structured feed and strictly better
+than scraping a rendered page.
