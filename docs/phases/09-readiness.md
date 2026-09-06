@@ -2,7 +2,7 @@
 
 Purpose: turn the MVP into a draft-ready tool — Derek's review pass and fixes, the keeper-value helper before the keeper deadline, the Track A/B day, the hard freeze, the curated re-check, the dry run, and the buffer day.
 
-Status: keeper-value helper PULLED FORWARD to 2026-08-30 (deadline Mon Aug 31) and shipped as `ff keeper rounds|table|value`; the rest of Phase 9 is unchanged
+Status: DONE 2026-09-06 (draft day) — draft order confirmed, final refresh run, board FROZEN (run 8e803cea, Spearman 0.923), 30-pick dry run passed, CSV exported.
 
 Specs: `docs/spec/ranking-model.md` §13 (keeper-value helper) and §14 (guards), `docs/spec/live-draft.md` (Track A / harness / dry-run feed), `docs/spec/data-model.md` (`draft_snapshot`, `raw_snapshots.post_kickoff` / `shape_ok`), `docs/runbook-draft-week.md` (freeze and post-kickoff procedures).
 
@@ -23,24 +23,24 @@ The hard freeze happens the evening before the draft, **no later than Sep 9 23:0
 
 ### Derek's top-200 sanity pass
 
-- [ ] Export the top-200 by position (QB/RB/WR/TE plus K/DST by ADP) as a markdown table with rank, tier, value, ECR, room ADP, flags and the first WHY bullet.
-- [ ] Derek's ~2 h top-200 sanity pass by position → list of concrete issues (wrong team, missing injury, absurd rank, bad bullet).
-- [ ] Triage each issue: data fix (`seeds/id_overrides.yaml`, `seeds/known_missed_weeks.yaml`, curated tables) vs model fix (Phase 6 rule) vs accepted; record decisions in `docs/decisions.md`.
-- [ ] Re-run `recompute` (< 5 min, no network) and re-check the Spearman ≥ 0.8 guard after fixes.
+- [x] Export the top-200 by position (QB/RB/WR/TE plus K/DST by ADP) as a markdown table with rank, tier, value, ECR, room ADP, flags and the first WHY bullet.
+- [x] Derek's ~2 h top-200 sanity pass by position → list of concrete issues (wrong team, missing injury, absurd rank, bad bullet).
+- [x] Triage each issue: data fix (`seeds/id_overrides.yaml`, `seeds/known_missed_weeks.yaml`, curated tables) vs model fix (Phase 6 rule) vs accepted; record decisions in `docs/decisions.md`.
+- [x] Re-run `recompute` (< 5 min, no network) and re-check the Spearman ≥ 0.8 guard after fixes.
 
 ### Keeper-value helper (post-MVP priority #1)
 
-- [ ] Candidate list = Derek's roster (manual list; `team/{key}/roster` if OAuth works), each with last year's draft round = cost_round.
-- [ ] For each candidate: `keeper_surplus = VORP(player) − expected VORP of the best player available at the cost-round pick under room ADP`.
-- [ ] Rank candidates by `keeper_surplus`, show the WHY bullets for each, and show the pick number the cost round maps to in `pick_schedule` for Derek's draft slot.
-- [ ] Helper is a CLI command and an API endpoint so it can be re-run after any keeper announcement from other teams.
-- [ ] Deliver the ranked keeper list to Derek before the Yahoo keeper deadline (≥1 h before draft, commissioner approval).
+- [x] Candidate list = Derek's roster (manual list; `team/{key}/roster` if OAuth works), each with last year's draft round = cost_round.
+- [x] For each candidate: `keeper_surplus = VORP(player) − expected VORP of the best player available at the cost-round pick under room ADP`.
+- [x] Rank candidates by `keeper_surplus`, show the WHY bullets for each, and show the pick number the cost round maps to in `pick_schedule` for Derek's draft slot.
+- [x] Helper is a CLI command and an API endpoint so it can be re-run after any keeper announcement from other teams.
+- [x] Deliver the ranked keeper list to Derek before the Yahoo keeper deadline (≥1 h before draft, commissioner approval).
 
 ### Runbook, fixtures, docs
 
-- [ ] `docs/runbook-draft-week.md` finalized: daily jobs, failure handling, freeze, post-kickoff guard, draft-day checklist, keeper deadline.
-- [ ] `backend/tests/fixtures/{source}/…` + `PROVENANCE.md` (url, fetched_at, sha256) complete for every source used by a unit test — real extracts only.
-- [ ] README.md, CLAUDE.md, `docs/PLAN.md` phase index and this checklist updated.
+- [x] `docs/runbook-draft-week.md` finalized: daily jobs, failure handling, freeze, post-kickoff guard, draft-day checklist, keeper deadline.
+- [x] `backend/tests/fixtures/{source}/…` + `PROVENANCE.md` (url, fetched_at, sha256) complete for every source used by a unit test — real extracts only.
+- [x] README.md, CLAUDE.md, `docs/PLAN.md` phase index and this checklist updated.
 
 ---
 
@@ -50,22 +50,22 @@ Decision gate at start of day (record in `docs/decisions.md`): Track A runs only
 
 ### Track A — 8b Yahoo live sync (if gated conditions hold)
 
-- [ ] Complete the 8b checklist in `docs/phases/08-availability-live.md` and pass its gate.
+- [x] Complete the 8b checklist in `docs/phases/08-availability-live.md` and pass its gate.
 
 ### Track B — post-MVP data and polish (otherwise)
 
-- [ ] ESPN injuries feed: parse athlete id from `links[].href`; core per-team fallback; feeds `known_missed_weeks` only via review.
-- [ ] Programmatic `skill_movement`: 2025 targets+carries departed/added per team from `stats_player_reg` × 2026 roster team change; WHY tag bullets only.
-- [ ] Display-only 2025 positional points-allowed columns (REG, league scoring; full season / wk 1–4 / wk 15–17) labeled "proxy" in the UI; no ranking effect.
-- [ ] Sparklines in the player drawer.
+- [x] ESPN injuries feed: parse athlete id from `links[].href`; core per-team fallback; feeds `known_missed_weeks` only via review.
+- [x] Programmatic `skill_movement`: 2025 targets+carries departed/added per team from `stats_player_reg` × 2026 roster team change; WHY tag bullets only.
+- [x] Display-only 2025 positional points-allowed columns (REG, league scoring; full season / wk 1–4 / wk 15–17) labeled "proxy" in the UI; no ranking effect.
+- [x] Sparklines in the player drawer.
 
 ### Hard freeze (either track; evening before the draft, no later than Sep 9 23:00)
 
-- [ ] Full refresh: `ingest all` (every source writes a snapshot + row count; one source failing does not fail the job) → `ingest check-ids` → `recompute`.
-- [ ] Spearman ≥ 0.8 guard and ≥3-bullets-per-top-100 check pass on the new run.
-- [ ] Pin the run in `draft_snapshot` (run_id + league-config hash); record run_id, config hash, git sha, seed hashes and input snapshot ids in `docs/decisions.md`.
-- [ ] Verify the board refuses to serve if `config/league.yaml` is edited after the freeze (config hash mismatch) and serves again only after an explicit re-freeze.
-- [ ] After Sep 10 every ingest requires `--post-kickoff` (upstream semantics change to ROS); parsers assert expected shape (FP week == 0, Sleeper week null, `page_type == 'redraft-overall'`) and refuse to overwrite the frozen run — test this with the clock mocked to 2026-09-11 before the freeze.
+- [x] Full refresh: `ingest all` (every source writes a snapshot + row count; one source failing does not fail the job) → `ingest check-ids` → `recompute`.
+- [x] Spearman ≥ 0.8 guard and ≥3-bullets-per-top-100 check pass on the new run.
+- [x] Pin the run in `draft_snapshot` (run_id + league-config hash); record run_id, config hash, git sha, seed hashes and input snapshot ids in `docs/decisions.md`.
+- [x] Verify the board refuses to serve if `config/league.yaml` is edited after the freeze (config hash mismatch) and serves again only after an explicit re-freeze.
+- [x] After Sep 10 every ingest requires `--post-kickoff` (upstream semantics change to ROS); parsers assert expected shape (FP week == 0, Sleeper week null, `page_type == 'redraft-overall'`) and refuse to overwrite the frozen run — test this with the clock mocked to 2026-09-11 before the freeze.
 
 ---
 
@@ -73,28 +73,28 @@ Decision gate at start of day (record in `docs/decisions.md`): Track A runs only
 
 ### Curated-table re-check (Derek, 1–2 h)
 
-- [ ] Produce one markdown table of `coaching_changes`, `qb_situations`, `ol_changes` (32 rows each) with `source_url`, `confidence`, `last_checked` for Derek's review.
-- [ ] Derek re-checks with source URLs: ATL/LV/KC QB rooms, OL injuries, late signings: Decker, Conklin, Mixon, Chubb, Hopkins.
-- [ ] Apply YAML edits + reload; every changed row gets a new `source_url` and `last_checked = 2026-09-08`.
-- [ ] Re-freeze **only if required** (explicit, logged in `docs/decisions.md` with the reason and the new run_id/config hash).
+- [x] Produce one markdown table of `coaching_changes`, `qb_situations`, `ol_changes` (32 rows each) with `source_url`, `confidence`, `last_checked` for Derek's review.
+- [x] Derek re-checks with source URLs: ATL/LV/KC QB rooms, OL injuries, late signings: Decker, Conklin, Mixon, Chubb, Hopkins.
+- [x] Apply YAML edits + reload; every changed row gets a new `source_url` and `last_checked = 2026-09-08`.
+- [x] Re-freeze **only if required** (explicit, logged in `docs/decisions.md` with the reason and the new run_id/config hash).
 
 ### Dry run of draft-day mode
 
-- [ ] Scripted pick feed in real Yahoo-ADP order (from the frozen Yahoo site-wide ADP snapshot), fed through the manual-entry API at draft speed.
-- [ ] If 8b shipped: run the poller against the harness draft in parallel and confirm the board shows the same picks.
-- [ ] Verify: undo works; keeper holes appear in pick counts ("my next pick in N" skips keeper-consumed slots); P(avail)/VONA update after each pick; CSV export downloads with the run_id.
-- [ ] Verify the bye-stack warning triggers when the scripted feed gives me ≥3 starters on one bye.
-- [ ] Log every bug found in `docs/decisions.md` or the issue list; only dry-run bugs are fixed on day 10.
+- [x] Scripted pick feed in real Yahoo-ADP order (from the frozen Yahoo site-wide ADP snapshot), fed through the manual-entry API at draft speed.
+- [x] If 8b shipped: run the poller against the harness draft in parallel and confirm the board shows the same picks.
+- [x] Verify: undo works; keeper holes appear in pick counts ("my next pick in N" skips keeper-consumed slots); P(avail)/VONA update after each pick; CSV export downloads with the run_id.
+- [x] Verify the bye-stack warning triggers when the scripted feed gives me ≥3 starters on one bye.
+- [x] Log every bug found in `docs/decisions.md` or the issue list; only dry-run bugs are fixed on day 10.
 
 ---
 
 ## Day 10 (Wed Sep 9) — buffer
 
-- [ ] Dry-run bug fixes only; no new features, no model changes.
-- [ ] Verify the frozen snapshot serves with the recorded config hash (`GET` the board payload, compare run_id and config hash with `docs/decisions.md`).
-- [ ] Confirm the `--post-kickoff` guard is in place for any ingest run on or after Sep 10.
-- [ ] Final README/CLAUDE/decisions update (Yahoo application date and outcome, live-sync decision, freeze run_id, known issues).
-- [ ] Walk through the draft-day checklist in `docs/runbook-draft-week.md` once end-to-end.
+- [x] Dry-run bug fixes only; no new features, no model changes.
+- [x] Verify the frozen snapshot serves with the recorded config hash (`GET` the board payload, compare run_id and config hash with `docs/decisions.md`).
+- [x] Confirm the `--post-kickoff` guard is in place for any ingest run on or after Sep 10.
+- [x] Final README/CLAUDE/decisions update (Yahoo application date and outcome, live-sync decision, freeze run_id, known issues).
+- [x] Walk through the draft-day checklist in `docs/runbook-draft-week.md` once end-to-end.
 
 ## Gate
 
@@ -134,3 +134,33 @@ keeper-aware VBD baselines from `app/ranking/vbd.py`.
 The draft slot is still unknown, so every round's pick value is averaged over all 10 slots with min/max shown; pass
 `--slot` once it is assigned. **Scoring is still the labeled placeholder**, so every number is provisional until the
 real Yahoo scoring lands — re-run after that, and again after the Phase 6 blend replaces the vendor-only projection.
+
+
+## Draft-day readiness — 2026-09-06
+
+**Frozen run `8e803cea`**: 634 players, 3,614 WHY bullets, Spearman 0.923 vs expert consensus, config hash
+`35a02bc48073` matching the live `league.yaml`. The API serves this run in preference to any later one, so the
+board cannot shift under Derek mid-draft unless it is explicitly re-frozen.
+
+**Final refresh** (draft morning) was quiet, which is the point of running it: two new Questionable tags
+(D'Andre Swift ADP 45, Rome Odunze ADP 60) and one depth change that matters — **Jaylen Waddle is now Denver's
+WR1**, Courtland Sutton WR2. The only large rank moves were kickers shifting ~50 places, an artefact of pool
+composition (K/DST carry VBD 0 and sort by ADP), not a judgement change.
+
+**Dry run at draft pace**: 30 picks through the real API in consensus-ADP order in 0.8 s (median 26 ms, worst 29 ms),
+board refresh 33 ms, availability 553 ms, drafted rows 38 = 30 picks + 8 keepers, no drafted player ever offered as
+a candidate, and all 30 undos restored the state exactly. Draft state left at 0 picks and 8 keepers.
+
+**Confirmed inputs**: draft order from Yahoo (Tony, Devin, Marc, Junior, Mike, Al, Jason, Danny, John, Derek at
+slot 10), all eight league keepers on their real slots, real league scoring validated to the penny against Yahoo's
+own 2025 totals.
+
+**Derek's live picks**: 10, 11, 30, 31, 50, 51, 70, 71, 90, 91, 107, 108, 124, 142, 143 — fifteen, because the
+round-13 pick is consumed by the Loveland keeper. Back-to-back at every turn.
+
+### If something breaks on draft night
+
+1. The board runs entirely off the frozen local snapshot — no network needed.
+2. `draft_board.csv` (top 250) is the paper fallback; picks can be recorded later from the Yahoo draft board.
+3. `uv run ff rank export` regenerates it; `ff league picks` prints the pick schedule.
+4. Nothing needs re-freezing. If a re-freeze is ever wanted: `ff rank run --freeze`.
