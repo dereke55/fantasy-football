@@ -515,3 +515,34 @@ before re-entering`, which the client already renders (the fetch layer preserves
 The flaky test was separately made order-independent: it asserted `live_pick == my_draft_slot`, which silently
 assumed an untouched board and made it a tripwire for any earlier test leaving a pick behind rather than a check
 of the snake. It now derives from the actual `picks_made` and only asserts the slot when the board is untouched.
+
+## 2026-09-06 12:54 CDT — Pre-draft refresh #2 (7h51m before the 20:45 draft)
+
+```
+uv run ff ingest all         57 s   id gate PASSED
+uv run ff ingest check-ids   < 1 s  PASSED
+uv run ff recompute --freeze  6 s   features -> market -> ranking -> WHY
+```
+
+| | |
+|---|---|
+| run_id | `3ddd5393` |
+| frozen_at | 2026-09-06 12:54:38 CDT |
+| league_config_sha256 | `35a02bc48073` |
+| git_sha | `5f0c94a` |
+| players / WHY bullets | 634 / 3615 |
+
+Input snapshots: `fantasypros_mirror` 0ffb88b7 (10:40) · `ffc` 9cc13335 (10:40) · `sleeper` d82d9671 (12:53) ·
+`yahoo_pub` 44eabcf6 (12:54). Only Sleeper projections and the Yahoo pool returned new payloads; FFC, the
+FantasyPros mirror, depth charts, rosters and every historical table deduped (`skipped_dupe`).
+
+**The board did not move**: 634 players, 0 changes to overall_rank, ppg_blend, composite_adp or e_games. That is
+the fourth identical board today (10:40, 12:26, 12:29, 12:54), so the market has settled and Sleeper's changing
+content hash is its `last_modified` stamp rather than moving projections.
+
+Guards: Spearman 0.9233 · every top-100 ≥ 3 WHY bullets · market layer current · exactly one frozen run ·
+id gate 300/300 ECR, 381/381 Yahoo, 300/300 Sleeper, 43/43 2026 R1–R4 skill, 32/32 teams.
+State: 0 picks, 8 keepers, my slot 10, first pick R1 P10, keeper Colston Loveland.
+
+Injury-driven E[games] carried into the frozen board (the values a later pull could still move): Egbuka 14.2 Q ·
+Love 13.7 Q · Monangai 13.2 Q · Kittle 13.8 Q · Tyson 11.0 IR · Charbonnet 9.0 PUP · Aiyuk 0.0 DNR.
